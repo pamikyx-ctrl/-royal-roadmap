@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Roadmap</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
+<link rel="apple-touch-icon-precomposed" sizes="180x180" href="/icon-180.png">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Royal Roadmap">
+<style>body{background:#0A0A0F;color:#eee;font-family:-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:14px;margin:0;}
+a{display:block;width:260px;text-align:center;padding:14px;border:1.5px solid #C9A84C;border-radius:12px;color:#C9A84C;text-decoration:none;font-weight:700;}</style>
+</head><body>
+<img src="icon-180.png" style="width:90px;height:90px;border-radius:22px;" alt="">
+<h2 style="margin:6px 0 12px;">👑 Royal Roadmap</h2>
+<a href="iphone.html">📱 iPhone version</a>
+<a href="ipad.html">💻 iPad version</a>
+<a href="desktop.html">🖥 Desktop version</a>
+<script>
+(function(){
+  var ua=navigator.userAgent;
+  var isIpad=/iPad/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  var isIphone=/iPhone/.test(ua);
+  var dest=isIphone?"iphone.html":(isIpad?"ipad.html":"desktop.html");
+  location.replace(dest);
+})();
+</script>
+</body></html>
