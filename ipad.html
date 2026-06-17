@@ -15101,5 +15101,232 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 })();
 </script>
 <!-- ════════════ END SYSTEM REFRESH BUTTON ════════════ -->
+
+<!-- ════════════ ROYAL SCHOLARS — EDUCATION SPONSORSHIP TRACKER ════════════ -->
+<style id="rrsch-css">
+#s-scholars .scl-root{max-width:1100px;margin:0 auto;padding:6px 2px 40px;}
+#s-scholars .scl-head{display:flex;align-items:center;gap:12px;margin:6px 0 16px;flex-wrap:wrap;}
+#s-scholars .scl-crest{width:48px;height:48px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));display:flex;align-items:center;justify-content:center;font-size:25px;}
+#s-scholars .scl-ttl h1{margin:0;font-size:20px;font-weight:800;color:var(--text,#F0EBE0);}
+#s-scholars .scl-ttl p{margin:2px 0 0;font-size:12.5px;color:var(--text3,#7A7268);font-weight:600;}
+#s-scholars .scl-sp{flex:1;}
+#s-scholars .scl-add{height:40px;padding:0 16px;border:none;border-radius:11px;cursor:pointer;font-weight:800;font-size:13.5px;color:#1a1408;background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));}
+#s-scholars .scl-add:active{transform:scale(.96);}
+#s-scholars .scl-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+@media(max-width:760px){#s-scholars .scl-kpis{grid-template-columns:repeat(2,1fr);}}
+#s-scholars .scl-kpi{background:var(--dark3,#1A1A28);border:1.5px solid rgba(201,168,76,0.14);border-radius:14px;padding:14px;}
+#s-scholars .scl-kpi .k{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text3,#7A7268);}
+#s-scholars .scl-kpi .v{font-size:21px;font-weight:800;color:var(--text,#F0EBE0);margin-top:5px;}
+#s-scholars .scl-kpi .s{font-size:11px;color:var(--text3,#7A7268);margin-top:2px;font-weight:600;}
+#s-scholars .scl-due{background:rgba(255,159,10,0.10);border:1.5px solid rgba(255,159,10,0.35);border-radius:12px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:#FFCF8A;font-weight:700;display:flex;gap:9px;align-items:center;}
+#s-scholars .scl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+@media(max-width:760px){#s-scholars .scl-grid{grid-template-columns:1fr;}}
+#s-scholars .scl-card{background:var(--dark3,#1A1A28);border:1.5px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:11px;}
+#s-scholars .scl-card .top{display:flex;align-items:flex-start;gap:11px;}
+#s-scholars .scl-av{width:42px;height:42px;border-radius:12px;flex-shrink:0;background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));color:#1a1408;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;}
+#s-scholars .scl-nm{font-size:15px;font-weight:800;color:var(--text,#F0EBE0);line-height:1.2;}
+#s-scholars .scl-rel{font-size:11.5px;color:var(--gold,#C9A84C);font-weight:700;margin-top:2px;}
+#s-scholars .scl-badge{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:3px 8px;border-radius:7px;}
+#s-scholars .b-enrolled{background:rgba(76,175,125,.16);color:#4CAF7D;}
+#s-scholars .b-break{background:rgba(255,159,10,.16);color:#FF9F0A;}
+#s-scholars .b-grad,#s-scholars .b-completed{background:rgba(91,141,217,.16);color:#5B8DD9;}
+#s-scholars .scl-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;}
+#s-scholars .scl-meta .mk{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text4,#4A4640);}
+#s-scholars .scl-meta .mv{font-size:12.5px;font-weight:700;color:var(--text,#F0EBE0);margin-top:1px;}
+#s-scholars .scl-bar{height:7px;border-radius:5px;background:rgba(255,255,255,0.08);overflow:hidden;}
+#s-scholars .scl-bar>i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--gold,#C9A84C),#E8C96A);}
+#s-scholars .scl-row{display:flex;gap:8px;flex-wrap:wrap;}
+#s-scholars .scl-btn{flex:1;min-width:90px;height:36px;border-radius:9px;border:1.5px solid rgba(201,168,76,0.3);background:rgba(201,168,76,0.08);color:var(--gold,#C9A84C);font-weight:700;font-size:12px;cursor:pointer;}
+#s-scholars .scl-btn.pay{background:rgba(76,175,125,0.12);border-color:rgba(76,175,125,0.35);color:#4CAF7D;}
+#s-scholars .scl-btn.del{flex:0 0 auto;min-width:0;width:40px;background:rgba(224,82,82,0.10);border-color:rgba(224,82,82,0.3);color:#E05252;}
+#s-scholars .scl-form{background:var(--dark3,#1A1A28);border:1.5px solid rgba(201,168,76,0.3);border-radius:16px;padding:18px;margin-bottom:18px;}
+#s-scholars .scl-form h3{margin:0 0 14px;font-size:15px;font-weight:800;color:var(--gold,#C9A84C);}
+#s-scholars .scl-fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:560px){#s-scholars .scl-fg{grid-template-columns:1fr;}}
+#s-scholars .scl-fg .full{grid-column:1/-1;}
+#s-scholars .scl-lbl{font-size:10.5px;font-weight:700;color:var(--text3,#7A7268);margin-bottom:4px;display:block;}
+#s-scholars .scl-in,#s-scholars .scl-sel,#s-scholars .scl-ta{width:100%;background:var(--dark4,#222235);border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:var(--text,#F0EBE0);font-size:13.5px;padding:9px 11px;font-family:inherit;-webkit-appearance:none;}
+#s-scholars .scl-ta{min-height:60px;resize:vertical;}
+#s-scholars .scl-save{height:42px;padding:0 20px;border:none;border-radius:10px;font-weight:800;font-size:13.5px;color:#1a1408;background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));cursor:pointer;}
+#s-scholars .scl-cancel{height:42px;padding:0 18px;border:1.5px solid rgba(255,255,255,0.14);border-radius:10px;background:transparent;color:var(--text2,#C4BAA8);font-weight:700;font-size:13px;cursor:pointer;}
+#s-scholars .scl-empty{text-align:center;color:var(--text3,#7A7268);font-size:14px;padding:40px 16px;line-height:1.6;}
+</style>
+<script id="rrsch-js">
+(function(){
+ if(window.RRSCH)return;
+ var KEY='royal_scholars_v1';
+ var LEVELS=['Primary','JSS — Junior Secondary','SSS — Senior Secondary','University','Tertiary / College','Other'];
+ var STATUS=['Enrolled','On Break','Graduated','Completed'];
+ var editId=null, showForm=false;
+
+ function load(){try{var v=JSON.parse(localStorage.getItem(KEY));return Array.isArray(v)?v:[];}catch(e){return [];}}
+ function save(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
+ function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+ function gbp(n){return '£'+(Math.round(+n||0)).toLocaleString('en-GB');}
+ function uid(){return 'sch'+Date.now()+Math.floor(Math.random()*999);}
+ function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+ function daysTo(d){if(!d)return null;return Math.ceil((new Date(d)-new Date())/86400000);}
+ function fmtDate(d){if(!d)return '—';try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}}
+ function initials(n){return (n||'?').trim().split(/\s+/).slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();}
+ function statusClass(s){return {'Enrolled':'b-enrolled','On Break':'b-break','Graduated':'b-grad','Completed':'b-completed'}[s]||'b-enrolled';}
+
+ function ensureScreen(){
+   if(document.getElementById('s-scholars'))return;
+   var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+   var sc=document.createElement('div'); sc.id='s-scholars'; sc.className='screen';
+   sc.innerHTML='<div id="scl-root" class="scl-root"></div>';
+   main.appendChild(sc);
+ }
+ function ensureNav(){
+   var fam=document.getElementById('nb-family');
+   if(fam && !document.getElementById('nb-scholars')){
+     var b=fam.cloneNode(true); b.id='nb-scholars'; b.setAttribute('data-tab','scholars'); b.setAttribute('onclick',"go('scholars')");
+     var ni=b.querySelector('.ni'); if(ni)ni.textContent='🎓';
+     var nl=b.querySelector('.nl'); if(nl)nl.textContent='Royal Scholars';
+     fam.parentNode.insertBefore(b, fam.nextSibling);
+   }
+   if(!document.querySelector('.rms-item[data-scl]')){
+     var items=document.querySelectorAll('.rms-item');
+     for(var i=0;i<items.length;i++){
+       var oc=items[i].getAttribute('onclick')||'';
+       if(/royalTab\('family'/.test(oc)){
+         var c=items[i].cloneNode(true); c.setAttribute('data-scl','1');
+         c.setAttribute('onclick',"royalTab('scholars',null);if(typeof royalCloseMore==='function')royalCloseMore()");
+         var ic=c.querySelector('.rms-icon'); if(ic)ic.textContent='🎓';
+         var lb=c.querySelector('.rms-lbl'); if(lb)lb.textContent='Scholars';
+         items[i].parentNode.insertBefore(c, items[i].nextSibling);
+         break;
+       }
+     }
+   }
+ }
+
+ function build(){
+   ensureScreen();
+   var root=document.getElementById('scl-root'); if(!root)return;
+   var list=load();
+   var total=list.reduce(function(a,s){return a+(+s.totalInvested||0);},0);
+   var enrolled=list.filter(function(s){return (s.status||'Enrolled')==='Enrolled';}).length;
+   var grad=list.filter(function(s){return s.status==='Graduated'||s.status==='Completed';}).length;
+   var due=list.filter(function(s){return s.nextFeeDue&&s.status!=='Graduated'&&s.status!=='Completed';}).map(function(s){return {s:s,d:daysTo(s.nextFeeDue)};}).filter(function(x){return x.d!=null;}).sort(function(a,b){return a.d-b.d;});
+   var next=due[0];
+
+   var html='<div class="scl-head"><div class="scl-crest">🎓</div><div class="scl-ttl"><h1>Royal Scholars</h1><p>Education sponsorship — the future leaders you are raising</p></div><div class="scl-sp"></div><button class="scl-add" onclick="window.RRSCH.addNew()">＋ Add Scholar</button></div>';
+
+   html+='<div class="scl-kpis">'
+     +'<div class="scl-kpi"><div class="k">Scholars</div><div class="v">'+list.length+'</div><div class="s">'+enrolled+' enrolled · '+grad+' completed</div></div>'
+     +'<div class="scl-kpi"><div class="k">Total Invested</div><div class="v">'+gbp(total)+'</div><div class="s">across all scholars</div></div>'
+     +'<div class="scl-kpi"><div class="k">Next Fee Due</div><div class="v">'+(next?fmtDate(next.s.nextFeeDue):'—')+'</div><div class="s">'+(next?esc(next.s.name):'nothing scheduled')+'</div></div>'
+     +'<div class="scl-kpi"><div class="k">Termly Commitment</div><div class="v">'+gbp(list.reduce(function(a,s){return a+(+s.feePerTerm||0);},0))+'</div><div class="s">sum of fees per term</div></div>'
+     +'</div>';
+
+   if(next && next.d!=null && next.d<=45){
+     html+='<div class="scl-due">⏰ <span>'+esc(next.s.name)+'’s next fee ('+gbp(next.s.feePerTerm)+') is due '+(next.d<0?'<b>overdue</b>':'in <b>'+next.d+' days</b>')+' — '+fmtDate(next.s.nextFeeDue)+'.</span></div>';
+   }
+
+   if(showForm){ html+=formHtml(editId?list.filter(function(s){return s.id===editId;})[0]:null); }
+
+   if(!list.length && !showForm){
+     html+='<div class="scl-empty">No scholars yet.<br>Tap <b>＋ Add Scholar</b> to record the first student you sponsor — their school, level, course and fees.</div>';
+   } else {
+     html+='<div class="scl-grid">'+list.map(card).join('')+'</div>';
+   }
+   root.innerHTML=html;
+ }
+
+ function card(s){
+   var inv=+s.totalInvested||0, target=+s.targetTotal||0;
+   var pct=target>0?Math.max(0,Math.min(100,Math.round(inv/target*100))):0;
+   var dleft=daysTo(s.nextFeeDue);
+   var dueTxt=s.nextFeeDue?(dleft!=null&&dleft<0?'Overdue':fmtDate(s.nextFeeDue)):'—';
+   return '<div class="scl-card">'
+     +'<div class="top"><div class="scl-av">'+esc(initials(s.name))+'</div>'
+       +'<div style="flex:1;min-width:0;"><div class="scl-nm">'+esc(s.name||'Unnamed')+'</div>'
+       +(s.relationship?'<div class="scl-rel">'+esc(s.relationship)+'</div>':'')+'</div>'
+       +'<span class="scl-badge '+statusClass(s.status||'Enrolled')+'">'+esc(s.status||'Enrolled')+'</span></div>'
+     +'<div class="scl-meta">'
+       +cell('Institution',s.institution||'—')
+       +cell('Level',s.level||'—')
+       +cell('Year / Class',s.year||'—')
+       +cell('Course',s.course||'—')
+       +cell('Fee / Term',s.feePerTerm?gbp(s.feePerTerm):'—')
+       +cell('Next Fee Due',dueTxt)
+       +cell('Total Invested',gbp(inv))
+       +cell('Expected Finish',s.expectedGrad||'—')
+     +'</div>'
+     +(target>0?'<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:var(--text3,#7A7268);margin-bottom:4px;"><span>TOWARDS TARGET '+gbp(target)+'</span><span>'+pct+'%</span></div><div class="scl-bar"><i style="width:'+pct+'%"></i></div></div>':'')
+     +(s.notes?'<div style="font-size:12px;color:var(--text2,#C4BAA8);line-height:1.5;">'+esc(s.notes)+'</div>':'')
+     +'<div class="scl-row">'
+       +'<button class="scl-btn pay" onclick="window.RRSCH.recordFee(\''+s.id+'\')">＋ Record Term Fee</button>'
+       +'<button class="scl-btn" onclick="window.RRSCH.edit(\''+s.id+'\')">✏️ Edit</button>'
+       +'<button class="scl-btn del" onclick="window.RRSCH.del(\''+s.id+'\')">🗑</button>'
+     +'</div></div>';
+ }
+ function cell(k,v){return '<div><div class="mk">'+k+'</div><div class="mv">'+esc(v)+'</div></div>';}
+
+ function formHtml(s){
+   s=s||{};
+   function opt(arr,val){return arr.map(function(o){return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>';}).join('');}
+   return '<div class="scl-form"><h3>'+(s.id?'✏️ Edit Scholar':'🎓 Add a Scholar')+'</h3>'
+     +'<div class="scl-fg">'
+       +'<div class="full"><label class="scl-lbl">Full Name</label><input class="scl-in" id="scl-f-name" value="'+esc(s.name||'')+'" placeholder="e.g. Akua Binney"></div>'
+       +'<div><label class="scl-lbl">Relationship</label><input class="scl-in" id="scl-f-rel" value="'+esc(s.relationship||'')+'" placeholder="e.g. Niece, Nephew, Cousin"></div>'
+       +'<div><label class="scl-lbl">Status</label><select class="scl-sel" id="scl-f-status">'+opt(STATUS,s.status||'Enrolled')+'</select></div>'
+       +'<div><label class="scl-lbl">Institution / School</label><input class="scl-in" id="scl-f-inst" value="'+esc(s.institution||'')+'" placeholder="e.g. KNUST, Dadiaso SHS"></div>'
+       +'<div><label class="scl-lbl">Level</label><select class="scl-sel" id="scl-f-level">'+opt(LEVELS,s.level||'University')+'</select></div>'
+       +'<div><label class="scl-lbl">Year / Class</label><input class="scl-in" id="scl-f-year" value="'+esc(s.year||'')+'" placeholder="e.g. JSS 2, Year 1, Form 3"></div>'
+       +'<div><label class="scl-lbl">Course / Programme</label><input class="scl-in" id="scl-f-course" value="'+esc(s.course||'')+'" placeholder="e.g. Nursing, Law, General"></div>'
+       +'<div><label class="scl-lbl">Fee per Term (£)</label><input class="scl-in" id="scl-f-fee" type="number" inputmode="decimal" value="'+(s.feePerTerm||'')+'" placeholder="0"></div>'
+       +'<div><label class="scl-lbl">Next Fee Due</label><input class="scl-in" id="scl-f-due" type="date" value="'+esc(s.nextFeeDue||'')+'"></div>'
+       +'<div><label class="scl-lbl">Total Invested so far (£)</label><input class="scl-in" id="scl-f-inv" type="number" inputmode="decimal" value="'+(s.totalInvested||'')+'" placeholder="0"></div>'
+       +'<div><label class="scl-lbl">Expected Finish</label><input class="scl-in" id="scl-f-grad" value="'+esc(s.expectedGrad||'')+'" placeholder="e.g. 2028"></div>'
+       +'<div class="full"><label class="scl-lbl">Notes</label><textarea class="scl-ta" id="scl-f-notes" placeholder="School contact, scholarship details, anything to remember…">'+esc(s.notes||'')+'</textarea></div>'
+     +'</div>'
+     +'<div style="display:flex;gap:10px;margin-top:14px;"><button class="scl-save" onclick="window.RRSCH.saveForm()">💾 Save Scholar</button><button class="scl-cancel" onclick="window.RRSCH.cancel()">Cancel</button></div>'
+     +'</div>';
+ }
+
+ var API={
+   build:build,
+   addNew:function(){editId=null;showForm=true;build();var n=document.getElementById('scl-f-name');if(n)n.focus();},
+   edit:function(id){editId=id;showForm=true;build();},
+   cancel:function(){editId=null;showForm=false;build();},
+   del:function(id){var list=load();var s=list.filter(function(x){return x.id===id;})[0];if(!s)return;if(!confirm('Remove '+(s.name||'this scholar')+' from your Royal Scholars register? This does not affect any money already logged.'))return;save(list.filter(function(x){return x.id!==id;}));build();},
+   recordFee:function(id){var list=load();var s=list.filter(function(x){return x.id===id;})[0];if(!s)return;var def=s.feePerTerm||0;var amt=prompt('Record a term fee for '+(s.name||'this scholar')+' (£):',def);if(amt===null)return;amt=parseFloat(amt)||0;if(amt<=0)return;s.totalInvested=(+s.totalInvested||0)+amt;s.lastPaid=todayISO();if(s.nextFeeDue){var d=new Date(s.nextFeeDue);d.setDate(d.getDate()+120);s.nextFeeDue=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}save(list);build();alert('Recorded '+('£'+amt)+' for '+(s.name||'scholar')+'. Remember to also log the actual transfer under Money to Ghana.');},
+   saveForm:function(){
+     var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+     var name=g('scl-f-name').trim();
+     if(!name){alert('Please enter the scholar’s name.');return;}
+     var list=load();
+     var s=editId?list.filter(function(x){return x.id===editId;})[0]:null;
+     var isNew=!s; if(isNew){s={id:uid()};}
+     s.name=name; s.relationship=g('scl-f-rel').trim(); s.status=g('scl-f-status');
+     s.institution=g('scl-f-inst').trim(); s.level=g('scl-f-level'); s.year=g('scl-f-year').trim();
+     s.course=g('scl-f-course').trim(); s.feePerTerm=parseFloat(g('scl-f-fee'))||0;
+     s.nextFeeDue=g('scl-f-due'); s.totalInvested=parseFloat(g('scl-f-inv'))||0;
+     s.expectedGrad=g('scl-f-grad').trim(); s.notes=g('scl-f-notes').trim();
+     if(isNew)list.push(s);
+     save(list); editId=null; showForm=false; build();
+   }
+ };
+ window.RRSCH=API;
+
+ /* hook the two navigators so opening 'scholars' builds the screen */
+ function hook(fnName){
+   var orig=window[fnName];
+   if(typeof orig!=='function'||orig._rrsch)return;
+   var wrapped=function(n){ var r=orig.apply(this,arguments); if(n==='scholars'){ensureScreen();build();} return r; };
+   wrapped._rrsch=true; window[fnName]=wrapped;
+ }
+ function init(){ ensureScreen(); ensureNav(); hook('go'); hook('royalTab');
+   var s=document.getElementById('s-scholars'); if(s&&s.classList.contains('active'))build();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+ setInterval(function(){ if(!document.getElementById('nb-scholars')||!document.getElementById('s-scholars'))init();
+   var s=document.getElementById('s-scholars'); if(s&&s.classList.contains('active')&&!document.getElementById('scl-root').innerHTML)build();
+ },1500);
+})();
+</script>
+<!-- ════════════ END ROYAL SCHOLARS ════════════ -->
 </body>
 </html>
