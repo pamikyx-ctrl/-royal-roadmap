@@ -6073,7 +6073,7 @@ function rotaQuickView(id){
       +'<button onclick="this.closest(\'[onclick]\').remove();" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;">&#x2715;</button>'
     +'</div>'
     +sec('Assignment')
-    +row('Client',r.clientName)
+    +row('Client',r.clientName)+row('Preferred Name',r.preferredName)+row('Date of Birth',r.clientDOB)+row('Age',r.clientAge)+row('Gender',r.clientGender)+row('Reason for Care',r.careReason)+row('Diagnosis',r.medicalDiagnosis)
     +row('Address',r.clientAddress||r.address)
     +row('Client Phone',r.clientPhone)
     +row('Care Type',r.careType)
@@ -12581,7 +12581,7 @@ function rcPick(cid,targetId){
   var el=document.getElementById(targetId);
   if(el){ el.value=c.name; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); }
   // Bonus: auto-fill phone field on rota form if empty
-  if(targetId==='rf-client'){ var ph=document.getElementById('rf-phone'); if(ph && !ph.value && c.phone) ph.value=c.phone; }
+  if(targetId==='rf-client'){ var ph=document.getElementById('rf-phone'); if(ph && !ph.value && c.phone) ph.value=c.phone; var ph2=document.getElementById('rf-clientphone'); if(ph2 && !ph2.value && c.phone) ph2.value=c.phone; }
   var ov=document.getElementById('rc-picker'); if(ov) ov.remove();
 }
 
@@ -15265,5 +15265,479 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 })();
 </script>
 <!-- ════════════ END ROYAL SCHOLARS ════════════ -->
+
+<!-- ════════════ SMART REPORT — Per-Goal + Category + Type Tabs + AI View ════════════ -->
+<style id="rrep-css">
+#s-report .rrep-wrap{background:linear-gradient(180deg,rgba(201,168,76,0.06),transparent);border:1.5px solid rgba(201,168,76,0.28);border-radius:16px;padding:16px 16px 18px;margin:0 0 22px;}
+#s-report .rrep-h{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+#s-report .rrep-h .t{font-size:15px;font-weight:800;color:var(--gold,#C9A84C);}
+#s-report .rrep-h .s{font-size:11.5px;color:var(--text3,#7A7268);font-weight:600;}
+#s-report .rrep-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+#s-report .rrep-fld{display:flex;flex-direction:column;gap:4px;}
+#s-report .rrep-fld label{font-size:9.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text4,#4A4640);}
+#s-report .rrep-in,#s-report .rrep-sel{background:var(--dark4,#222235);border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:var(--text,#F0EBE0);font-size:13px;padding:8px 10px;font-family:inherit;-webkit-appearance:none;min-width:120px;}
+#s-report #rrep-custom{display:none;gap:8px;}
+#s-report .rrep-tabs{display:flex;gap:7px;overflow-x:auto;padding:14px 2px 4px;scrollbar-width:none;}
+#s-report .rrep-tabs::-webkit-scrollbar{display:none;}
+#s-report .rrep-tab{white-space:nowrap;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.1);background:var(--dark3,#1A1A28);color:var(--text2,#C4BAA8);padding:7px 12px;border-radius:11px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;}
+#s-report .rrep-tab .ct{font-size:11px;font-weight:800;background:rgba(255,255,255,0.08);border-radius:7px;padding:1px 7px;}
+#s-report .rrep-tab.on{background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));color:#1a1408;border-color:transparent;}
+#s-report .rrep-tab.on .ct{background:rgba(0,0,0,0.18);}
+#s-report .rrep-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+#s-report .rrep-btn{height:40px;padding:0 16px;border-radius:10px;border:1.5px solid rgba(201,168,76,0.35);background:rgba(201,168,76,0.08);color:var(--gold,#C9A84C);font-weight:800;font-size:13px;cursor:pointer;}
+#s-report .rrep-btn.ai{background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));color:#1a1408;border-color:transparent;}
+#s-report .rrep-btn:active{transform:scale(.97);}
+#s-report .rrep-out{margin-top:16px;}
+#s-report .rrep-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:760px){#s-report .rrep-kpis{grid-template-columns:repeat(2,1fr);}}
+#s-report .rrep-kpi{background:var(--dark3,#1A1A28);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:11px 13px;}
+#s-report .rrep-kpi .k{font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--text3,#7A7268);}
+#s-report .rrep-kpi .v{font-size:19px;font-weight:800;margin-top:4px;}
+#s-report .rrep-goalsec{background:var(--dark3,#1A1A28);border:1px solid rgba(255,255,255,0.07);border-radius:13px;padding:14px;margin-bottom:12px;}
+#s-report .rrep-goalsec .gh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap;}
+#s-report .rrep-goalsec .gh .nm{font-size:14px;font-weight:800;color:var(--text,#F0EBE0);}
+#s-report .rrep-goalsec .gh .sub{font-size:13px;font-weight:800;color:var(--gold,#C9A84C);}
+#s-report .rrep-line{display:grid;grid-template-columns:84px 1fr auto;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,0.05);font-size:12.5px;}
+#s-report .rrep-line .dt{color:var(--text3,#7A7268);font-weight:600;font-size:11px;}
+#s-report .rrep-line .ds{color:var(--text2,#C4BAA8);}
+#s-report .rrep-line .am{font-weight:800;white-space:nowrap;}
+#s-report .rrep-ai{background:var(--dark3,#1A1A28);border:1.5px solid rgba(201,168,76,0.3);border-radius:14px;padding:18px;}
+#s-report .rrep-ai .badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.5px;color:#1a1408;background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));padding:3px 10px;border-radius:8px;margin-bottom:12px;}
+#s-report .rrep-ai p{font-size:14px;line-height:1.7;color:var(--text,#F0EBE0);margin:0 0 12px;}
+#s-report .rrep-ai b{color:var(--gold,#C9A84C);}
+#s-report .rrep-ai .nums{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:6px;}
+#s-report .rrep-ai .nums div{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:9px 11px;}
+#s-report .rrep-ai .nums .k{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3,#7A7268);}
+#s-report .rrep-ai .nums .v{font-size:16px;font-weight:800;margin-top:2px;}
+#s-report .rrep-empty{text-align:center;color:var(--text3,#7A7268);font-size:13.5px;padding:26px;line-height:1.6;}
+</style>
+<script id="rrep-js">
+(function(){
+ if(window.RREP)return;
+ function gv(k,fb){try{var v=JSON.parse(localStorage.getItem(k));return v==null?fb:v;}catch(e){return fb;}}
+ function gbp(n){var neg=n<0;n=Math.abs(Math.round(+n||0));return (neg?'−£':'£')+n.toLocaleString('en-GB');}
+ function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+ function fmtDate(d){if(!d)return '—';try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});}catch(e){return d;}}
+ var OUT=['expense','personal','ghana','family','investment','debt','education','saving'];
+ function isOut(t){return OUT.indexOf(t)>-1;}
+ var TYPES=[{t:'',ic:'🗂',lbl:'All'},{t:'income',ic:'📈',lbl:'Income'},{t:'expense',ic:'🛒',lbl:'Expense'},{t:'personal',ic:'🏠',lbl:'Personal'},{t:'debt',ic:'💳',lbl:'Debt'},{t:'ghana',ic:'🇬🇭',lbl:'Ghana'},{t:'family',ic:'🏘️',lbl:'Family'},{t:'education',ic:'🎓',lbl:'Education'},{t:'investment',ic:'💎',lbl:'Investment'}];
+ var activeType='', lastView='breakdown';
+
+ function goalsList(){var g=gv('royal_goals_v2',null);if(g&&g.length)return g;return (window.goals||[]);}
+ function catLabel(type,cat){try{if(window.MH_CATS&&window.MH_CATS[type]){var f=window.MH_CATS[type].filter(function(c){return c.v===cat;})[0];if(f)return f.l;}}catch(e){}return cat||'—';}
+
+ function rows(){
+   var out=[];
+   gv('royal_moneyhub_v1',[]).forEach(function(t){
+     out.push({date:t.date||'',src:'Money Hub',type:t.type||'expense',cat:catLabel(t.type,t.cat),amount:parseFloat(t.amount)||0,desc:t.desc||'—',goalUid:null,goalTitle:null});
+   });
+   goalsList().forEach(function(g){
+     gv('royal_'+g.uid+'_entries',[]).forEach(function(e){
+       out.push({date:e.date||'',src:'Goal',type:e.type||'note',cat:g.t,amount:parseFloat(e.amount)||0,desc:e.description||e.desc||'—',goalUid:g.uid,goalTitle:g.t});
+     });
+   });
+   gv('royal_debts_v1',[]).forEach(function(d){
+     gv('royal_debt_'+d.id+'_hist',[]).forEach(function(h){out.push({date:h.date||'',src:'Debt',type:'debt',cat:d.name||'Debt',amount:parseFloat(h.amount)||0,desc:'Payment — '+(d.name||'Debt'),goalUid:null,goalTitle:null});});
+   });
+   gv('royal_rota_v1',[]).forEach(function(r){
+     if(!r.date)return;var pay=(parseFloat(r.hours)||0)*(parseFloat(r.rate)||0);
+     out.push({date:r.date||'',src:'Rota',type:'income',cat:r.client||r.location||'Care Shift',amount:pay,desc:(r.client||'Shift'),goalUid:null,goalTitle:null});
+   });
+   return out;
+ }
+ function range(period){
+   var now=new Date(),y=now.getFullYear(),m=now.getMonth();
+   function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+   if(period==='thisweek'){var d=new Date(now);var day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return {from:iso(d),to:iso(now),lbl:'this week'};}
+   if(period==='thismonth')return {from:iso(new Date(y,m,1)),to:iso(now),lbl:'this month'};
+   if(period==='lastmonth')return {from:iso(new Date(y,m-1,1)),to:iso(new Date(y,m,0)),lbl:'last month'};
+   if(period==='thisquarter'){var q=Math.floor(m/3)*3;return {from:iso(new Date(y,q,1)),to:iso(now),lbl:'this quarter'};}
+   if(period==='last6m')return {from:iso(new Date(y,m-5,1)),to:iso(now),lbl:'last 6 months'};
+   if(period==='thisyear')return {from:iso(new Date(y,0,1)),to:iso(now),lbl:'this year'};
+   if(period==='custom'){var f=(document.getElementById('rrep-from')||{}).value||'';var t=(document.getElementById('rrep-to')||{}).value||'';return {from:f,to:t,lbl:(f||'start')+' to '+(t||'today')};}
+   return {from:'',to:'',lbl:'all time'};
+ }
+ /* rows filtered by period+cat+goal (NOT type) — used for tab counts */
+ function baseFiltered(){
+   var period=(document.getElementById('rrep-period')||{}).value||'thismonth';
+   var cat=(document.getElementById('rrep-cat')||{}).value||'';
+   var goal=(document.getElementById('rrep-goal')||{}).value||'';
+   var r=range(period);
+   var f=rows().filter(function(x){
+     if(r.from&&x.date&&x.date<r.from)return false;
+     if(r.to&&x.date&&x.date>r.to)return false;
+     if(cat&&x.cat!==cat)return false;
+     if(goal&&x.goalUid!==goal)return false;
+     return true;
+   });
+   return {rows:f,range:r,cat:cat,goal:goal};
+ }
+ function filtered(){
+   var b=baseFiltered();
+   var f=b.rows.filter(function(x){ if(activeType&&x.type!==activeType)return false; return true; });
+   f.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+   return {rows:f,range:b.range,cat:b.cat,goal:b.goal};
+ }
+ function totals(rs){var inc=0,out=0;rs.forEach(function(x){if(x.type==='income')inc+=x.amount;else if(isOut(x.type))out+=x.amount;});return {inc:inc,out:out,net:inc-out,count:rs.length};}
+
+ function refreshTabs(){
+   var bar=document.getElementById('rrep-tabs'); if(!bar)return;
+   var base=baseFiltered().rows;
+   var counts={}; base.forEach(function(x){counts[x.type]=(counts[x.type]||0)+1;});
+   bar.innerHTML=TYPES.map(function(tp){
+     var c=tp.t===''?base.length:(counts[tp.t]||0);
+     return '<button class="rrep-tab'+(tp.t===activeType?' on':'')+'" onclick="window.RREP.setType(\''+tp.t+'\')">'+tp.ic+' '+tp.lbl+' <span class="ct">'+c+'</span></button>';
+   }).join('');
+ }
+ function kpis(t){return '<div class="rrep-kpis">'
+   +'<div class="rrep-kpi"><div class="k">Entries</div><div class="v">'+t.count+'</div></div>'
+   +'<div class="rrep-kpi"><div class="k">Money In</div><div class="v" style="color:var(--green,#4CAF7D)">'+gbp(t.inc)+'</div></div>'
+   +'<div class="rrep-kpi"><div class="k">Money Out</div><div class="v" style="color:var(--red,#E05252)">'+gbp(t.out)+'</div></div>'
+   +'<div class="rrep-kpi"><div class="k">Net</div><div class="v" style="color:'+(t.net>=0?'var(--green,#4CAF7D)':'var(--red,#E05252)')+'">'+gbp(t.net)+'</div></div></div>';}
+
+ function renderBreakdown(){
+   lastView='breakdown'; refreshTabs();
+   var d=filtered(); var out=document.getElementById('rrep-out'); if(!out)return;
+   if(!d.rows.length){out.innerHTML='<div class="rrep-empty">No entries match your filters for <b>'+esc(d.range.lbl)+'</b>.<br>Try a wider period or a different tab.</div>';return;}
+   var t=totals(d.rows); var html=kpis(t);
+   var byGoal={}, unlinked=[];
+   d.rows.forEach(function(x){ if(x.goalUid){(byGoal[x.goalTitle]=byGoal[x.goalTitle]||[]).push(x);} else unlinked.push(x); });
+   Object.keys(byGoal).forEach(function(g){var rs=byGoal[g];var sub=rs.reduce(function(a,x){return a+(isOut(x.type)?-x.amount:(x.type==='income'?x.amount:0));},0);html+=goalSection('🎯 '+g, rs, sub);});
+   if(unlinked.length){var sub=unlinked.reduce(function(a,x){return a+(isOut(x.type)?-x.amount:(x.type==='income'?x.amount:0));},0);html+=goalSection('📂 Not linked to a goal', unlinked, sub);}
+   out.innerHTML=html;
+ }
+ function goalSection(title,rs,sub){
+   var lines=rs.slice(0,80).map(function(x){
+     var col=x.type==='income'?'var(--green,#4CAF7D)':(isOut(x.type)?'var(--red,#E05252)':'var(--text3,#7A7268)');
+     var amt=x.amount?(x.type==='income'?'+':isOut(x.type)?'−':'')+gbp(x.amount):'—';
+     return '<div class="rrep-line"><span class="dt">'+fmtDate(x.date)+'</span><span class="ds">'+esc(x.desc)+' <span style="color:var(--text4,#4A4640)">· '+esc(x.cat)+' · '+esc(x.src)+'</span></span><span class="am" style="color:'+col+'">'+amt+'</span></div>';
+   }).join('');
+   return '<div class="rrep-goalsec"><div class="gh"><span class="nm">'+esc(title)+'</span><span class="sub">Net '+gbp(sub)+' · '+rs.length+' entries</span></div>'+lines+'</div>';
+ }
+ function renderAI(){
+   lastView='ai'; refreshTabs();
+   var d=filtered(); var out=document.getElementById('rrep-out'); if(!out)return;
+   var t=totals(d.rows);
+   var typeLbl=activeType?(TYPES.filter(function(x){return x.t===activeType;})[0]||{}).lbl:null;
+   if(!d.rows.length){out.innerHTML='<div class="rrep-ai"><span class="badge">🤖 AI VIEW</span><p>No matching entries for <b>'+esc(d.range.lbl)+'</b>'+(typeLbl?' under <b>'+esc(typeLbl)+'</b>':'')+'. Try a wider period or another tab.</p></div>';return;}
+   var goalOut={}, catOut={};
+   d.rows.forEach(function(x){ if(isOut(x.type)){ if(x.goalTitle)goalOut[x.goalTitle]=(goalOut[x.goalTitle]||0)+x.amount; catOut[x.cat]=(catOut[x.cat]||0)+x.amount; }});
+   function top(o){var k=Object.keys(o);if(!k.length)return null;k.sort(function(a,b){return o[b]-o[a];});return {name:k[0],val:o[k[0]]};}
+   var tg=top(goalOut), tc=top(catOut), gl=d.goal?goalName(d.goal):null;
+   var p='In <b>'+esc(d.range.lbl)+'</b>'+(typeLbl?' for <b>'+esc(typeLbl)+'</b>':'')+(gl?' on <b>'+esc(gl)+'</b>':'')+(d.cat?' under <b>'+esc(d.cat)+'</b>':'')+', you logged <b>'+t.count+' entries</b>. ';
+   p+='Money in was <b>'+gbp(t.inc)+'</b> and money out <b>'+gbp(t.out)+'</b>, leaving a net of <b>'+gbp(t.net)+'</b>'+(t.net>=0?' in your favour':' (more went out than came in)')+'. ';
+   if(tg)p+='The goal taking the most was <b>'+esc(tg.name)+'</b> at '+gbp(tg.val)+'. ';
+   if(tc&&(!tg||tc.name!==tg.name))p+='Your biggest single category was <b>'+esc(tc.name)+'</b> ('+gbp(tc.val)+'). ';
+   p+=(t.net<0)?'Worth a glance before any new commitment to Ghana.':'A healthy position — surplus could go to the Residence build or clearing debt.';
+   out.innerHTML='<div class="rrep-ai"><span class="badge">🤖 AI VIEW · read-only</span><p>'+p+'</p><div class="nums">'
+     +'<div><div class="k">Money In</div><div class="v" style="color:var(--green,#4CAF7D)">'+gbp(t.inc)+'</div></div>'
+     +'<div><div class="k">Money Out</div><div class="v" style="color:var(--red,#E05252)">'+gbp(t.out)+'</div></div>'
+     +'<div><div class="k">Net Position</div><div class="v" style="color:'+(t.net>=0?'var(--green,#4CAF7D)':'var(--red,#E05252)')+'">'+gbp(t.net)+'</div></div>'
+     +'<div><div class="k">Entries</div><div class="v">'+t.count+'</div></div></div></div>';
+ }
+ function goalName(uid){var g=goalsList().filter(function(x){return x.uid===uid;})[0];return g?g.t:'';}
+ function rerun(){ if(lastView==='ai')renderAI(); else renderBreakdown(); }
+
+ function catOptions(){
+   var labels={};
+   try{if(window.MH_CATS){Object.keys(window.MH_CATS).forEach(function(tp){window.MH_CATS[tp].forEach(function(c){labels[c.l]=1;});});}}catch(e){}
+   return '<option value="">All categories</option>'+Object.keys(labels).sort().map(function(l){return '<option value="'+esc(l)+'">'+esc(l)+'</option>';}).join('');
+ }
+ function goalOptions(){return '<option value="">All goals</option>'+goalsList().map(function(g){return '<option value="'+esc(g.uid)+'">'+esc(g.t)+'</option>';}).join('');}
+
+ function panelHtml(){
+   return '<div class="rrep-wrap">'
+     +'<div class="rrep-h"><span class="t">🤖 Smart Report</span><span class="s">Period · category · goal · type tabs · AI summary</span></div>'
+     +'<div class="rrep-controls">'
+       +'<div class="rrep-fld"><label>Period</label><select class="rrep-sel" id="rrep-period" onchange="window.RREP.change()">'
+         +'<option value="thisweek">This Week</option><option value="thismonth" selected>This Month</option><option value="lastmonth">Last Month</option><option value="thisquarter">This Quarter</option><option value="last6m">Last 6 Months</option><option value="thisyear">This Year</option><option value="alltime">All Time</option><option value="custom">Custom…</option></select></div>'
+       +'<div class="rrep-fld" id="rrep-custom"><label>From → To</label><div style="display:flex;gap:8px;"><input class="rrep-in" type="date" id="rrep-from" style="min-width:0;"><input class="rrep-in" type="date" id="rrep-to" style="min-width:0;"></div></div>'
+       +'<div class="rrep-fld"><label>Category</label><select class="rrep-sel" id="rrep-cat" onchange="window.RREP.change()">'+catOptions()+'</select></div>'
+       +'<div class="rrep-fld"><label>Goal (task subject)</label><select class="rrep-sel" id="rrep-goal" onchange="window.RREP.change()">'+goalOptions()+'</select></div>'
+     +'</div>'
+     +'<div class="rrep-tabs" id="rrep-tabs"></div>'
+     +'<div class="rrep-btns">'
+       +'<button class="rrep-btn" onclick="window.RREP.breakdown()">📑 Per-Goal Breakdown</button>'
+       +'<button class="rrep-btn ai" onclick="window.RREP.ai()">🤖 AI View</button>'
+     +'</div>'
+     +'<div class="rrep-out" id="rrep-out"></div>'
+     +'</div>';
+ }
+ function mount(){
+   var scr=document.getElementById('s-report'); if(!scr)return;
+   if(document.querySelector('#s-report .rrep-wrap'))return;
+   var host=document.createElement('div'); host.innerHTML=panelHtml();
+   var sub=scr.querySelector('.page-sub');
+   if(sub&&sub.nextSibling)scr.insertBefore(host.firstChild, sub.nextSibling); else scr.insertBefore(host.firstChild, scr.firstChild);
+   refreshTabs(); renderBreakdown();
+ }
+ window.RREP={mount:mount,breakdown:renderBreakdown,ai:renderAI,
+   setType:function(t){activeType=t;rerun();},
+   change:function(){var c=document.getElementById('rrep-custom');var p=document.getElementById('rrep-period');if(c&&p)c.style.display=p.value==='custom'?'flex':'none';rerun();}};
+
+ function init(){mount();}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+ setInterval(function(){if(!document.querySelector('#s-report .rrep-wrap'))mount();},1500);
+})();
+</script>
+<!-- ════════════ END SMART REPORT ════════════ -->
+
+<!-- ════════════ NAVIGATION CONSOLIDATION — Finance + Royal Projects hubs ════════════ -->
+<style id="rrnav-css">
+.rrnav-bar{display:flex;gap:7px;overflow-x:auto;padding:4px 2px 12px;margin:0 0 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.rrnav-bar::-webkit-scrollbar{display:none;}
+.rrnav-pill{white-space:nowrap;flex-shrink:0;border:1.5px solid rgba(201,168,76,0.28);background:rgba(201,168,76,0.06);color:var(--text2,#C4BAA8);padding:8px 13px;border-radius:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none;}
+.rrnav-pill:active{transform:scale(.96);}
+.rrnav-pill.on{background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));color:#1a1408;border-color:transparent;}
+.rrnav-hubtag{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gold,#C9A84C);padding:2px 2px 6px;opacity:.8;}
+</style>
+<script id="rrnav-js">
+(function(){
+ if(window.RRNAV)return;
+ var FIN=[
+   {tab:'moneyhub',ic:'💷',lbl:'Money Hub'},
+   {tab:'tracker', ic:'💰',lbl:'Finance Dashboard'},
+   {tab:'income',  ic:'📈',lbl:'Income & Wealth'},
+   {tab:'wealth',  ic:'👑',lbl:'Executive Wealth'},
+   {tab:'expense', ic:'💳',lbl:'Spending'},
+   {tab:'debts',   ic:'🧾',lbl:'Debt'},
+   {tab:'fin',     ic:'💎',lbl:'Life Plan'},
+   {tab:'report',  ic:'📊',lbl:'Reports'}
+ ];
+ var PROJ=[
+   {tab:'residence',ic:'🏰',lbl:'Royal Residence'},
+   {tab:'family',   ic:'🏘️',lbl:'Family Support'},
+   {tab:'scholars', ic:'🎓',lbl:'Royal Scholars'}
+ ];
+ var FINSET=FIN.map(function(x){return x.tab;});
+ var PROJSET=PROJ.map(function(x){return x.tab;});
+
+ function nav(tab){ if(typeof window.go==='function'){window.go(tab);} else if(typeof window.royalTab==='function'){window.royalTab(tab,null);} if(typeof window.royalCloseMore==='function')window.royalCloseMore(); }
+ window.RRNAV={go:nav};
+
+ function barHtml(items,tag){
+   return '<div class="rrnav-hubtag">'+tag+'</div><div class="rrnav-bar">'+items.map(function(x){
+     return '<button class="rrnav-pill" data-tab="'+x.tab+'" onclick="window.RRNAV.go(\''+x.tab+'\')">'+x.ic+' '+x.lbl+'</button>';
+   }).join('')+'</div>';
+ }
+ function addBars2(items,tag){
+   items.forEach(function(x){
+     var scr=document.getElementById('s-'+x.tab); if(!scr)return;
+     if(scr.querySelector('.rrnav-bar'))return;
+     var holder=document.createElement('div'); holder.className='rrnav-holder';
+     holder.innerHTML=barHtml(items,tag);
+     scr.insertBefore(holder, scr.firstChild);
+   });
+ }
+
+ function collapseSidebar(){
+   var goalsBtn=document.getElementById('nb-goals');
+   /* hide individual finance + project buttons */
+   FINSET.concat(PROJSET).forEach(function(t){
+     var b=document.getElementById('nb-'+t); if(b){ b.style.display='none'; b.setAttribute('data-rrnav-hidden','1'); }
+   });
+   if(goalsBtn && !document.getElementById('nb-finance')){
+     var fb=goalsBtn.cloneNode(true); fb.id='nb-finance'; fb.removeAttribute('data-tab'); fb.setAttribute('onclick',"window.RRNAV.go('moneyhub')");
+     var fi=fb.querySelector('.ni'); if(fi)fi.textContent='💷'; var fl=fb.querySelector('.nl'); if(fl)fl.textContent='Finance';
+     var nb=fb.querySelector('.nb'); if(nb)nb.remove();
+     goalsBtn.parentNode.insertBefore(fb, goalsBtn.nextSibling);
+     var pb=goalsBtn.cloneNode(true); pb.id='nb-projects'; pb.removeAttribute('data-tab'); pb.setAttribute('onclick',"window.RRNAV.go('residence')");
+     var pi=pb.querySelector('.ni'); if(pi)pi.textContent='🏰'; var pl=pb.querySelector('.nl'); if(pl)pl.textContent='Royal Projects';
+     var pnb=pb.querySelector('.nb'); if(pnb)pnb.remove();
+     fb.parentNode.insertBefore(pb, fb.nextSibling);
+   }
+ }
+ function collapseMore(){
+   var items=document.querySelectorAll('.rms-item'); if(!items.length)return;
+   var anchor=null;
+   items.forEach(function(it){
+     var oc=it.getAttribute('onclick')||'';
+     var m=oc.match(/royalTab\('([a-z]+)'/);
+     if(m && (FINSET.indexOf(m[1])>-1 || PROJSET.indexOf(m[1])>-1)){ if(!anchor)anchor=it; it.style.display='none'; it.setAttribute('data-rrnav-hidden','1'); }
+   });
+   if(anchor && !document.querySelector('.rms-item[data-rrnav-fin]')){
+     var f=anchor.cloneNode(true); f.style.display=''; f.setAttribute('data-rrnav-fin','1');
+     f.setAttribute('onclick',"window.RRNAV.go('moneyhub')");
+     var fi=f.querySelector('.rms-icon'); if(fi)fi.textContent='💷'; var fl=f.querySelector('.rms-lbl'); if(fl)fl.textContent='Finance';
+     anchor.parentNode.insertBefore(f, anchor);
+     var p=anchor.cloneNode(true); p.style.display=''; p.setAttribute('data-rrnav-proj','1');
+     p.setAttribute('onclick',"window.RRNAV.go('residence')");
+     var pi=p.querySelector('.rms-icon'); if(pi)pi.textContent='🏰'; var pl=p.querySelector('.rms-lbl'); if(pl)pl.textContent='Royal Projects';
+     f.parentNode.insertBefore(p, f.nextSibling);
+   }
+ }
+ function syncActive(){
+   var act=document.querySelector('.screen.active'); if(!act)return;
+   var cur=act.id.replace('s-','');
+   document.querySelectorAll('.rrnav-pill').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-tab')===cur); });
+   /* grouped sidebar buttons active state */
+   var fb=document.getElementById('nb-finance'), pb=document.getElementById('nb-projects');
+   if(fb)fb.classList.toggle('active', FINSET.indexOf(cur)>-1);
+   if(pb)pb.classList.toggle('active', PROJSET.indexOf(cur)>-1);
+ }
+ function hook(fnName){ var o=window[fnName]; if(typeof o!=='function'||o._rrnav)return; var w=function(){var r=o.apply(this,arguments); setTimeout(syncActive,0); return r;}; w._rrnav=true; window[fnName]=w; }
+
+ function init(){
+   addBars2(FIN,'💷 Finance'); addBars2(PROJ,'🏰 Royal Projects');
+   collapseSidebar(); collapseMore(); hook('go'); hook('royalTab'); syncActive();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+ setInterval(function(){ if(!document.getElementById('nb-finance')||!document.querySelector('#s-moneyhub .rrnav-bar')) init(); else syncActive(); },1500);
+})();
+</script>
+<!-- ════════════ END NAVIGATION CONSOLIDATION ════════════ -->
+
+<!-- ════════════ ROYAL DIARY — Follow-up fields (Task · Line of Action · Outcome) ════════════ -->
+<style id="rrdiary-css">
+.rrd-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.rrd-fields .full{grid-column:1/-1;}
+.rrd-fields label{font-size:12px;color:#aaa;display:block;margin-bottom:4px;}
+.rrd-in,.rrd-sel,.rrd-ta{width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;font-family:inherit;-webkit-appearance:none;}
+.rrd-ta{min-height:60px;resize:vertical;}
+.rrd-strip{margin-top:11px;padding-top:11px;border-top:1px dashed rgba(201,168,76,0.25);display:flex;flex-direction:column;gap:7px;}
+.rrd-row{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:#B8B0A0;}
+.rrd-row .k{font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#7A7268;min-width:78px;flex-shrink:0;padding-top:2px;}
+.rrd-row .v{flex:1;color:#D8D0C0;line-height:1.5;}
+.rrd-badge{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:3px 9px;border-radius:7px;}
+.oc-routine{background:rgba(149,165,166,0.18);color:#B8C2C3;}
+.oc-action{background:rgba(224,82,82,0.18);color:#E87878;}
+.oc-reported{background:rgba(91,141,217,0.18);color:#7BAAE8;}
+.oc-progress{background:rgba(255,159,10,0.18);color:#FF9F0A;}
+.oc-opportunity{background:rgba(76,175,125,0.18);color:#5FD79E;}
+.oc-escalated{background:rgba(191,90,242,0.20);color:#CE8BF7;}
+.rrd-editbtn{align-self:flex-start;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:#C9A84C;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;cursor:pointer;}
+#rrd-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:6000;align-items:center;justify-content:center;padding:16px;}
+#rrd-ov .box{background:#111118;border:1px solid rgba(201,168,76,0.25);border-radius:16px;width:520px;max-width:94vw;max-height:88vh;overflow-y:auto;padding:24px;}
+#rrd-ov h3{margin:0 0 16px;font-size:17px;font-weight:800;color:#E8C96A;}
+#rrd-ov .btns{display:flex;gap:10px;margin-top:6px;}
+#rrd-ov .save{flex:1;height:44px;background:linear-gradient(135deg,#C9A84C,#7A5F1A);color:#000;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;}
+#rrd-ov .cancel{height:44px;padding:0 18px;background:transparent;border:1.5px solid rgba(201,168,76,0.4);color:#C9A84C;border-radius:10px;font-weight:700;cursor:pointer;}
+</style>
+<script id="rrdiary-js">
+(function(){
+ if(window.RRDIARY)return;
+ var KEY='royal_diary_v1';
+ var OUT=[['','— Outcome —'],['Routine','Routine'],['Action Required','Action Required'],['Reported','Reported'],['In Progress','In Progress'],['Opportunity','Opportunity'],['Escalated','Escalated']];
+ function ocClass(o){return {'Routine':'oc-routine','Action Required':'oc-action','Reported':'oc-reported','In Progress':'oc-progress','Opportunity':'oc-opportunity','Escalated':'oc-escalated'}[o]||'oc-routine';}
+ function load(){try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return [];}}
+ function saveAll(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
+ function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+ function val(id){var e=document.getElementById(id);return e?e.value:'';}
+ function fmtDate(d){if(!d)return '';try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}}
+ function ocOpts(sel){return OUT.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===sel?' selected':'')+'>'+o[1]+'</option>';}).join('');}
+
+ var fieldsHtml=''
+   +'<div class="rrd-fields">'
+     +'<div class="full"><label>📋 Task / Follow-up</label><input class="rrd-in" id="nd-task" placeholder="e.g. Call the school bursar, chase legal bundle"></div>'
+     +'<div class="full"><label>🧭 Line of Action</label><textarea class="rrd-ta" id="nd-loa" placeholder="What you did or plan to do about it…"></textarea></div>'
+     +'<div><label>📅 Follow-up Date</label><input class="rrd-in" id="nd-followup" type="date"></div>'
+     +'<div><label>🎯 Outcome</label><select class="rrd-sel" id="nd-outcome">'+ocOpts('')+'</select></div>'
+   +'</div>';
+
+ function injectFields(){
+   var box=document.getElementById('diary-modal-box'); if(!box)return;
+   if(document.getElementById('nd-task'))return;
+   var saveBtn=box.querySelector('[onclick="saveNewDiary()"]');
+   var btnRow=saveBtn?saveBtn.parentNode:null; if(!btnRow)return;
+   var holder=document.createElement('div'); holder.innerHTML=fieldsHtml;
+   box.insertBefore(holder.firstChild, btnRow);
+ }
+
+ function stripHtml(e){
+   var rows='';
+   if(e.outcome)rows+='<div class="rrd-row"><span class="k">Outcome</span><span class="v"><span class="rrd-badge '+ocClass(e.outcome)+'">'+esc(e.outcome)+'</span></span></div>';
+   if(e.task)rows+='<div class="rrd-row"><span class="k">Task</span><span class="v">'+esc(e.task)+'</span></div>';
+   if(e.lineOfAction)rows+='<div class="rrd-row"><span class="k">Line of Action</span><span class="v">'+esc(e.lineOfAction)+'</span></div>';
+   if(e.followUp)rows+='<div class="rrd-row"><span class="k">Follow-up</span><span class="v">'+esc(fmtDate(e.followUp))+'</span></div>';
+   rows+='<button class="rrd-editbtn" onclick="window.RRDIARY.edit(\''+e.id+'\')">✎ Follow-up details</button>';
+   return rows;
+ }
+ function sortedEntries(){return load().slice().sort(function(a,b){return (b.date+' '+(b.time||'00:00')).localeCompare(a.date+' '+(a.time||'00:00'));});}
+ function enhanceCards(){
+   var list=document.getElementById('diary-list'); if(!list)return;
+   var sorted=sortedEntries();
+   var cards=list.querySelectorAll('.diary-entry-outer');
+   cards.forEach(function(card,i){
+     if(card.querySelector('.rrd-strip'))return;
+     var e=sorted[i]; if(!e)return;
+     var has=e.task||e.lineOfAction||e.outcome||e.followUp;
+     var strip=document.createElement('div'); strip.className='rrd-strip';
+     strip.innerHTML = has?stripHtml(e):'<button class="rrd-editbtn" onclick="window.RRDIARY.edit(\''+e.id+'\')">＋ Add follow-up / outcome</button>';
+     var body=card.querySelector('.diary-entry-body')||card;
+     body.appendChild(strip);
+   });
+ }
+
+ function ensureOverlay(){
+   if(document.getElementById('rrd-ov'))return;
+   var ov=document.createElement('div'); ov.id='rrd-ov';
+   ov.innerHTML='<div class="box"><h3>Follow-up details</h3>'
+     +'<div class="rrd-fields"><div class="full"><label>📋 Task / Follow-up</label><input class="rrd-in" id="rrd-e-task"></div>'
+     +'<div class="full"><label>🧭 Line of Action</label><textarea class="rrd-ta" id="rrd-e-loa"></textarea></div>'
+     +'<div><label>📅 Follow-up Date</label><input class="rrd-in" id="rrd-e-followup" type="date"></div>'
+     +'<div><label>🎯 Outcome</label><select class="rrd-sel" id="rrd-e-outcome">'+ocOpts('')+'</select></div></div>'
+     +'<div class="btns"><button class="save" id="rrd-e-save">💾 Save</button><button class="cancel" onclick="document.getElementById(\'rrd-ov\').style.display=\'none\'">Cancel</button></div></div>';
+   document.body.appendChild(ov);
+   ov.addEventListener('click',function(e){if(e.target===ov)ov.style.display='none';});
+ }
+
+ window.RRDIARY={
+   edit:function(id){
+     ensureOverlay();
+     var e=load().filter(function(x){return x.id===id;})[0]; if(!e)return;
+     document.getElementById('rrd-e-task').value=e.task||'';
+     document.getElementById('rrd-e-loa').value=e.lineOfAction||'';
+     document.getElementById('rrd-e-followup').value=e.followUp||'';
+     document.getElementById('rrd-e-outcome').value=e.outcome||'';
+     document.getElementById('rrd-e-save').onclick=function(){
+       var arr=load(); var x=arr.filter(function(y){return y.id===id;})[0]; if(x){x.task=val('rrd-e-task').trim();x.lineOfAction=val('rrd-e-loa').trim();x.followUp=val('rrd-e-followup');x.outcome=val('rrd-e-outcome');saveAll(arr);}
+       document.getElementById('rrd-ov').style.display='none';
+       if(typeof window.buildDiary==='function')window.buildDiary();
+     };
+     document.getElementById('rrd-ov').style.display='flex';
+   }
+ };
+
+ /* wrap saveNewDiary to capture the new fields */
+ /* the app references closeDiaryModal() but never defines it — define it so saving closes the box */
+ function ensureClose(){ if(typeof window.closeDiaryModal!=='function'){ window.closeDiaryModal=function(){var ov=document.getElementById('diary-modal-overlay');if(ov)ov.style.display='none';}; } }
+ function wrapSave(){
+   if(typeof window.saveNewDiary!=='function'||window.saveNewDiary._rrd)return;
+   var orig=window.saveNewDiary;
+   var w=function(){
+     var task=val('nd-task'),loa=val('nd-loa'),fu=val('nd-followup'),oc=val('nd-outcome');
+     var before=load().length;
+     try{ orig.apply(this,arguments); }catch(err){}
+     try{
+       var arr=load();
+       if(arr.length>before){
+         var e=arr[arr.length-1]; e.task=(task||'').trim();e.lineOfAction=(loa||'').trim();e.followUp=fu;e.outcome=oc; saveAll(arr);
+         if(typeof window.closeDiaryModal==='function')window.closeDiaryModal();
+         if(typeof window.buildDiary==='function')window.buildDiary();
+       }
+     }catch(err){}
+   };
+   w._rrd=true; window.saveNewDiary=w;
+ }
+ function wrapOpen(){
+   if(typeof window.openAddDiary!=='function'||window.openAddDiary._rrd)return;
+   var orig=window.openAddDiary;
+   var w=function(){var r=orig.apply(this,arguments); injectFields(); ['nd-task','nd-loa','nd-followup'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';}); var o=document.getElementById('nd-outcome');if(o)o.selectedIndex=0; return r;};
+   w._rrd=true; window.openAddDiary=w;
+ }
+ function wrapBuild(){
+   if(typeof window.buildDiary!=='function'||window.buildDiary._rrd)return;
+   var orig=window.buildDiary;
+   var w=function(){var r=orig.apply(this,arguments); setTimeout(enhanceCards,0); return r;};
+   w._rrd=true; window.buildDiary=w;
+ }
+ function init(){ ensureClose(); injectFields(); ensureOverlay(); wrapSave(); wrapOpen(); wrapBuild();
+   var s=document.getElementById('s-diary'); if(s&&s.classList.contains('active')&&typeof window.buildDiary==='function')enhanceCards();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+ setInterval(function(){ ensureClose(); if(!document.getElementById('nd-task'))injectFields(); wrapSave();wrapOpen();wrapBuild(); },1500);
+})();
+</script>
+<!-- ════════════ END DIARY FOLLOW-UP ════════════ -->
 </body>
 </html>
