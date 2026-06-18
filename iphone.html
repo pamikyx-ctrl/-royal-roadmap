@@ -15190,7 +15190,10 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
        +cell('Next Fee Due',dueTxt)
        +cell('Total Invested',gbp(inv))
        +cell('Expected Finish',s.expectedGrad||'—')
+       +cell('Start Date',s.startDate?fmtDate(s.startDate):'—')
+       +cell('Term',s.term||'—')
      +'</div>'
+     +(s.careerGoal?'<div style="font-size:12px;color:var(--gold,#C9A84C);font-weight:700;">🎯 Career goal: '+esc(s.careerGoal)+'</div>':'')
      +(target>0?'<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:var(--text3,#7A7268);margin-bottom:4px;"><span>TOWARDS TARGET '+gbp(target)+'</span><span>'+pct+'%</span></div><div class="scl-bar"><i style="width:'+pct+'%"></i></div></div>':'')
      +(s.notes?'<div style="font-size:12px;color:var(--text2,#C4BAA8);line-height:1.5;">'+esc(s.notes)+'</div>':'')
      +'<div class="scl-row">'
@@ -15200,6 +15203,15 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
      +'</div></div>';
  }
  function cell(k,v){return '<div><div class="mk">'+k+'</div><div class="mv">'+esc(v)+'</div></div>';}
+ function termOpts(sel){var a=['','1st Term','2nd Term','3rd Term','Semester 1','Semester 2'];return a.map(function(o){return '<option value="'+o+'"'+(o===sel?' selected':'')+'>'+(o||'— Term / Semester —')+'</option>';}).join('');}
+ var RELS=['Son','Daughter','Grandson','Granddaughter','Niece','Nephew','Brother','Sister','Cousin','Step-Son','Step-Daughter','Ward / Dependant','Father','Mother','Wife','Husband','Uncle','Aunt','In-Law','Family Friend','Other'];
+ function relOpts(sel){var arr=RELS.slice();if(sel&&arr.indexOf(sel)===-1)arr.unshift(sel);return '<option value="">— Select relationship —</option>'+arr.map(function(o){return '<option'+(o===sel?' selected':'')+'>'+esc(o)+'</option>';}).join('');}
+ var CAREERS=[
+   ['💻 ICT / Computer Science',['Software Developer','Systems Analyst','Network Engineer','Database Administrator','IT Consultant','Cybersecurity Analyst','Cloud Architect','Web Developer','Data Scientist','IT Project Manager']],
+   ['⚙️ Mechanical Engineering',['Mechanical Design Engineer','Manufacturing Engineer','HVAC Engineer','Automotive Engineer','Robotics Engineer','Aerospace Engineer','Quality Control Engineer','Maintenance Engineer','Thermal Systems Engineer','Project Engineer']],
+   ['📚 JSS → SHS Programme (suggested)',['General Science','General Arts','Business','Visual Arts','Home Economics','Agricultural Science','Technical / Vocational','ICT']]
+ ];
+ function careerOpts(sel){var h='<option value="">— Select expected career / pathway —</option>';CAREERS.forEach(function(g){h+='<optgroup label="'+g[0]+'">'+g[1].map(function(o){return '<option'+(o===sel?' selected':'')+'>'+esc(o)+'</option>';}).join('')+'</optgroup>';});return h;}
 
  function formHtml(s){
    s=s||{};
@@ -15207,7 +15219,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
    return '<div class="scl-form"><h3>'+(s.id?'✏️ Edit Scholar':'🎓 Add a Scholar')+'</h3>'
      +'<div class="scl-fg">'
        +'<div class="full"><label class="scl-lbl">Full Name</label><input class="scl-in" id="scl-f-name" value="'+esc(s.name||'')+'" placeholder="e.g. Akua Binney"></div>'
-       +'<div><label class="scl-lbl">Relationship</label><input class="scl-in" id="scl-f-rel" value="'+esc(s.relationship||'')+'" placeholder="e.g. Niece, Nephew, Cousin"></div>'
+       +'<div><label class="scl-lbl">Relationship</label><select class="scl-sel" id="scl-f-rel">'+relOpts(s.relationship||'')+'</select></div>'
        +'<div><label class="scl-lbl">Status</label><select class="scl-sel" id="scl-f-status">'+opt(STATUS,s.status||'Enrolled')+'</select></div>'
        +'<div><label class="scl-lbl">Institution / School</label><input class="scl-in" id="scl-f-inst" value="'+esc(s.institution||'')+'" placeholder="e.g. KNUST, Dadiaso SHS"></div>'
        +'<div><label class="scl-lbl">Level</label><select class="scl-sel" id="scl-f-level">'+opt(LEVELS,s.level||'University')+'</select></div>'
@@ -15217,6 +15229,9 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
        +'<div><label class="scl-lbl">Next Fee Due</label><input class="scl-in" id="scl-f-due" type="date" value="'+esc(s.nextFeeDue||'')+'"></div>'
        +'<div><label class="scl-lbl">Total Invested so far (£)</label><input class="scl-in" id="scl-f-inv" type="number" inputmode="decimal" value="'+(s.totalInvested||'')+'" placeholder="0"></div>'
        +'<div><label class="scl-lbl">Expected Finish</label><input class="scl-in" id="scl-f-grad" value="'+esc(s.expectedGrad||'')+'" placeholder="e.g. 2028"></div>'
+       +'<div><label class="scl-lbl">Start Date</label><input class="scl-in" id="scl-f-start" type="date" value="'+esc(s.startDate||'')+'"></div>'
+       +'<div><label class="scl-lbl">Semester / Term</label><select class="scl-sel" id="scl-f-term">'+termOpts(s.term||'')+'</select></div>'
+       +'<div class="full"><label class="scl-lbl">Expected Career / Pathway</label><select class="scl-sel" id="scl-f-career">'+careerOpts(s.careerGoal||'')+'</select></div>'
        +'<div class="full"><label class="scl-lbl">Notes</label><textarea class="scl-ta" id="scl-f-notes" placeholder="School contact, scholarship details, anything to remember…">'+esc(s.notes||'')+'</textarea></div>'
      +'</div>'
      +'<div style="display:flex;gap:10px;margin-top:14px;"><button class="scl-save" onclick="window.RRSCH.saveForm()">💾 Save Scholar</button><button class="scl-cancel" onclick="window.RRSCH.cancel()">Cancel</button></div>'
@@ -15242,6 +15257,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
      s.course=g('scl-f-course').trim(); s.feePerTerm=parseFloat(g('scl-f-fee'))||0;
      s.nextFeeDue=g('scl-f-due'); s.totalInvested=parseFloat(g('scl-f-inv'))||0;
      s.expectedGrad=g('scl-f-grad').trim(); s.notes=g('scl-f-notes').trim();
+     s.startDate=g('scl-f-start'); s.term=g('scl-f-term'); s.careerGoal=g('scl-f-career');
      if(isNew)list.push(s);
      save(list); editId=null; showForm=false; build();
    }
