@@ -15150,12 +15150,59 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 #s-scholars .scl-save{height:42px;padding:0 20px;border:none;border-radius:10px;font-weight:800;font-size:13.5px;color:#1a1408;background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));cursor:pointer;}
 #s-scholars .scl-cancel{height:42px;padding:0 18px;border:1.5px solid rgba(255,255,255,0.14);border-radius:10px;background:transparent;color:var(--text2,#C4BAA8);font-weight:700;font-size:13px;cursor:pointer;}
 #s-scholars .scl-empty{text-align:center;color:var(--text3,#7A7268);font-size:14px;padding:40px 16px;line-height:1.6;}
+#s-scholars .scl-certadd{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border:1.5px dashed rgba(201,168,76,0.45);border-radius:10px;background:rgba(201,168,76,0.06);color:var(--gold,#C9A84C);font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit;}
+#s-scholars .scl-certadd:active{transform:scale(.97);}
+#s-scholars .scl-certhint{font-size:10.5px;color:var(--text4,#4A4640);margin-top:6px;font-weight:600;}
+#s-scholars .scl-certitem{display:flex;align-items:center;gap:10px;background:var(--dark4,#222235);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px 10px;margin-top:8px;}
+#s-scholars .scl-certthumb{width:34px;height:34px;border-radius:7px;object-fit:cover;flex-shrink:0;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:16px;}
+#s-scholars .scl-certname{flex:1;min-width:0;font-size:12.5px;font-weight:700;color:var(--text,#F0EBE0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#s-scholars .scl-certsz{font-size:10px;color:var(--text4,#4A4640);font-weight:600;}
+#s-scholars .scl-certbtn{border:none;background:rgba(201,168,76,0.12);color:var(--gold,#C9A84C);border-radius:7px;font-size:11px;font-weight:700;padding:6px 9px;cursor:pointer;}
+#s-scholars .scl-certbtn.x{background:rgba(224,82,82,0.12);color:#E05252;}
+#s-scholars .scl-certtag{font-size:11.5px;color:var(--text3,#7A7268);font-weight:700;margin-top:6px;}
+</style>
 </style>
 <script id="rrsch-js">
 (function(){
  if(window.RRSCH)return;
  var KEY='royal_scholars_v1';
+ /* ---------- Certificates: own storage key, size-guarded, isolated from main data ---------- */
+ var CERT_KEY='royal_scholar_certs_v1';
+ var CERT_MAX_FILE=900000;   /* ~0.9 MB per file after shrink */
+ var CERT_BUDGET=4000000;    /* ~4 MB total across all certificates */
+ var formCertId=null;        /* the scholar id the open form attaches certs to */
+ function loadCertsAll(){try{return JSON.parse(localStorage.getItem(CERT_KEY)||'{}');}catch(e){return {};}}
+ function saveCertsAll(o){try{localStorage.setItem(CERT_KEY,JSON.stringify(o));return true;}catch(e){return false;}}
+ function certsOf(id){var o=loadCertsAll();return o[id]||[];}
+ function certTotalSize(){var o=loadCertsAll(),t=0;Object.keys(o).forEach(function(k){(o[k]||[]).forEach(function(c){t+=(c.data?c.data.length:0);});});return t;}
+ function humanSize(n){if(n>1048576)return (n/1048576).toFixed(1)+' MB';if(n>1024)return Math.round(n/1024)+' KB';return n+' B';}
+ function shrinkImage(dataUrl,cb){
+   try{
+     var img=new Image();
+     img.onload=function(){
+       try{
+         var max=1500,w=img.width,h=img.height;
+         if(w>max||h>max){var r=Math.min(max/w,max/h);w=Math.round(w*r);h=Math.round(h*r);}
+         var cv=document.createElement('canvas');cv.width=w;cv.height=h;
+         cv.getContext('2d').drawImage(img,0,0,w,h);
+         cb(cv.toDataURL('image/jpeg',0.72));
+       }catch(e){cb(dataUrl);}
+     };
+     img.onerror=function(){cb(dataUrl);};
+     img.src=dataUrl;
+   }catch(e){cb(dataUrl);}
+ }
  var LEVELS=['Primary','JSS — Junior Secondary','SSS — Senior Secondary','University','Tertiary / College','Other'];
+ var LVL_KEY='royal_level_custom_v1';
+ function loadLvl(){try{return JSON.parse(localStorage.getItem(LVL_KEY)||'[]');}catch(e){return [];}}
+ function saveLvl(a){try{localStorage.setItem(LVL_KEY,JSON.stringify(a));}catch(e){}}
+ function levelOpts(sel){
+   var seen={},list=[];
+   LEVELS.concat(loadLvl()).forEach(function(o){if(o&&!seen[o]){seen[o]=1;list.push(o);}});
+   if(sel&&list.indexOf(sel)===-1)list.unshift(sel);
+   return list.map(function(o){return '<option'+(o===sel?' selected':'')+'>'+esc(o)+'</option>';}).join('')
+     +'<option value="__add__">➕ Add another Educational Level…</option>';
+ }
  var STATUS=['Enrolled','On Break','Graduated','Completed'];
  var editId=null, showForm=false;
 
@@ -15257,6 +15304,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
        +cell('Term',s.term||'—')
      +'</div>'
      +(s.careerGoal?'<div style="font-size:12px;color:var(--gold,#C9A84C);font-weight:700;">🎯 Career goal: '+esc(s.careerGoal)+'</div>':'')
+     +(certsOf(s.id).length?'<div class="scl-certtag">📎 '+certsOf(s.id).length+' certificate'+(certsOf(s.id).length===1?'':'s')+' attached</div>':'')
      +(target>0?'<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:var(--text3,#7A7268);margin-bottom:4px;"><span>TOWARDS TARGET '+gbp(target)+'</span><span>'+pct+'%</span></div><div class="scl-bar"><i style="width:'+pct+'%"></i></div></div>':'')
      +(s.notes?'<div style="font-size:12px;color:var(--text2,#C4BAA8);line-height:1.5;">'+esc(s.notes)+'</div>':'')
      +'<div class="scl-row">'
@@ -15269,6 +15317,32 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
  function termOpts(sel){var a=['','1st Term','2nd Term','3rd Term','Semester 1','Semester 2'];return a.map(function(o){return '<option value="'+o+'"'+(o===sel?' selected':'')+'>'+(o||'— Term / Semester —')+'</option>';}).join('');}
  var RELS=['Son','Daughter','Grandson','Granddaughter','Niece','Nephew','Brother','Sister','Cousin','Step-Son','Step-Daughter','Ward / Dependant','Father','Mother','Wife','Husband','Uncle','Aunt','In-Law','Family Friend','Other'];
  function relOpts(sel){var arr=RELS.slice();if(sel&&arr.indexOf(sel)===-1)arr.unshift(sel);return '<option value="">— Select relationship —</option>'+arr.map(function(o){return '<option'+(o===sel?' selected':'')+'>'+esc(o)+'</option>';}).join('');}
+ /* Institution / School dropdown — your schools, plus any you add later (admin can extend) */
+ var INSTITUTIONS=["St John's Preparatory School","Benkum Senior High School","KNUST, Kumasi","UPS, Accra","Legon, Accra (University of Ghana)","Ghana School of Law, Makola"];
+ var INST_KEY='royal_inst_custom_v1';
+ function loadInst(){try{return JSON.parse(localStorage.getItem(INST_KEY)||'[]');}catch(e){return [];}}
+ function saveInst(a){try{localStorage.setItem(INST_KEY,JSON.stringify(a));}catch(e){}}
+ function instOpts(sel){
+   var seen={},list=[];
+   INSTITUTIONS.concat(loadInst()).forEach(function(o){if(o&&!seen[o]){seen[o]=1;list.push(o);}});
+   if(sel&&list.indexOf(sel)===-1)list.unshift(sel);
+   return '<option value="">— Select school / institution —</option>'
+     +list.map(function(o){return '<option'+(o===sel?' selected':'')+'>'+esc(o)+'</option>';}).join('')
+     +'<option value="__add__">➕ Add another school…</option>';
+ }
+ function certListHtml(id){
+   var arr=certsOf(id);
+   if(!arr.length)return '<div class="scl-certtag">No certificates attached yet.</div>';
+   return arr.map(function(c){
+     var thumb=(c.type&&c.type.indexOf('image')===0)?'<img class="scl-certthumb" src="'+c.data+'" alt="">':'<div class="scl-certthumb">📄</div>';
+     return '<div class="scl-certitem">'+thumb
+       +'<div style="flex:1;min-width:0;"><div class="scl-certname">'+esc(c.name||'Certificate')+'</div><div class="scl-certsz">'+humanSize(c.data?c.data.length:0)+'</div></div>'
+       +'<button type="button" class="scl-certbtn" onclick="window.RRSCH.certOpen(\''+id+'\',\''+c.id+'\')">Open</button>'
+       +'<button type="button" class="scl-certbtn x" onclick="window.RRSCH.certDel(\''+id+'\',\''+c.id+'\')">Remove</button>'
+     +'</div>';
+   }).join('');
+ }
+ function renderCertList(){var el=document.getElementById('scl-cert-list');if(el)el.innerHTML=certListHtml(formCertId);}
  var CAREERS=[
    ['💻 ICT / Computer Science',['Software Developer','Systems Analyst','Network Engineer','Database Administrator','IT Consultant','Cybersecurity Analyst','Cloud Architect','Web Developer','Data Scientist','IT Project Manager']],
    ['⚙️ Mechanical Engineering',['Mechanical Design Engineer','Manufacturing Engineer','HVAC Engineer','Automotive Engineer','Robotics Engineer','Aerospace Engineer','Quality Control Engineer','Maintenance Engineer','Thermal Systems Engineer','Project Engineer']],
@@ -15284,8 +15358,8 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
        +'<div class="full"><label class="scl-lbl">Full Name</label><input class="scl-in" id="scl-f-name" value="'+esc(s.name||'')+'" placeholder="e.g. Akua Binney"></div>'
        +'<div><label class="scl-lbl">Relationship</label><select class="scl-sel" id="scl-f-rel">'+relOpts(s.relationship||'')+'</select></div>'
        +'<div><label class="scl-lbl">Status</label><select class="scl-sel" id="scl-f-status">'+opt(STATUS,s.status||'Enrolled')+'</select></div>'
-       +'<div><label class="scl-lbl">Institution / School</label><input class="scl-in" id="scl-f-inst" value="'+esc(s.institution||'')+'" placeholder="e.g. KNUST, Dadiaso SHS"></div>'
-       +'<div><label class="scl-lbl">Level</label><select class="scl-sel" id="scl-f-level">'+opt(LEVELS,s.level||'University')+'</select></div>'
+       +'<div><label class="scl-lbl">Institution / School</label><select class="scl-sel" id="scl-f-inst" onchange="window.RRSCH.instPick(this)">'+instOpts(s.institution||'')+'</select></div>'
+       +'<div><label class="scl-lbl">Level</label><select class="scl-sel" id="scl-f-level" onchange="window.RRSCH.levelPick(this)">'+levelOpts(s.level||'University')+'</select></div>'
        +'<div><label class="scl-lbl">Year / Class</label><input class="scl-in" id="scl-f-year" value="'+esc(s.year||'')+'" placeholder="e.g. JSS 2, Year 1, Form 3"></div>'
        +'<div><label class="scl-lbl">Course / Programme</label><input class="scl-in" id="scl-f-course" value="'+esc(s.course||'')+'" placeholder="e.g. Nursing, Law, General"></div>'
        +'<div><label class="scl-lbl">Fee per Term (£)</label><input class="scl-in" id="scl-f-fee" type="number" inputmode="decimal" value="'+(s.feePerTerm||'')+'" placeholder="0"></div>'
@@ -15296,6 +15370,12 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
        +'<div><label class="scl-lbl">Semester / Term</label><select class="scl-sel" id="scl-f-term">'+termOpts(s.term||'')+'</select></div>'
        +'<div class="full"><label class="scl-lbl">Expected Career / Pathway</label><select class="scl-sel" id="scl-f-career">'+careerOpts(s.careerGoal||'')+'</select></div>'
        +'<div class="full"><label class="scl-lbl">Notes</label><textarea class="scl-ta" id="scl-f-notes" placeholder="School contact, scholarship details, anything to remember…">'+esc(s.notes||'')+'</textarea></div>'
+       +'<div class="full"><label class="scl-lbl">Certificates</label>'
+         +'<input type="file" id="scl-f-certfile" accept="image/png,image/jpeg,application/pdf" multiple style="display:none" onchange="window.RRSCH.certAdd(this)">'
+         +'<button type="button" class="scl-certadd" onclick="document.getElementById(\'scl-f-certfile\').click()">📎 Attach certificate</button>'
+         +'<div class="scl-certhint">PDF, JPG or PNG. Photos are shrunk automatically. Stored on this device only.</div>'
+         +'<div id="scl-cert-list">'+certListHtml(formCertId)+'</div>'
+       +'</div>'
      +'</div>'
      +'<div style="display:flex;gap:10px;margin-top:14px;"><button class="scl-save" onclick="window.RRSCH.saveForm()">💾 Save Scholar</button><button class="scl-cancel" onclick="window.RRSCH.cancel()">Cancel</button></div>'
      +'</div>';
@@ -15303,10 +15383,66 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 
  var API={
    build:build,
-   addNew:function(){editId=null;showForm=true;build();var n=document.getElementById('scl-f-name');if(n)n.focus();},
-   edit:function(id){editId=id;showForm=true;build();},
-   cancel:function(){editId=null;showForm=false;build();},
-   del:function(id){var list=load();var s=list.filter(function(x){return x.id===id;})[0];if(!s)return;if(!confirm('Remove '+(s.name||'this scholar')+' from your Royal Scholars register? This does not affect any money already logged.'))return;save(list.filter(function(x){return x.id!==id;}));build();},
+   instPick:function(sel){
+     if(sel.value==='__add__'){
+       var n=(prompt('Add a new school / institution:')||'').trim();
+       if(!n){sel.value=sel.getAttribute('data-prev')||'';return;}
+       var c=loadInst(); if(INSTITUTIONS.indexOf(n)===-1 && c.indexOf(n)===-1){c.push(n);saveInst(c);}
+       var opt=document.createElement('option'); opt.text=n; opt.value=n;
+       var addOpt=sel.querySelector('option[value="__add__"]'); sel.insertBefore(opt,addOpt); sel.value=n;
+     }
+     sel.setAttribute('data-prev',sel.value);
+   },
+   levelPick:function(sel){
+     if(sel.value==='__add__'){
+       var n=(prompt('Add a new educational level:')||'').trim();
+       if(!n){sel.value=sel.getAttribute('data-prev')||'University';return;}
+       var c=loadLvl(); if(LEVELS.indexOf(n)===-1 && c.indexOf(n)===-1){c.push(n);saveLvl(c);}
+       var opt=document.createElement('option'); opt.text=n; opt.value=n;
+       var addOpt=sel.querySelector('option[value="__add__"]'); sel.insertBefore(opt,addOpt); sel.value=n;
+     }
+     sel.setAttribute('data-prev',sel.value);
+   },
+   addNew:function(){editId=null;formCertId=uid();showForm=true;build();var n=document.getElementById('scl-f-name');if(n)n.focus();},
+   edit:function(id){editId=id;formCertId=id;showForm=true;build();},
+   cancel:function(){if(!editId&&formCertId){var o=loadCertsAll();if(o[formCertId]){delete o[formCertId];saveCertsAll(o);}}editId=null;formCertId=null;showForm=false;build();},
+   certAdd:function(input){
+     var files=input&&input.files?input.files:[]; if(!files.length)return;
+     var id=formCertId; if(!id){alert('Please open or create a scholar first.');return;}
+     var queue=[].slice.call(files); input.value='';
+     function next(){
+       if(!queue.length){renderCertList();return;}
+       var f=queue.shift();
+       var okType=/^(image\/(png|jpe?g)|application\/pdf)$/i.test(f.type);
+       if(!okType){alert('“'+f.name+'” skipped — only PDF, JPG or PNG allowed.');return next();}
+       var rd=new FileReader();
+       rd.onload=function(){
+         function store(dataUrl){
+           if(dataUrl.length>CERT_MAX_FILE){alert('“'+f.name+'” is too large even after shrinking ('+humanSize(dataUrl.length)+'). Please use a smaller or clearer scan.');return next();}
+           if(certTotalSize()+dataUrl.length>CERT_BUDGET){alert('Certificate storage is nearly full ('+humanSize(certTotalSize())+'). Remove some before adding more, so your other data stays safe.');return next();}
+           var o=loadCertsAll(); if(!o[id])o[id]=[];
+           o[id].push({id:'ct'+Date.now()+Math.floor(Math.random()*999),name:f.name||'Certificate',type:f.type,data:dataUrl});
+           if(!saveCertsAll(o)){o[id].pop();alert('Could not save “'+f.name+'” — device storage is full.');}
+           next();
+         }
+         if(/^image\//i.test(f.type)) shrinkImage(rd.result,store); else store(rd.result);
+       };
+       rd.onerror=function(){alert('Could not read “'+f.name+'”.');next();};
+       rd.readAsDataURL(f);
+     }
+     next();
+   },
+   certDel:function(id,cid){var o=loadCertsAll();if(o[id]){o[id]=o[id].filter(function(c){return c.id!==cid;});if(!o[id].length)delete o[id];saveCertsAll(o);renderCertList();}},
+   certOpen:function(id,cid){
+     var c=(certsOf(id)||[]).filter(function(x){return x.id===cid;})[0]; if(!c)return;
+     try{
+       var parts=c.data.split(','),m=/data:([^;]+)/.exec(parts[0]),bin=atob(parts[1]),len=bin.length,buf=new Uint8Array(len);
+       for(var i=0;i<len;i++)buf[i]=bin.charCodeAt(i);
+       var blob=new Blob([buf],{type:(m?m[1]:c.type)});var url=URL.createObjectURL(blob);
+       window.open(url,'_blank');
+     }catch(e){ var w=window.open(); if(w)w.document.write('<img src="'+c.data+'" style="max-width:100%">'); }
+   },
+   del:function(id){var list=load();var s=list.filter(function(x){return x.id===id;})[0];if(!s)return;if(!confirm('Remove '+(s.name||'this scholar')+' from your Royal Scholars register? This does not affect any money already logged.'))return;save(list.filter(function(x){return x.id!==id;}));var co=loadCertsAll();if(co[id]){delete co[id];saveCertsAll(co);}build();},
    recordFee:function(id){var list=load();var s=list.filter(function(x){return x.id===id;})[0];if(!s)return;var def=s.feePerTerm||0;var amt=prompt('Record a term fee for '+(s.name||'this scholar')+' (£):',def);if(amt===null)return;amt=parseFloat(amt)||0;if(amt<=0)return;s.totalInvested=(+s.totalInvested||0)+amt;s.lastPaid=todayISO();if(s.nextFeeDue){var d=new Date(s.nextFeeDue);d.setDate(d.getDate()+120);s.nextFeeDue=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}save(list);build();alert('Recorded '+('£'+amt)+' for '+(s.name||'scholar')+'. Remember to also log the actual transfer under Money to Ghana.');},
    saveForm:function(){
      var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
@@ -15314,7 +15450,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
      if(!name){alert('Please enter the scholar’s name.');return;}
      var list=load();
      var s=editId?list.filter(function(x){return x.id===editId;})[0]:null;
-     var isNew=!s; if(isNew){s={id:uid()};}
+     var isNew=!s; if(isNew){s={id:formCertId||uid()};}
      s.name=name; s.relationship=g('scl-f-rel').trim(); s.status=g('scl-f-status');
      s.institution=g('scl-f-inst').trim(); s.level=g('scl-f-level'); s.year=g('scl-f-year').trim();
      s.course=g('scl-f-course').trim(); s.feePerTerm=parseFloat(g('scl-f-fee'))||0;
@@ -15322,7 +15458,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
      s.expectedGrad=g('scl-f-grad').trim(); s.notes=g('scl-f-notes').trim();
      s.startDate=g('scl-f-start'); s.term=g('scl-f-term'); s.careerGoal=g('scl-f-career');
      if(isNew)list.push(s);
-     save(list); editId=null; showForm=false; build();
+     save(list); editId=null; formCertId=null; showForm=false; build();
    }
  };
  window.RRSCH=API;
@@ -15818,5 +15954,292 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 })();
 </script>
 <!-- ════════════ END DIARY FOLLOW-UP ════════════ -->
+<!-- ════════════ RRFIX — interaction hardening (stops open/close flicker) ════════════
+     Fixes three reported bugs without touching any data:
+       • Dropdowns / pickers closing before you can choose
+       • Floating buttons opening then snapping shut
+       • The More menu opening then closing
+     Cause: (a) a single tap firing twice (touch + click) toggles a menu open then shut,
+            (b) background auto-refresh loops redrawing the screen while a menu/select is open.
+     Fix:   (a) ignore a duplicate call to a toggle within 450ms,
+            (b) skip the cosmetic redraw loops while a popup is open or a field is focused.
+     Idempotent. Reversible. ════════════ -->
+<script id="rrfix-js">
+(function(){
+  if(window.__RRFIX)return; window.__RRFIX=true;
+
+  /* 1. Are we mid-interaction? (a popup is open, or a field/select is focused) */
+  function busy(){
+    try{
+      if(document.querySelector('.modal.open,.sheet.open,[id$="-modal"].open,[id$="-sheet"].open,.more-sheet.open,#royal-more-sheet.open')) return true;
+      var ae=document.activeElement;
+      if(ae){ var t=(ae.tagName||'').toUpperCase();
+        if(t==='SELECT'||t==='INPUT'||t==='TEXTAREA'||ae.isContentEditable) return true; }
+    }catch(e){}
+    return false;
+  }
+  window.__rrBusy=busy;
+
+  /* 2. De-bounce TOGGLE entry points so one physical tap can't fire twice and undo itself.
+        Navigation functions are deliberately NOT debounced (fast tab-switching must work). */
+  var last={};
+  function guard(name){
+    var fn=window[name];
+    if(typeof fn!=='function'||fn.__rrGuarded) return;
+    var w=function(){
+      var now=Date.now();
+      if(last[name] && (now-last[name])<450){ return undefined; } /* swallow duplicate tap */
+      last[name]=now;
+      return fn.apply(this,arguments);
+    };
+    w.__rrGuarded=true; w.__rrOrig=fn; try{ window[name]=w; }catch(e){}
+  }
+  var TOGGLES=['royalMoreSheet','voiceToggle','goalVoiceToggle'];
+
+  /* 3. Pause the cosmetic redraw loop while busy, so an open dropdown is never wiped.
+        Only ever wraps the harmless re-paint helpers — never any save/data function. */
+  function shield(name){
+    var fn=window[name];
+    if(typeof fn!=='function'||fn.__rrShield) return;
+    var w=function(){ if(busy()) return undefined; return fn.apply(this,arguments); };
+    w.__rrShield=true; w.__rrOrig=fn; try{ window[name]=w; }catch(e){}
+  }
+  var REDRAWS=['syncActive'];
+
+  function apply(){ TOGGLES.forEach(guard); REDRAWS.forEach(shield); }
+  apply();
+  /* re-apply briefly because some functions are defined by later-injected modules */
+  var n=0, iv=setInterval(function(){ apply(); if(++n>8) clearInterval(iv); }, 600);
+})();
+</script>
+<!-- ════════════ END RRFIX ════════════ -->
+
+<!-- ════════════ ROYAL DAILY — Sum Checklist + time-based task & spending lists ════════════
+     New main tab. One central store (royal_daily_v1). Buckets: Sum / Daily / Weekly /
+     Monthly / Quarterly / Yearly / Lifetime. Each row: tick · description · £amount, with
+     optional advanced fields (category, priority, deadline, status, %). Ticked = actual
+     spend, unticked = projected. On-page finance panel reads the same store — no duplicates.
+     Mounts like Royal Scholars (works on desktop + iPhone + iPad). Idempotent. ════════════ -->
+<style id="rrday-css">
+#s-royaldaily .rd-root{max-width:1000px;margin:0 auto;padding:6px 2px 48px;}
+#s-royaldaily .rd-head{display:flex;align-items:center;gap:12px;margin:6px 0 16px;flex-wrap:wrap;}
+#s-royaldaily .rd-crest{width:48px;height:48px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));display:flex;align-items:center;justify-content:center;font-size:25px;}
+#s-royaldaily .rd-ttl h1{margin:0;font-size:20px;font-weight:800;color:var(--text,#F0EBE0);}
+#s-royaldaily .rd-ttl p{margin:2px 0 0;font-size:12.5px;color:var(--text3,#7A7268);font-weight:600;}
+#s-royaldaily .rd-tabs{display:flex;gap:7px;overflow-x:auto;padding:2px 0 12px;margin-bottom:8px;scrollbar-width:none;}
+#s-royaldaily .rd-tabs::-webkit-scrollbar{display:none;}
+#s-royaldaily .rd-tab{white-space:nowrap;flex-shrink:0;border:1.5px solid rgba(201,168,76,0.28);background:rgba(201,168,76,0.06);color:var(--text2,#C4BAA8);padding:8px 14px;border-radius:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none;}
+#s-royaldaily .rd-tab.on{background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));color:#1a1408;border-color:transparent;}
+#s-royaldaily .rd-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+@media(max-width:760px){#s-royaldaily .rd-kpis{grid-template-columns:repeat(2,1fr);}}
+#s-royaldaily .rd-kpi{background:var(--dark3,#1A1A28);border:1.5px solid rgba(201,168,76,0.14);border-radius:14px;padding:13px;}
+#s-royaldaily .rd-kpi .k{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text3,#7A7268);}
+#s-royaldaily .rd-kpi .v{font-size:20px;font-weight:800;color:var(--text,#F0EBE0);margin-top:5px;}
+#s-royaldaily .rd-kpi .s{font-size:11px;color:var(--text3,#7A7268);margin-top:2px;font-weight:600;}
+#s-royaldaily .rd-kpi.actual .v{color:#4CAF7D;}
+#s-royaldaily .rd-kpi.proj .v{color:#E5A93C;}
+#s-royaldaily .rd-tablewrap{background:var(--dark3,#1A1A28);border:1.5px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden;}
+#s-royaldaily table.rd-tbl{width:100%;border-collapse:collapse;}
+#s-royaldaily .rd-tbl th{font-size:10px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--text3,#7A7268);text-align:left;padding:12px 12px;background:rgba(255,255,255,0.03);border-bottom:1.5px solid rgba(255,255,255,0.06);}
+#s-royaldaily .rd-tbl th.c-yn{width:64px;text-align:center;}
+#s-royaldaily .rd-tbl th.c-amt{width:130px;text-align:right;}
+#s-royaldaily .rd-tbl td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle;}
+#s-royaldaily .rd-tbl tr:nth-child(even) td{background:rgba(255,255,255,0.018);}
+#s-royaldaily .rd-tbl tr.done td{opacity:.6;}
+#s-royaldaily .rd-tbl tr.done .rd-desc{text-decoration:line-through;}
+#s-royaldaily .rd-chk{width:22px;height:22px;cursor:pointer;accent-color:#4CAF7D;display:block;margin:0 auto;}
+#s-royaldaily .rd-desc{width:100%;background:transparent;border:none;color:var(--text,#F0EBE0);font-size:14px;font-family:inherit;padding:6px 4px;border-radius:7px;}
+#s-royaldaily .rd-desc:focus{outline:none;background:rgba(201,168,76,0.08);}
+#s-royaldaily .rd-amt{width:100%;background:transparent;border:none;color:var(--text,#F0EBE0);font-size:14px;font-weight:700;font-family:inherit;text-align:right;padding:6px 4px;border-radius:7px;-webkit-appearance:none;}
+#s-royaldaily .rd-amt:focus{outline:none;background:rgba(201,168,76,0.08);}
+#s-royaldaily .rd-amtcell{white-space:nowrap;text-align:right;}
+#s-royaldaily .rd-amtcell .gp{color:var(--text3,#7A7268);font-size:13px;}
+#s-royaldaily .rd-tbl th.c-dur{width:140px;}
+#s-royaldaily .rd-dur{width:100%;background:transparent;border:none;color:var(--text2,#C4BAA8);font-size:13px;font-family:inherit;padding:6px 4px;border-radius:7px;}
+#s-royaldaily .rd-dur:focus{outline:none;background:rgba(201,168,76,0.08);color:var(--text,#F0EBE0);}
+#s-royaldaily .rd-more{background:none;border:none;color:var(--text4,#4A4640);cursor:pointer;font-size:15px;padding:2px 6px;}
+#s-royaldaily .rd-del{background:none;border:none;color:#E05252;cursor:pointer;font-size:14px;padding:2px 6px;opacity:.7;}
+#s-royaldaily .rd-adv{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:4px 4px 10px;}
+@media(max-width:760px){#s-royaldaily .rd-adv{grid-template-columns:repeat(2,1fr);}}
+#s-royaldaily .rd-adv label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text4,#4A4640);display:block;margin-bottom:3px;}
+#s-royaldaily .rd-adv select,#s-royaldaily .rd-adv input{width:100%;background:var(--dark4,#222235);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--text,#F0EBE0);font-size:12.5px;padding:7px 9px;font-family:inherit;-webkit-appearance:none;}
+#s-royaldaily .rd-foot{display:flex;align-items:center;justify-content:space-between;padding:14px 14px;background:rgba(201,168,76,0.06);border-top:1.5px solid rgba(201,168,76,0.18);}
+#s-royaldaily .rd-foot .lbl{font-size:13px;font-weight:800;color:var(--text,#F0EBE0);}
+#s-royaldaily .rd-foot .tot{font-size:18px;font-weight:800;color:var(--gold,#C9A84C);}
+#s-royaldaily .rd-foot .sub{font-size:11px;color:var(--text3,#7A7268);font-weight:600;}
+#s-royaldaily .rd-add{margin-top:14px;height:42px;padding:0 18px;border:1.5px dashed rgba(201,168,76,0.4);border-radius:11px;background:rgba(201,168,76,0.06);color:var(--gold,#C9A84C);font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit;}
+#s-royaldaily .rd-add:active{transform:scale(.98);}
+#s-royaldaily .rd-cat{margin-top:18px;background:var(--dark3,#1A1A28);border:1.5px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px;}
+#s-royaldaily .rd-cat h3{margin:0 0 12px;font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--gold,#C9A84C);}
+#s-royaldaily .rd-catrow{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+#s-royaldaily .rd-catname{font-size:12.5px;font-weight:700;color:var(--text2,#C4BAA8);width:130px;flex-shrink:0;}
+#s-royaldaily .rd-catbar{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,0.06);overflow:hidden;}
+#s-royaldaily .rd-catbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold,#C9A84C),#E8C96A);}
+#s-royaldaily .rd-catval{font-size:12px;font-weight:800;color:var(--text,#F0EBE0);width:90px;text-align:right;flex-shrink:0;}
+#s-royaldaily .rd-empty{text-align:center;color:var(--text3,#7A7268);font-size:14px;padding:30px 16px;line-height:1.6;}
+</style>
+<script id="rrday-js">
+(function(){
+  if(window.RRDAY)return;
+  var KEY='royal_daily_v1';
+  var BUCKETS=[['sum','📋','Sum Checklist'],['daily','☀️','Daily'],['weekly','📅','Weekly'],['monthly','🗓️','Monthly'],['quarterly','🍂','Quarterly'],['yearly','📆','Yearly'],['lifetime','♾️','Lifetime']];
+  var CATS=['General','Royal Affairs','Family','Care Business','Education','Royal Residence','Personal','Ghana','Investment','Health','Other'];
+  var PRIOS=['🔴 Critical','🟠 High','🟡 Medium','🟢 Low'];
+  var STATS=['Open','In Progress','Done','Blocked'];
+  var cur='sum';      /* current bucket */
+  var openAdv={};     /* which rows have advanced panel open */
+
+  function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){return [];}}
+  function save(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
+  function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function gbp(n){return '£'+(Math.round((+n||0)*100)/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function uid(){return 'rd'+Date.now()+Math.floor(Math.random()*999);}
+  function rowsOf(b){var a=load();return a.filter(function(r){return b==='sum'?true:r.bucket===b;});}
+  function bucketName(b){for(var i=0;i<BUCKETS.length;i++)if(BUCKETS[i][0]===b)return BUCKETS[i][2];return b;}
+
+  /* ---------- mounting (desktop sidebar + mobile More sheet), like Royal Scholars ---------- */
+  function ensureScreen(){
+    if(document.getElementById('s-royaldaily'))return;
+    var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+    var sc=document.createElement('div'); sc.id='s-royaldaily'; sc.className='screen';
+    sc.innerHTML='<div id="rd-root" class="rd-root"></div>';
+    main.appendChild(sc);
+  }
+  function ensureNav(){
+    /* desktop: clone a VISIBLE top-level button (Goals/Diary) so Royal Daily is itself visible.
+       Cloning a hidden button would inherit display:none — that was the earlier bug. */
+    var anchor=document.getElementById('nb-goals')||document.getElementById('nb-diary')||document.getElementById('nb-rota')||document.getElementById('nb-scholars');
+    if(anchor && !document.getElementById('nb-royaldaily')){
+      var b=anchor.cloneNode(true); b.id='nb-royaldaily'; b.setAttribute('data-tab','royaldaily'); b.setAttribute('onclick',"go('royaldaily')");
+      b.classList.remove('active'); b.style.display=''; b.removeAttribute('data-rrnav-hidden');
+      var ni=b.querySelector('.ni'); if(ni)ni.textContent='📋';
+      var nl=b.querySelector('.nl'); if(nl)nl.textContent='Royal Daily';
+      var nb=b.querySelector('.nb'); if(nb)nb.remove();
+      anchor.parentNode.insertBefore(b, anchor.nextSibling);
+    }
+    /* mobile: clone a VISIBLE More-sheet item (not one hidden by the nav tidy-up) */
+    if(!document.querySelector('.rms-item[data-rrday]')){
+      var items=document.querySelectorAll('.rms-item'), src=null;
+      for(var i=0;i<items.length;i++){
+        var oc=items[i].getAttribute('onclick')||'';
+        if(/royalTab\('(goals|diary|rota)'/.test(oc) && items[i].style.display!=='none'){ src=items[i]; break; }
+      }
+      if(!src){ for(var j=0;j<items.length;j++){ if(items[j].style.display!=='none'){ src=items[j]; break; } } }
+      if(src){
+        var c=src.cloneNode(true); c.setAttribute('data-rrday','1'); c.style.display='';
+        c.setAttribute('onclick',"royalTab('royaldaily',null);if(typeof royalCloseMore==='function')royalCloseMore()");
+        var ic=c.querySelector('.rms-icon'); if(ic)ic.textContent='📋';
+        var lb=c.querySelector('.rms-lbl'); if(lb)lb.textContent='Royal Daily';
+        src.parentNode.insertBefore(c, src.nextSibling);
+      }
+    }
+  }
+
+  /* ---------- totals ---------- */
+  function totals(b){
+    var rows=rowsOf(b), all=0, actual=0, proj=0;
+    rows.forEach(function(r){var amt=+r.amount||0; all+=amt; if(r.done)actual+=amt; else proj+=amt;});
+    return {count:rows.length,all:all,actual:actual,proj:proj,done:rows.filter(function(r){return r.done;}).length};
+  }
+  function catBreakdown(b){
+    var rows=rowsOf(b), m={};
+    rows.forEach(function(r){var c=r.category||'General'; m[c]=(m[c]||0)+(+r.amount||0);});
+    return Object.keys(m).map(function(k){return {cat:k,amt:m[k]};}).filter(function(x){return x.amt>0;}).sort(function(a,b){return b.amt-a.amt;});
+  }
+
+  /* ---------- render ---------- */
+  function build(){
+    ensureScreen();
+    var root=document.getElementById('rd-root'); if(!root)return;
+    var t=totals(cur);
+    var html='<div class="rd-head"><div class="rd-crest">📋</div><div class="rd-ttl"><h1>Royal Daily</h1><p>Your master task & spending checklist — tick what is done and paid</p></div></div>';
+    /* bucket tabs */
+    html+='<div class="rd-tabs">'+BUCKETS.map(function(b){return '<button class="rd-tab'+(b[0]===cur?' on':'')+'" onclick="window.RRDAY.go(\''+b[0]+'\')">'+b[1]+' '+b[2]+'</button>';}).join('')+'</div>';
+    /* finance KPIs */
+    html+='<div class="rd-kpis">'
+      +'<div class="rd-kpi"><div class="k">Total</div><div class="v">'+gbp(t.all)+'</div><div class="s">'+t.count+' item'+(t.count===1?'':'s')+'</div></div>'
+      +'<div class="rd-kpi actual"><div class="k">Actual spent</div><div class="v">'+gbp(t.actual)+'</div><div class="s">'+t.done+' ticked</div></div>'
+      +'<div class="rd-kpi proj"><div class="k">Projected</div><div class="v">'+gbp(t.proj)+'</div><div class="s">'+(t.count-t.done)+' pending</div></div>'
+      +'<div class="rd-kpi"><div class="k">Completion</div><div class="v">'+(t.count?Math.round(t.done/t.count*100):0)+'%</div><div class="s">of this list</div></div>'
+      +'</div>';
+    /* table */
+    var rows=rowsOf(cur);
+    html+='<div class="rd-tablewrap"><table class="rd-tbl"><thead><tr><th class="c-yn">Yes/No</th><th>Description'+(cur==='sum'?' &amp; list':'')+'</th><th class="c-amt">Amount (£)</th><th class="c-dur">Duration</th><th style="width:60px;"></th></tr></thead><tbody id="rd-tbody">';
+    if(!rows.length){
+      html+='<tr><td colspan="5"><div class="rd-empty">No items yet in <b>'+esc(bucketName(cur))+'</b>.<br>Tap <b>＋ Add row</b> below to add your first task or spend.</div></td></tr>';
+    } else {
+      html+=rows.map(rowHtml).join('');
+    }
+    html+='</tbody><tfoot><tr><td colspan="5" style="padding:0;"><div class="rd-foot"><div><div class="lbl">Total — ticked items only</div><div class="sub">'+gbp(t.all)+' total · '+gbp(t.proj)+' still projected</div></div><div class="tot" id="rd-tickedtotal">'+gbp(t.actual)+'</div></div></td></tr></tfoot></table></div>';
+    html+='<button class="rd-add" onclick="window.RRDAY.addRow()">＋ Add row</button>';
+    /* category intelligence */
+    var cb=catBreakdown(cur);
+    if(cb.length){
+      var max=cb[0].amt||1;
+      html+='<div class="rd-cat"><h3>💷 Spending by category — '+esc(bucketName(cur))+'</h3>'+cb.map(function(x){return '<div class="rd-catrow"><div class="rd-catname">'+esc(x.cat)+'</div><div class="rd-catbar"><i style="width:'+Math.round(x.amt/max*100)+'%"></i></div><div class="rd-catval">'+gbp(x.amt)+'</div></div>';}).join('')+'</div>';
+    }
+    root.innerHTML=html;
+  }
+
+  function rowHtml(r){
+    var adv=openAdv[r.id];
+    var h='<tr class="'+(r.done?'done':'')+'" data-id="'+r.id+'">'
+      +'<td class="c-yn"><input type="checkbox" class="rd-chk" '+(r.done?'checked':'')+' onchange="window.RRDAY.toggle(\''+r.id+'\',this.checked)"></td>'
+      +'<td><input class="rd-desc" value="'+esc(r.desc||'')+'" placeholder="Describe the task or spend…" oninput="window.RRDAY.set(\''+r.id+'\',\'desc\',this.value)"></td>'
+      +'<td class="rd-amtcell"><span class="gp">£</span><input class="rd-amt" inputmode="decimal" value="'+(r.amount?(+r.amount):'')+'" placeholder="0.00" oninput="window.RRDAY.setAmt(\''+r.id+'\',this.value)" style="width:84px;display:inline-block;"></td>'
+      +'<td><input class="rd-dur" value="'+esc(r.duration||'')+'" placeholder="e.g. 45 min · 3 days · 10 years" oninput="window.RRDAY.set(\''+r.id+'\',\'duration\',this.value)"></td>'
+      +'<td style="white-space:nowrap;text-align:right;"><button class="rd-more" title="More fields" onclick="window.RRDAY.adv(\''+r.id+'\')">'+(adv?'▾':'⋯')+'</button><button class="rd-del" title="Delete" onclick="window.RRDAY.del(\''+r.id+'\')">🗑</button></td></tr>';
+    if(adv){
+      h+='<tr class="adv-row" data-id="'+r.id+'"><td colspan="5"><div class="rd-adv">'
+        +'<div><label>Category</label><select onchange="window.RRDAY.set(\''+r.id+'\',\'category\',this.value)">'+CATS.map(function(c){return '<option'+(c===(r.category||'General')?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select></div>'
+        +'<div><label>Priority</label><select onchange="window.RRDAY.set(\''+r.id+'\',\'priority\',this.value)"><option value="">—</option>'+PRIOS.map(function(p){return '<option'+(p===r.priority?' selected':'')+'>'+esc(p)+'</option>';}).join('')+'</select></div>'
+        +'<div><label>Deadline</label><input type="date" value="'+esc(r.deadline||'')+'" onchange="window.RRDAY.set(\''+r.id+'\',\'deadline\',this.value)"></div>'
+        +'<div><label>Status</label><select onchange="window.RRDAY.set(\''+r.id+'\',\'status\',this.value)"><option value="">—</option>'+STATS.map(function(s){return '<option'+(s===r.status?' selected':'')+'>'+esc(s)+'</option>';}).join('')+'</select></div>'
+        +'<div><label>Completion %</label><input type="number" inputmode="numeric" min="0" max="100" value="'+(r.pct!=null&&r.pct!==''?r.pct:'')+'" placeholder="0" onchange="window.RRDAY.set(\''+r.id+'\',\'pct\',this.value)"></div>'
+        +'</div></td></tr>';
+    }
+    return h;
+  }
+
+  /* recompute footer + KPI numbers in place WITHOUT rebuilding the table (keeps focus & dropdowns) */
+  function recalc(){
+    var t=totals(cur);
+    var el=document.getElementById('rd-tickedtotal'); if(el)el.textContent=gbp(t.actual);
+    var root=document.getElementById('rd-root'); if(!root)return;
+    var kp=root.querySelectorAll('.rd-kpi .v');
+    if(kp.length>=4){kp[0].textContent=gbp(t.all);kp[1].textContent=gbp(t.actual);kp[2].textContent=gbp(t.proj);kp[3].textContent=(t.count?Math.round(t.done/t.count*100):0)+'%';}
+  }
+
+  var API={
+    build:build,
+    go:function(b){cur=b;openAdv={};build();},
+    addRow:function(){var a=load();var r={id:uid(),bucket:(cur==='sum'?'sum':cur),done:false,desc:'',amount:0,category:'General',priority:'',deadline:'',status:'',pct:'',duration:''};a.push(r);save(a);build();
+      setTimeout(function(){var rows=document.querySelectorAll('#rd-tbody tr[data-id="'+r.id+'"] .rd-desc');if(rows[0])rows[0].focus();},30);},
+    toggle:function(id,v){var a=load();a.forEach(function(r){if(r.id===id)r.done=!!v;});save(a);
+      var tr=document.querySelector('#rd-tbody tr[data-id="'+id+'"]');if(tr){if(v)tr.classList.add('done');else tr.classList.remove('done');}
+      recalc();},
+    set:function(id,field,v){var a=load();a.forEach(function(r){if(r.id===id)r[field]=v;});save(a);},
+    setAmt:function(id,v){var n=parseFloat(v)||0;var a=load();a.forEach(function(r){if(r.id===id)r.amount=n;});save(a);recalc();},
+    adv:function(id){openAdv[id]=!openAdv[id];build();},
+    del:function(id){var a=load();var r=a.filter(function(x){return x.id===id;})[0];if(r&&(r.desc||r.amount)){if(!confirm('Delete this row?'))return;}save(a.filter(function(x){return x.id!==id;}));build();},
+    /* read-only summary for other parts of the system (no duplicate writes) */
+    summary:function(){var g=totals('sum');var grand={all:g.all,actual:g.actual,proj:g.proj,count:g.count};var byB={};BUCKETS.forEach(function(b){if(b[0]==='sum')return;byB[b[0]]=totals(b[0]);});return {grand:grand,byBucket:byB};}
+  };
+  window.RRDAY=API;
+
+  function hook(fnName){
+    var orig=window[fnName];
+    if(typeof orig!=='function'||orig._rrday)return;
+    var wrapped=function(n){var r=orig.apply(this,arguments);if(n==='royaldaily'){ensureScreen();build();}return r;};
+    wrapped._rrday=true;window[fnName]=wrapped;
+  }
+  function init(){ensureScreen();ensureNav();hook('go');hook('royalTab');var s=document.getElementById('s-royaldaily');if(s&&s.classList.contains('active'))build();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  setInterval(function(){if(!document.getElementById('nb-royaldaily')&&!document.querySelector('.rms-item[data-rrday]'))init();
+    var s=document.getElementById('s-royaldaily');if(s&&s.classList.contains('active')){var root=document.getElementById('rd-root');if(root&&!root.innerHTML)build();}},1500);
+})();
+</script>
+<!-- ════════════ END ROYAL DAILY ════════════ -->
+
 </body>
 </html>
