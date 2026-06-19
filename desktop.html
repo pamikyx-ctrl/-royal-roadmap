@@ -16764,7 +16764,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
      if((m && SET.indexOf(m[1])>-1) || isDaily){ if(!anchor)anchor=it; it.style.display='none'; it.setAttribute('data-rrdl-hidden','1'); }
    });
    if(anchor && !document.querySelector('.rms-item[data-rrdl]')){
-     var c=anchor.cloneNode(true); c.style.display=''; c.setAttribute('data-rrdl','1'); c.removeAttribute('data-rrday');
+     var c=anchor.cloneNode(true); c.style.display=''; c.setAttribute('data-rrdl','1'); c.removeAttribute('data-rrday'); c.removeAttribute('data-rrdl-hidden');
      c.setAttribute('onclick',"window.RRDL.go('royaldaily')");
      var ci=c.querySelector('.rms-icon'); if(ci)ci.textContent='📔';
      var cl=c.querySelector('.rms-lbl'); if(cl)cl.textContent='Legacy Daily';
