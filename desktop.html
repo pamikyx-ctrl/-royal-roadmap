@@ -16510,7 +16510,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 #s-royaldaily .rd-kpi.proj .v{color:#E5A93C;}
 #s-royaldaily .rd-tablewrap{background:var(--dark3,#1A1A28);border:1.5px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden;}
 #s-royaldaily table.rd-tbl{width:100%;border-collapse:collapse;}
-#s-royaldaily .rd-tbl th{font-size:10px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--text3,#7A7268);text-align:left;padding:12px 12px;background:rgba(255,255,255,0.03);border-bottom:1.5px solid rgba(255,255,255,0.06);}
+#s-royaldaily .rd-tbl th{font-size:10px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--text3,#7A7268);text-align:left;padding:12px 12px;background:rgba(255,255,255,0.03);border-bottom:1.5px solid rgba(255,255,255,0.06);white-space:nowrap;}
 #s-royaldaily .rd-tbl th.c-yn{width:64px;text-align:center;}
 #s-royaldaily .rd-tbl th.c-amt{width:130px;text-align:right;}
 #s-royaldaily .rd-tbl td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle;}
@@ -16527,6 +16527,22 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 #s-royaldaily .rd-tbl th.c-dur{width:140px;}
 #s-royaldaily .rd-dur{width:100%;background:transparent;border:none;color:var(--text2,#C4BAA8);font-size:13px;font-family:inherit;padding:6px 4px;border-radius:7px;}
 #s-royaldaily .rd-dur:focus{outline:none;background:rgba(201,168,76,0.08);color:var(--text,#F0EBE0);}
+/* ── narrow phone screens: keep the checklist table readable ── */
+@media(max-width:560px){
+  #s-royaldaily .rd-tbl th{font-size:8.5px;letter-spacing:.2px;padding:9px 5px;}
+  #s-royaldaily .rd-tbl td{padding:7px 5px;}
+  #s-royaldaily .rd-tbl th.c-yn{width:36px;}
+  #s-royaldaily .rd-tbl th.c-amt{width:72px;}
+  #s-royaldaily .rd-tbl th.c-dur{width:74px;}
+  #s-royaldaily .rd-desc{font-size:13px;padding:6px 2px;}
+  #s-royaldaily .rd-amt{width:50px !important;font-size:13px;}
+  #s-royaldaily .rd-dur{font-size:12px;padding:6px 2px;}
+  #s-royaldaily .rd-amtcell .gp{font-size:11px;}
+  #s-royaldaily .rd-chk{width:19px;height:19px;}
+  #s-royaldaily .rd-more,#s-royaldaily .rd-del{font-size:13px;padding:2px 3px;}
+  #s-royaldaily .rd-foot{padding:12px 10px;}
+  #s-royaldaily .rd-foot .tot{font-size:16px;}
+}
 #s-royaldaily .rd-more{background:none;border:none;color:var(--text4,#4A4640);cursor:pointer;font-size:15px;padding:2px 6px;}
 #s-royaldaily .rd-del{background:none;border:none;color:#E05252;cursor:pointer;font-size:14px;padding:2px 6px;opacity:.7;}
 #s-royaldaily .rd-adv{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:4px 4px 10px;}
@@ -16634,7 +16650,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
       +'</div>';
     /* table */
     var rows=rowsOf(cur);
-    html+='<div class="rd-tablewrap"><table class="rd-tbl"><thead><tr><th class="c-yn">Yes/No</th><th>Description'+(cur==='sum'?' &amp; list':'')+'</th><th class="c-amt">Amount (£)</th><th class="c-dur">Duration</th><th style="width:60px;"></th></tr></thead><tbody id="rd-tbody">';
+    html+='<div class="rd-tablewrap"><table class="rd-tbl"><thead><tr><th class="c-yn">Yes/No</th><th>Description</th><th class="c-amt">Amount (£)</th><th class="c-dur">Duration</th><th style="width:60px;"></th></tr></thead><tbody id="rd-tbody">';
     if(!rows.length){
       html+='<tr><td colspan="5"><div class="rd-empty">No items yet in <b>'+esc(bucketName(cur))+'</b>.<br>Tap <b>＋ Add row</b> below to add your first task or spend.</div></td></tr>';
     } else {
