@@ -16241,5 +16241,81 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 </script>
 <!-- ════════════ END ROYAL DAILY ════════════ -->
 
+<!-- ════════════ DAILY LIFE HUB — groups Royal Daily + Royal Diary under one tab ════════════
+     One sidebar entry ("Daily Life") opens a two-pill switcher: 📋 Royal Daily | 📔 Royal Diary.
+     Same hub pattern as Finance / Royal Projects. Reuses the existing .rrnav-pill styling.
+     Touches only the royaldaily + diary screens. Idempotent. ════════════ -->
+<style id="rrdl-css">
+.rrdl-holder{margin:0 0 4px;}
+[data-rrdl-hidden]{display:none !important;}
+</style>
+<script id="rrdl-js">
+(function(){
+ if(window.RRDL)return;
+ var PAIR=[{tab:'royaldaily',ic:'📋',lbl:'Royal Daily'},{tab:'diary',ic:'📔',lbl:'Royal Diary'}];
+ var SET=['royaldaily','diary'];
+
+ function nav(tab){ if(typeof window.go==='function'){window.go(tab);} else if(typeof window.royalTab==='function'){window.royalTab(tab,null);} if(typeof window.royalCloseMore==='function')window.royalCloseMore(); addBars(); setTimeout(addBars,60); syncHub(); }
+ window.RRDL={go:nav};
+
+ function barHtml(){
+   return '<div class="rrnav-hubtag">📔 Legacy Daily</div><div class="rrnav-bar">'+PAIR.map(function(x){
+     return '<button class="rrnav-pill" data-tab="'+x.tab+'" onclick="window.RRDL.go(\''+x.tab+'\')">'+x.ic+' '+x.lbl+'</button>';
+   }).join('')+'</div>';
+ }
+ function addBars(){
+   SET.forEach(function(t){
+     var scr=document.getElementById('s-'+t); if(!scr)return;
+     if(scr.querySelector('.rrdl-holder'))return;
+     var h=document.createElement('div'); h.className='rrdl-holder'; h.innerHTML=barHtml();
+     scr.insertBefore(h, scr.firstChild);
+   });
+ }
+
+ function collapseSidebar(){
+   ['nb-royaldaily','nb-diary'].forEach(function(id){var b=document.getElementById(id); if(b){b.style.display='none'; b.setAttribute('data-rrdl-hidden','1');}});
+   var anchor=document.getElementById('nb-diary')||document.getElementById('nb-royaldaily');
+   if(anchor && !document.getElementById('nb-dailylife')){
+     var c=anchor.cloneNode(true); c.id='nb-dailylife'; c.style.display=''; c.classList.remove('active');
+     c.removeAttribute('data-rrdl-hidden'); c.removeAttribute('data-rrnav-hidden'); c.removeAttribute('data-tab');
+     c.setAttribute('onclick',"window.RRDL.go('royaldaily')");
+     var ci=c.querySelector('.ni'); if(ci)ci.textContent='📔';
+     var cl=c.querySelector('.nl'); if(cl)cl.textContent='Legacy Daily';
+     var cnb=c.querySelector('.nb'); if(cnb)cnb.remove();
+     anchor.parentNode.insertBefore(c, anchor);
+   }
+ }
+ function collapseMore(){
+   var items=document.querySelectorAll('.rms-item'), anchor=null;
+   items.forEach(function(it){
+     var oc=it.getAttribute('onclick')||'';
+     var m=oc.match(/royalTab\('([a-z]+)'/);
+     var isDaily=it.getAttribute('data-rrday')!=null;
+     if((m && SET.indexOf(m[1])>-1) || isDaily){ if(!anchor)anchor=it; it.style.display='none'; it.setAttribute('data-rrdl-hidden','1'); }
+   });
+   if(anchor && !document.querySelector('.rms-item[data-rrdl]')){
+     var c=anchor.cloneNode(true); c.style.display=''; c.setAttribute('data-rrdl','1'); c.removeAttribute('data-rrday');
+     c.setAttribute('onclick',"window.RRDL.go('royaldaily')");
+     var ci=c.querySelector('.rms-icon'); if(ci)ci.textContent='📔';
+     var cl=c.querySelector('.rms-lbl'); if(cl)cl.textContent='Legacy Daily';
+     anchor.parentNode.insertBefore(c, anchor);
+   }
+ }
+ function syncHub(){
+   var act=document.querySelector('.screen.active'); var cur=act?act.id.replace('s-',''):'';
+   var hub=document.getElementById('nb-dailylife'); if(hub)hub.classList.toggle('active', SET.indexOf(cur)>-1);
+   document.querySelectorAll('.rrdl-holder .rrnav-pill').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-tab')===cur); });
+ }
+ function hook(fn){ var o=window[fn]; if(typeof o!=='function'||o._rrdl)return; var w=function(){var r=o.apply(this,arguments); addBars(); setTimeout(function(){addBars();syncHub();},0); return r;}; w._rrdl=true; window[fn]=w; }
+
+ function init(){ addBars(); collapseSidebar(); collapseMore(); hook('go'); hook('royalTab'); syncHub(); }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+ setInterval(function(){
+   if(!document.getElementById('nb-dailylife') || !document.querySelector('#s-royaldaily .rrdl-holder') || !document.querySelector('#s-diary .rrdl-holder')) init();
+   else syncHub();
+ },1500);
+})();
+</script>
+<!-- ════════════ END DAILY LIFE HUB ════════════ -->
 </body>
 </html>
