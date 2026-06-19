@@ -15097,6 +15097,37 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 #s-scholars .scl-certbtn{border:none;background:rgba(201,168,76,0.12);color:var(--gold,#C9A84C);border-radius:7px;font-size:11px;font-weight:700;padding:6px 9px;cursor:pointer;}
 #s-scholars .scl-certbtn.x{background:rgba(224,82,82,0.12);color:#E05252;}
 #s-scholars .scl-certtag{font-size:11.5px;color:var(--text3,#7A7268);font-weight:700;margin-top:6px;}
+#s-scholars .scl-btn.view{background:rgba(91,141,217,0.12);border-color:rgba(91,141,217,0.35);color:#5B8DD9;}
+/* Quick View modal */
+.scl-qv-overlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center;padding:0;}
+@media(min-width:680px){.scl-qv-overlay{align-items:center;padding:20px;}}
+.scl-qv-card{background:#1A1A28;color:#F0EBE0;width:100%;max-width:560px;max-height:90vh;overflow:auto;border:1.5px solid rgba(201,168,76,0.3);border-radius:20px 20px 0 0;padding:18px;}
+@media(min-width:680px){.scl-qv-card{border-radius:18px;}}
+.scl-qv-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.scl-qv-av{width:46px;height:46px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,#C9A84C,#7A5F1A);color:#1a1408;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;}
+.scl-qv-name{font-size:18px;font-weight:800;flex:1;line-height:1.2;}
+.scl-qv-x{background:rgba(255,255,255,0.08);border:none;color:#C4BAA8;width:34px;height:34px;border-radius:10px;font-size:16px;cursor:pointer;flex-shrink:0;}
+.scl-qv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-bottom:14px;}
+.scl-qv-grid .k{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#7A7268;}
+.scl-qv-grid .v{font-size:13.5px;font-weight:700;color:#F0EBE0;margin-top:2px;}
+.scl-qv-grid .full{grid-column:1/-1;}
+.scl-qv-note{background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;color:#C4BAA8;margin-bottom:14px;}
+.scl-qv-actions{display:flex;gap:9px;flex-wrap:wrap;position:sticky;bottom:0;background:#1A1A28;padding-top:8px;}
+.scl-qv-actions button{flex:1;min-width:90px;height:44px;border-radius:11px;border:1.5px solid rgba(201,168,76,0.3);background:rgba(201,168,76,0.1);color:#C9A84C;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;}
+.scl-qv-actions button.close{background:transparent;border-color:rgba(255,255,255,0.14);color:#C4BAA8;}
+/* Print layout */
+#scl-print{display:none;}
+@media print{
+  body.scl-printing>*{display:none !important;}
+  body.scl-printing #scl-print{display:block !important;}
+  #scl-print{font-family:Georgia,'Times New Roman',serif;color:#111;padding:30px;}
+  #scl-print h1{font-size:22px;margin:0 0 4px;}
+  #scl-print .sub{color:#666;font-size:12px;margin-bottom:18px;letter-spacing:1px;text-transform:uppercase;}
+  #scl-print table{width:100%;border-collapse:collapse;}
+  #scl-print td{padding:7px 6px;border-bottom:1px solid #ddd;font-size:13px;vertical-align:top;}
+  #scl-print td.k{width:38%;color:#666;font-weight:bold;text-transform:uppercase;font-size:11px;}
+  #scl-print .note{margin-top:16px;font-size:13px;line-height:1.5;}
+}
 </style>
 </style>
 <script id="rrsch-js">
@@ -15232,6 +15263,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
        +cell('Institution',s.institution||'—')
        +cell('Level',s.level||'—')
        +cell('Year / Class',s.year||'—')
+       +cell('Student ID',s.studentId||'—')
        +cell('Course',s.course||'—')
        +cell('Fee / Term',s.feePerTerm?gbp(s.feePerTerm):'—')
        +cell('Next Fee Due',dueTxt)
@@ -15244,6 +15276,10 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
      +(certsOf(s.id).length?'<div class="scl-certtag">📎 '+certsOf(s.id).length+' certificate'+(certsOf(s.id).length===1?'':'s')+' attached</div>':'')
      +(target>0?'<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:var(--text3,#7A7268);margin-bottom:4px;"><span>TOWARDS TARGET '+gbp(target)+'</span><span>'+pct+'%</span></div><div class="scl-bar"><i style="width:'+pct+'%"></i></div></div>':'')
      +(s.notes?'<div style="font-size:12px;color:var(--text2,#C4BAA8);line-height:1.5;">'+esc(s.notes)+'</div>':'')
+     +'<div class="scl-row">'
+       +'<button class="scl-btn view" onclick="window.RRSCH.quickView(\''+s.id+'\')">👁 Quick View</button>'
+       +'<button class="scl-btn" onclick="window.RRSCH.printEmail(\''+s.id+'\')">🖨 Print / Email</button>'
+     +'</div>'
      +'<div class="scl-row">'
        +'<button class="scl-btn pay" onclick="window.RRSCH.recordFee(\''+s.id+'\')">＋ Record Term Fee</button>'
        +'<button class="scl-btn" onclick="window.RRSCH.edit(\''+s.id+'\')">✏️ Edit</button>'
@@ -15298,6 +15334,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
        +'<div><label class="scl-lbl">Institution / School</label><select class="scl-sel" id="scl-f-inst" onchange="window.RRSCH.instPick(this)">'+instOpts(s.institution||'')+'</select></div>'
        +'<div><label class="scl-lbl">Level</label><select class="scl-sel" id="scl-f-level" onchange="window.RRSCH.levelPick(this)">'+levelOpts(s.level||'University')+'</select></div>'
        +'<div><label class="scl-lbl">Year / Class</label><input class="scl-in" id="scl-f-year" value="'+esc(s.year||'')+'" placeholder="e.g. JSS 2, Year 1, Form 3"></div>'
+       +'<div><label class="scl-lbl">Student ID</label><input class="scl-in" id="scl-f-studentid" value="'+esc(s.studentId||'')+'" placeholder="e.g. GSL/2024/0512"></div>'
        +'<div><label class="scl-lbl">Course / Programme</label><input class="scl-in" id="scl-f-course" value="'+esc(s.course||'')+'" placeholder="e.g. Nursing, Law, General"></div>'
        +'<div><label class="scl-lbl">Fee per Term (£)</label><input class="scl-in" id="scl-f-fee" type="number" inputmode="decimal" value="'+(s.feePerTerm||'')+'" placeholder="0"></div>'
        +'<div><label class="scl-lbl">Next Fee Due</label><input class="scl-in" id="scl-f-due" type="date" value="'+esc(s.nextFeeDue||'')+'"></div>'
@@ -15379,6 +15416,53 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
        window.open(url,'_blank');
      }catch(e){ var w=window.open(); if(w)w.document.write('<img src="'+c.data+'" style="max-width:100%">'); }
    },
+   quickView:function(id){
+     var s=load().filter(function(x){return x.id===id;})[0]; if(!s)return;
+     var certs=certsOf(id);
+     function row(k,v){return v?('<div><div class="k">'+esc(k)+'</div><div class="v">'+esc(v)+'</div></div>'):'';}
+     var html='<div class="scl-qv-overlay" id="scl-qv" onclick="if(event.target===this)window.RRSCH.qvClose()">'
+       +'<div class="scl-qv-card">'
+       +'<div class="scl-qv-head"><div class="scl-qv-av">'+esc(initials(s.name))+'</div><div class="scl-qv-name">'+esc(s.name||'Scholar')+'</div><button class="scl-qv-x" onclick="window.RRSCH.qvClose()">✕</button></div>'
+       +'<div class="scl-qv-grid">'
+         +row('Relationship',s.relationship)+row('Status',s.status)+row('Institution',s.institution)+row('Level',s.level)
+         +row('Year / Class',s.year)+row('Student ID',s.studentId)+row('Course',s.course)+row('Fee / Term',s.feePerTerm?gbp(s.feePerTerm):'')+row('Total Invested',s.totalInvested?gbp(s.totalInvested):'')
+         +row('Next Fee Due',s.nextFeeDue?fmtDate(s.nextFeeDue):'')+row('Expected Finish',s.expectedGrad)+row('Start Date',s.startDate?fmtDate(s.startDate):'')+row('Term',s.term)
+         +(s.careerGoal?'<div class="full"><div class="k">Expected Career</div><div class="v">'+esc(s.careerGoal)+'</div></div>':'')
+       +'</div>'
+       +(s.notes?'<div class="scl-qv-note">'+esc(s.notes)+'</div>':'')
+       +(certs.length?'<div style="margin-bottom:12px;"><div style="font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#7A7268;margin-bottom:6px;">Certificates</div>'+certs.map(function(c){return '<div class="scl-certitem">'+((c.type&&c.type.indexOf('image')===0)?'<img class="scl-certthumb" src="'+c.data+'">':'<div class="scl-certthumb">📄</div>')+'<div class="scl-certname" style="flex:1;">'+esc(c.name||'Certificate')+'</div><button class="scl-certbtn" onclick="window.RRSCH.certOpen(\''+id+'\',\''+c.id+'\')">Open</button></div>';}).join('')+'</div>':'')
+       +'<div class="scl-qv-actions"><button onclick="window.RRSCH.qvPrint(\''+id+'\')">🖨 Print</button><button onclick="window.RRSCH.qvEmail(\''+id+'\')">✉️ Email</button><button class="close" onclick="window.RRSCH.qvClose()">Close</button></div>'
+       +'</div></div>';
+     var holder=document.getElementById('scl-qv'); if(holder)holder.remove();
+     var tmp=document.createElement('div'); tmp.innerHTML=html; document.body.appendChild(tmp.firstChild);
+   },
+   printEmail:function(id){ this.quickView(id); },
+   qvClose:function(){ var o=document.getElementById('scl-qv'); if(o)o.remove(); },
+   qvPrint:function(id){
+     var s=load().filter(function(x){return x.id===id;})[0]; if(!s)return;
+     function tr(k,v){return v?('<tr><td class="k">'+esc(k)+'</td><td>'+esc(v)+'</td></tr>'):'';}
+     var doc='<h1>'+esc(s.name||'Royal Scholar')+'</h1><div class="sub">Royal Scholars — Suaman Dadiaso</div><table>'
+       +tr('Relationship',s.relationship)+tr('Status',s.status)+tr('Institution / School',s.institution)+tr('Level',s.level)
+       +tr('Year / Class',s.year)+tr('Student ID',s.studentId)+tr('Course / Programme',s.course)+tr('Fee per Term',s.feePerTerm?gbp(s.feePerTerm):'')+tr('Total Invested',s.totalInvested?gbp(s.totalInvested):'')
+       +tr('Next Fee Due',s.nextFeeDue?fmtDate(s.nextFeeDue):'')+tr('Expected Finish',s.expectedGrad)+tr('Start Date',s.startDate?fmtDate(s.startDate):'')+tr('Term',s.term)+tr('Expected Career',s.careerGoal)
+       +'</table>'+(s.notes?'<div class="note"><b>Notes:</b> '+esc(s.notes)+'</div>':'')
+       +(certsOf(id).length?'<div class="note"><b>Certificates on file:</b> '+certsOf(id).map(function(c){return esc(c.name||'Certificate');}).join(', ')+'</div>':'');
+     var pe=document.getElementById('scl-print'); if(pe)pe.remove();
+     var div=document.createElement('div'); div.id='scl-print'; div.innerHTML=doc; document.body.appendChild(div);
+     document.body.classList.add('scl-printing'); try{window.print();}catch(e){}
+     setTimeout(function(){document.body.classList.remove('scl-printing'); var x=document.getElementById('scl-print'); if(x)x.remove();},800);
+   },
+   qvEmail:function(id){
+     var s=load().filter(function(x){return x.id===id;})[0]; if(!s)return;
+     var L=['ROYAL SCHOLAR — '+(s.name||''),''];
+     function add(k,v){if(v)L.push(k+': '+v);}
+     add('Relationship',s.relationship);add('Status',s.status);add('Institution / School',s.institution);add('Level',s.level);
+     add('Year / Class',s.year);add('Student ID',s.studentId);add('Course / Programme',s.course);add('Fee per Term',s.feePerTerm?gbp(s.feePerTerm):'');add('Total Invested',s.totalInvested?gbp(s.totalInvested):'');
+     add('Next Fee Due',s.nextFeeDue?fmtDate(s.nextFeeDue):'');add('Expected Finish',s.expectedGrad);add('Start Date',s.startDate?fmtDate(s.startDate):'');add('Term',s.term);add('Expected Career',s.careerGoal);
+     if(s.notes){L.push('');L.push('Notes: '+s.notes);}
+     if(certsOf(id).length){L.push('');L.push('Certificates on file: '+certsOf(id).map(function(c){return c.name||'Certificate';}).join(', '));}
+     window.location.href='mailto:?subject='+encodeURIComponent('Royal Scholar — '+(s.name||''))+'&body='+encodeURIComponent(L.join('\n'));
+   },
    del:function(id){var list=load();var s=list.filter(function(x){return x.id===id;})[0];if(!s)return;if(!confirm('Remove '+(s.name||'this scholar')+' from your Royal Scholars register? This does not affect any money already logged.'))return;save(list.filter(function(x){return x.id!==id;}));var co=loadCertsAll();if(co[id]){delete co[id];saveCertsAll(co);}build();},
    recordFee:function(id){var list=load();var s=list.filter(function(x){return x.id===id;})[0];if(!s)return;var def=s.feePerTerm||0;var amt=prompt('Record a term fee for '+(s.name||'this scholar')+' (£):',def);if(amt===null)return;amt=parseFloat(amt)||0;if(amt<=0)return;s.totalInvested=(+s.totalInvested||0)+amt;s.lastPaid=todayISO();if(s.nextFeeDue){var d=new Date(s.nextFeeDue);d.setDate(d.getDate()+120);s.nextFeeDue=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}save(list);build();alert('Recorded '+('£'+amt)+' for '+(s.name||'scholar')+'. Remember to also log the actual transfer under Money to Ghana.');},
    saveForm:function(){
@@ -15390,7 +15474,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
      var isNew=!s; if(isNew){s={id:formCertId||uid()};}
      s.name=name; s.relationship=g('scl-f-rel').trim(); s.status=g('scl-f-status');
      s.institution=g('scl-f-inst').trim(); s.level=g('scl-f-level'); s.year=g('scl-f-year').trim();
-     s.course=g('scl-f-course').trim(); s.feePerTerm=parseFloat(g('scl-f-fee'))||0;
+     s.course=g('scl-f-course').trim(); s.studentId=g('scl-f-studentid').trim(); s.feePerTerm=parseFloat(g('scl-f-fee'))||0;
      s.nextFeeDue=g('scl-f-due'); s.totalInvested=parseFloat(g('scl-f-inv'))||0;
      s.expectedGrad=g('scl-f-grad').trim(); s.notes=g('scl-f-notes').trim();
      s.startDate=g('scl-f-start'); s.term=g('scl-f-term'); s.careerGoal=g('scl-f-career');
