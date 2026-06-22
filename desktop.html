@@ -12497,13 +12497,14 @@ function processCommand(raw){
   }
 
   /* ── FALL-THROUGH ── */
-  setResult(said+'❓ Not recognised. Try:<br>'
+  /* ── FALL-THROUGH → universal search ── */
+  if(window.rrUniversalSearch && window.rrUniversalSearch(raw, said)){ try{speak('Here is what I found.');}catch(e){} return; }
+  setResult(said+'❓ Not recognised. Type a name, amount or keyword to search — e.g. "Abicare", "cement", "Martha", "500". Or try:<br>'
     +'<b>Create:</b> "New diary entry" · "Add new goal" · "New debt" · "New rota"<br>'
     +'<b>Money:</b> "Add income 500 from Abicare" · "Add expense 45 Tesco"<br>'
     +'<b>Navigate:</b> "Open money hub" · "Go to goals" · "Show diary"<br>'
-    +'<b>Stats:</b> "Total income" · "Debt summary" · "Net position"<br>'
-    +'<b>Other:</b> "Generate report this month" · "Backup"');
-  speak('Sorry, didn\'t understand. Please try again.');
+    +'<b>Stats:</b> "Total income" · "Debt summary" · "Net position"');
+  speak('Sorry, didn\'t understand. Try a keyword to search.');
 }
 
 
@@ -17546,6 +17547,47 @@ body.rrfh-hidden #rr-refresh-fab{opacity:0 !important;pointer-events:none !impor
   try{var mo=new MutationObserver(function(m){var n=false;m.forEach(function(x){if(x.addedNodes&&x.addedNodes.length)n=true;});if(n)scan(document);});mo.observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
   window.rrScanDropdowns=scan;
 })();
+</script>
+
+<!-- RR-UNIVERSAL-SEARCH -->
+<script>
+/* Universal search for the AI Chat box — scans all data stores by name/keyword */
+window.rrUniversalSearch=function(raw, saidHtml){
+  function g(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+  function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function fmt(n){return '£'+(Math.round(parseFloat(n)||0)).toLocaleString('en-GB');}
+  function setRes(t){ if(window._vcSetResult) window._vcSetResult(t); else { try{document.getElementById('voice-result').innerHTML=t;}catch(e){} } }
+  var said = saidHtml||'';
+  var q = String(raw||'').toLowerCase().replace(/^\s*(search|find|look ?up|show me|where is|locate)\b[:\s]*/,'').trim();
+  if(q.length<2) return false;
+  function vals(o){ try{ return Object.keys(o).map(function(k){return o[k];}).filter(function(v){return v!=null && typeof v!=='object';}).join('  ').toLowerCase(); }catch(e){return '';} }
+  function hit(o){ return vals(o).indexOf(q)!==-1; }
+  var out=[], total=0;
+  function section(title, items, render, tab){
+    if(!items||!items.length) return;
+    var rows=items.filter(hit); if(!rows.length) return;
+    total+=rows.length;
+    var html='<div style="margin-top:8px;font-weight:800;color:var(--gold);font-size:12px;">'+title+' ('+rows.length+')</div>';
+    rows.slice(0,8).forEach(function(r){
+      html+='<div onclick="if(typeof navTo===\'function\')navTo(\''+tab+'\');if(typeof voicePanelClose===\'function\')voicePanelClose();" style="cursor:pointer;padding:6px 8px;border-bottom:1px solid var(--sep);font-size:12px;">'+render(r)+'</div>';
+    });
+    if(rows.length>8) html+='<div style="font-size:11px;color:var(--text3);padding:4px 8px;">+'+(rows.length-8)+' more — tap '+title+' to see all</div>';
+    out.push(html);
+  }
+  section('💷 Money', g('royal_moneyhub_v1')||[], function(r){var ic=(r.type==='income'?'⬆️':(r.type==='ghana'||r.type==='family'?'🇬🇭':'⬇️'));return ic+' <b>'+fmt(r.amount)+'</b> — '+esc(r.desc||r.recipient||r.payee||r.cat||'entry')+(r.date?(' · '+esc(r.date)):'');}, 'moneyhub');
+  section('📋 Rota', g('royal_rota_v1')||[], function(r){return '<b>'+esc(r.clientName||r.client||r.name||'Shift')+'</b>'+(r.status?(' · '+esc(r.status)):'')+(r.total?(' · '+fmt(r.total)):'');}, 'rota');
+  section('🎯 Goals', g('royal_goals_v2')||[], function(r){return '<b>'+esc(r.t||r.title||'Goal')+'</b>';}, 'goals');
+  section('💳 Debts', g('royal_debts_v1')||[], function(r){return '<b>'+esc(r.name||r.creditor||'Debt')+'</b>'+(r.balance!=null?(' · '+fmt(r.balance)):'');}, 'debts');
+  section('🎓 Scholars', g('royal_scholars_v1')||[], function(r){return '<b>'+esc(r.name||'Scholar')+'</b>'+(r.institution?(' · '+esc(r.institution)):'');}, 'scholars');
+  section('📔 Diary', g('royal_diary_v1')||[], function(r){return '<b>'+esc(r.title||'Entry')+'</b>'+(r.date?(' · '+esc(r.date)):'');}, 'diary');
+  var ch=g('royal_chief_v1')||{};
+  section('⚖️ Legal', ch.legal||[], function(r){return '<b>'+esc(r.title||'Matter')+'</b>'+(r.status?(' · '+esc(r.status)):'');}, 'chief');
+  section('👑 Coronation', ch.coronation||[], function(r){return '<b>'+esc(r.title||'Activity')+'</b>'+(r.date?(' · '+esc(r.date)):'');}, 'chief');
+  section('🤝 Stakeholders', ch.stake||[], function(r){return '<b>'+esc(r.name||'')+'</b>'+(r.role?(' · '+esc(r.role)):'');}, 'chief');
+  if(!total){ setRes(said+'🔍 No matches for <b>'+esc(q)+'</b>.<br><span style="font-size:11px;color:var(--text3);">Try a name, amount, place or keyword — e.g. "Abicare", "cement", "Martha", "500".</span>'); return true; }
+  setRes(said+'🔍 <b>'+total+' result'+(total>1?'s':'')+'</b> for "'+esc(q)+'" — tap any to open:'+out.join(''));
+  return true;
+};
 </script>
 
 </body>
