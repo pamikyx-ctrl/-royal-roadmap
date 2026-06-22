@@ -1749,28 +1749,35 @@ button{font-family:'Inter',sans-serif;}
     <div class="sb-cd-target">Target: <strong>31 December 2028</strong></div>
   </div>
   <div class="sb-nav">
-    <div class="sb-nav-label">Navigation</div>
+    <div class="sb-nav-label">Home</div>
     <button type="button" class="nav-btn active" id="nb-home" data-tab="home"><span class="ni">👑</span><span class="nl">Home</span></button>
-    <button type="button" class="nav-btn" id="nb-goals" data-tab="goals"><span class="ni">🎯</span><span class="nl">All 17 Goals</span><span class="nb">17</span></button>
+    <div class="sb-nav-label sb-nav-grp">Money</div>
     <button type="button" class="nav-btn" id="nb-tracker" data-tab="tracker"><span class="ni">💰</span><span class="nl">AI Finance Dashboard</span></button>
-    <button type="button" class="nav-btn" id="nb-sched" data-tab="sched"><span class="ni">🕐</span><span class="nl">Daily Schedule</span></button>
-    <button type="button" class="nav-btn" id="nb-report" data-tab="report"><span class="ni">📊</span><span class="nl">Reports</span></button>
-    <button type="button" class="nav-btn" id="nb-fin" data-tab="fin"><span class="ni">💎</span><span class="nl">Life Plan &amp; Forecast</span></button>
-    <button type="button" class="nav-btn" id="nb-pray" data-tab="pray"><span class="ni">🙏</span><span class="nl">Royal Prayers</span></button>
-    <button type="button" class="nav-btn" id="nb-diary" data-tab="diary"><span class="ni">📔</span><span class="nl">Royal Diary</span></button>
-    <button type="button" class="nav-btn" id="nb-rota" data-tab="rota"><span class="ni">📋</span><span class="nl">Rota &amp; Invoicing</span></button>
-    <button type="button" class="nav-btn" id="nb-profile" data-tab="profile"><span class="ni">👤</span><span class="nl">My Profile</span></button>
-    <button type="button" class="nav-btn" id="nb-debts" data-tab="debts"><span class="ni">💳</span><span class="nl">Debt Management</span></button>
     <button type="button" class="nav-btn" id="nb-moneyhub" data-tab="moneyhub"><span class="ni">💷</span><span class="nl">Money Hub</span></button>
+    <button type="button" class="nav-btn" id="nb-debts" data-tab="debts"><span class="ni">💳</span><span class="nl">Debt Management</span></button>
+    <button type="button" class="nav-btn" id="nb-fin" data-tab="fin"><span class="ni">💎</span><span class="nl">Life Plan &amp; Forecast</span></button>
+    <button type="button" class="nav-btn" id="nb-rota" data-tab="rota"><span class="ni">📋</span><span class="nl">Rota &amp; Invoicing</span></button>
+    <button type="button" class="nav-btn" id="nb-report" data-tab="report"><span class="ni">📊</span><span class="nl">Reports</span></button>
+    <button type="button" class="nav-btn" id="nb-income" data-tab="income" onclick="go('income')"><span class="ni">💷</span><span class="nl">Income &amp; Wealth</span></button>
+    <button type="button" class="nav-btn" id="nb-expense" data-tab="expense" onclick="go('expense')"><span class="ni">💳</span><span class="nl">Spending</span></button>
+    <button type="button" class="nav-btn" id="nb-wealth" data-tab="wealth" onclick="go('wealth')"><span class="ni">👑</span><span class="nl">Executive Wealth</span></button>
+    <div class="sb-nav-label sb-nav-grp">Command</div>
     <button type="button" class="nav-btn" id="nb-command" data-tab="command" onclick="go('command')"><span class="ni">🧭</span><span class="nl">Command Centre</span></button>
+    <div class="sb-nav-label sb-nav-grp">Plan</div>
+    <button type="button" class="nav-btn" id="nb-goals" data-tab="goals"><span class="ni">🎯</span><span class="nl">All 17 Goals</span><span class="nb">17</span></button>
+    <button type="button" class="nav-btn" id="nb-sched" data-tab="sched"><span class="ni">🕐</span><span class="nl">Daily Schedule</span></button>
+    <button type="button" class="nav-btn" id="nb-diary" data-tab="diary"><span class="ni">📔</span><span class="nl">Royal Diary</span></button>
+    <div class="sb-nav-label sb-nav-grp">Royal</div>
+    <button type="button" class="nav-btn" id="nb-chief" data-tab="chief" onclick="go('chief')"><span class="ni">⚖️</span><span class="nl">Chieftaincy &amp; Coronation</span></button>
     <button type="button" class="nav-btn" id="nb-residence" data-tab="residence" onclick="go('residence')"><span class="ni">🏰</span><span class="nl">Royal Residence</span></button>
     <button type="button" class="nav-btn" id="nb-family" data-tab="family" onclick="go('family')"><span class="ni">🏘️</span><span class="nl">Family Support</span></button>
-    <button type="button" class="nav-btn" id="nb-income" data-tab="income" onclick="go('income')"><span class="ni">💷</span><span class="nl">Income &amp; Wealth</span></button>
-    <button type="button" class="nav-btn" id="nb-wealth" data-tab="wealth" onclick="go('wealth')"><span class="ni">👑</span><span class="nl">Executive Wealth</span></button>
-    <button type="button" class="nav-btn" id="nb-expense" data-tab="expense" onclick="go('expense')"><span class="ni">💳</span><span class="nl">Spending</span></button>
+    <button type="button" class="nav-btn" id="nb-pray" data-tab="pray"><span class="ni">🙏</span><span class="nl">Royal Prayers</span></button>
     <button type="button" class="nav-btn" onclick="if(typeof openContactsManager==='function')openContactsManager()"><span class="ni">👥</span><span class="nl">Edit Contacts</span></button>
+    <div class="sb-nav-label sb-nav-grp">Settings</div>
+    <button type="button" class="nav-btn" id="nb-profile" data-tab="profile"><span class="ni">👤</span><span class="nl">My Profile</span></button>
     <button type="button" class="nav-btn" id="nb-settings" data-tab="settings"><span class="ni">⚙️</span><span class="nl">Settings</span></button>
   </div>
+  <style>.sb-nav-grp{margin-top:14px;}</style>
   <div class="sb-footer">
     <div id="sync-flash" style="font-size:10px;color:var(--green);text-align:center;margin-bottom:6px;opacity:0;transition:opacity 0.4s;">⟳ Synced across devices</div>
     <div class="sb-footer-text">Royal Roadmap v2.1 · Ecosystem</div>
@@ -2927,6 +2934,27 @@ button{font-family:'Inter',sans-serif;}
   <!-- ═══════════════════════════════════════════
        INCOME & WEALTH
   ═══════════════════════════════════════════ -->
+  <div id="s-chief" class="screen">
+    <div class="cc-wrap">
+      <div class="cc-topbar">
+        <div class="cc-title">⚖️ Chieftaincy Affairs &amp; Coronation</div>
+        <div class="cc-subtitle">Legal matters, coronation preparation, stakeholders &amp; costs — all in one place</div>
+      </div>
+      <div id="ch-hero" class="cc-block"></div>
+      <div id="ch-monitor" class="cc-block"></div>
+      <div class="ch-tabs" id="ch-tabs">
+        <button type="button" class="ch-tab on" data-ct="legal" onclick="chTab('legal')">⚖️ Legal</button>
+        <button type="button" class="ch-tab" data-ct="coronation" onclick="chTab('coronation')">👑 Coronation</button>
+        <button type="button" class="ch-tab" data-ct="stake" onclick="chTab('stake')">🤝 Stakeholders</button>
+        <button type="button" class="ch-tab" data-ct="exp" onclick="chTab('exp')">💷 Costs</button>
+      </div>
+      <div id="ch-body" class="cc-block"></div>
+      <div id="ch-report" class="cc-block"></div>
+      <div class="cc-foot">Money logged here is saved once in your Money Hub — no double-counting. Dated court &amp; coronation items also appear on your Home Command Centre.</div>
+    </div>
+  </div>
+  <div id="ch-modal"><div class="cc-modal-card" id="ch-modal-card"></div></div>
+
   <div id="s-income" class="screen">
     <div class="cc-wrap">
       <div class="cc-topbar">
@@ -3221,6 +3249,7 @@ function go(n) {
   if (n === 'settings') buildSettingsScreen();
   if (n === 'command' && typeof buildCommandCentre==='function') buildCommandCentre();
   if (n === 'residence' && typeof buildResidence==='function') buildResidence();
+  if (n === 'chief' && typeof buildChief==='function') buildChief();
   if (n === 'family' && typeof buildFamily==='function') buildFamily();
   if (n === 'income' && typeof buildIncome==='function') buildIncome();
   if (n === 'wealth' && typeof buildWealth==='function') buildWealth();
@@ -9190,13 +9219,7 @@ function sysResetTabs(){
 
 function sysExportAll(){
   var allData = {};
-  var keys = ['royal_rota_v1','royal_rota_receipts_v1','royal_diary_v1','royal_debts_v1',
-              'royal_sched_v1','royal_pray_v1','royal_finov_v1',LS_SETTINGS];
-  keys.forEach(function(k){ try{ var v=localStorage.getItem(k); if(v) allData[k]=JSON.parse(v); }catch(e){} });
-  // Also capture all goal entries
-  ['g01','g02','g03','g04','g05','g06','g07','g08','g09','g10','g11','g12','g13','g14','g15','g16','g17'].forEach(function(uid){
-    try{ var v=localStorage.getItem('royal_'+uid+'_entries'); if(v) allData['royal_'+uid+'_entries']=JSON.parse(v); }catch(e){}
-  });
+  try{ for(var _i=0;_i<localStorage.length;_i++){ var _k=localStorage.key(_i); if(!_k) continue; if(/^royal/i.test(_k) || (typeof LS_SETTINGS!=='undefined' && _k===LS_SETTINGS)){ try{ allData[_k]=JSON.parse(localStorage.getItem(_k)); }catch(e){ allData[_k]=localStorage.getItem(_k); } } } }catch(e){}
   allData._exportedAt = new Date().toISOString();
   allData._version = '3.0';
   var blob = new Blob([JSON.stringify(allData,null,2)],{type:'application/json'});
@@ -13995,9 +14018,10 @@ window.addEventListener('beforeunload',function(e){
     ghana:{e:'💸',l:'Money to Ghana',link:'family',ltitle:'',ph:'',desc:'Record money sent to Ghana — auto-filed to the right category.'},
     income:{e:'💷',l:'Income',link:'income',ltitle:'',ph:'',desc:'Record money you’ve received — wages, care work, Pamikyx, royal or other.'},
     expense:{e:'🛒',l:'Expense',link:'expense',ltitle:'',ph:'',desc:'Record money you’ve spent — categorised and added to your Spending.'},
-    smartrota:{e:'🤖',l:'AI Smart Rota',link:'rota',ltitle:'',ph:'',desc:'Build a brand-new rota & invoice with the AI Generator.'}
+    smartrota:{e:'🤖',l:'AI Smart Rota',link:'rota',ltitle:'',ph:'',desc:'Build a brand-new rota & invoice with the AI Generator.'},
+    chief:{e:'⚖️',l:'Chieftaincy',link:'chief',ltitle:'',ph:'',desc:'Log a court date, coronation activity or chieftaincy cost.'}
   };
-  var PAGES={command:'Command Centre',diary:'Royal Diary',rota:'Rota & Invoicing',goals:'Goals',sched:'Schedule',residence:'Royal Residence',family:'Royal Family Support',income:'Income & Wealth',expense:'Spending'};
+  var PAGES={command:'Command Centre',diary:'Royal Diary',rota:'Rota & Invoicing',goals:'Goals',sched:'Schedule',residence:'Royal Residence',family:'Royal Family Support',income:'Income & Wealth',expense:'Spending',chief:'Chieftaincy & Coronation'};
   var ACCOUNTS=['Lloyds Club Platinum','Lloyds Classic','Lloyds Business','Monzo Business','Manchester Credit Union','Stanbic Bank GH','Vodafone Cash (Ghana)','Cash','Other'];
   function ccGoalOpts(){var gs=g('royal_goals_v2',(window.goals||[]))||[];return '<option value="">— Link to a Goal (optional) —</option>'+gs.map(function(go){return '<option value="'+esc(go.uid||'')+'">'+esc(go.t||go.title||'Goal')+'</option>';}).join('');}
   function ccLinkGoal(uid,type,amount,date,desc){if(!uid)return;try{if(typeof DB!=='undefined'&&DB&&DB.add){DB.add(uid,{id:Date.now()+Math.floor(Math.random()*1000),type:type,amount:(parseFloat(amount)||0),date:date||todayIso(),description:desc||''});}if(typeof buildTracker==='function')buildTracker();}catch(e){}}
@@ -14336,6 +14360,7 @@ window.addEventListener('beforeunload',function(e){
     var gh=(t.type==='ghana');
     var incm=(t.type==='income');
     var exp=(t.type==='expense');
+    var chf=(t.type==='chief');
     var rSecs=(typeof window.rrSections==='function')?window.rrSections():[];
     var rStageOpts=rSecs.length?rSecs.map(function(sx){return '<option value="'+sx.id+'">'+esc(sx.name)+'</option>';}).join(''):'<option value="">(open Royal Residence first)</option>';
     var ghRecips=(typeof rcAll==='function')?rcAll():[];
@@ -14343,10 +14368,13 @@ window.addEventListener('beforeunload',function(e){
     var ghRecipSel='<option value="">— Select recipient —</option>'+Object.keys(ghByGrp).map(function(grp){return '<optgroup label="'+esc(grp)+'">'+ghByGrp[grp].map(function(c){return '<option value="'+esc(c.name)+'">'+esc(c.name)+'</option>';}).join('')+'</optgroup>';}).join('')+'<option value="Other">Other / not listed</option>';
     var ghRecipList=Object.keys(ghByGrp).map(function(grp){return ghByGrp[grp].map(function(c){return '<option value="'+esc(c.name)+'">';}).join('');}).join('');
     var acctOpts=ACCOUNTS.map(function(a){return '<option>'+esc(a)+'</option>';}).join('');
+    var chStake=[];try{var _chd=JSON.parse(localStorage.getItem('royal_chief_v1')||'null');if(_chd&&_chd.stake)chStake=_chd.stake;}catch(e){}
+    var chStakeOpts='<option value="">— Not linked —</option>'+chStake.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+(p.role?' ('+esc(p.role)+')':'')+'</option>';}).join('');
+    var chContractOpts=['One-off payment','Verbal agreement','Written contract','Service agreement','Retainer','Consultancy','Salary / wage','Expense reimbursement','Other'].map(function(z){return '<option>'+esc(z)+'</option>';}).join('');
     var brief=edit?(edit.title||''):'';
     return '<div class="cc-modal-h">'+(edit?'Edit item':'＋ Quick Capture')+'</div>'
       +'<div class="cc-field"><label>Choose function</label><div class="cc-type-row">'+typeBtns+'</div><div class="cc-type-desc" id="cc-type-desc">'+esc(ty.desc||'')+'</div></div>'
-      +'<div id="cc-standard"'+((ai||res||gh||incm||exp)?' style="display:none;"':'')+'>'
+      +'<div id="cc-standard"'+((ai||res||gh||incm||exp||chf)?' style="display:none;"':'')+'>'
         +'<div class="cc-field"><label id="cc-lbl-brief">Quick brief — '+esc(ty.l)+'</label><textarea id="cc-f-brief" rows="2" placeholder="'+esc(brfPlaceholder(t.type))+'" oninput="ccParsePreview()">'+esc(brief)+'</textarea></div>'
         +'<div class="cc-parse" id="cc-parse">Type a brief and I’ll fill in the details.</div>'
         +'<div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Date</label><input id="cc-f-date" type="date" value="'+esc(t.date)+'" onchange="ccTouch()"></div><div style="flex:1;"><label>Time</label><input id="cc-f-time" type="time" value="'+esc(t.time)+'" onchange="ccTouch()"></div></div>'
@@ -14361,8 +14389,9 @@ window.addEventListener('beforeunload',function(e){
       +'<div id="cc-ghana"'+(gh?'':' style="display:none;"')+'><div class="cc-field"><label>Recipient</label><select id="cc-gh-recip" onchange="ghRecipChange()">'+ghRecipSel+'</select></div><div class="cc-field"><label>Title</label><select id="cc-gh-title">'+ccTitleOpts()+'</select></div><div class="cc-field"><label>Mobile Number</label><input id="cc-gh-mobile" type="tel" placeholder="auto-fills from contact"></div><div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Amount £</label><input id="cc-gh-amount" type="number" inputmode="decimal" placeholder="0"></div><div style="flex:1;"><label>Date</label><input id="cc-gh-date" type="date" value="'+todayIso()+'"></div></div><div class="cc-field"><label>Purpose</label><input id="cc-gh-purpose" type="text" placeholder="e.g. cement for roofing / mother’s allowance" oninput="ghPreview()"></div><div class="cc-parse" id="cc-gh-cat">Type a purpose and I’ll file it automatically.</div><div class="cc-field"><label>Reference Number</label><input id="cc-gh-ref" type="text" placeholder="transfer ref / receipt no (optional)"></div><div class="cc-field"><label>Link to a Goal</label><select id="cc-gh-goal">'+ccGoalOpts()+'</select></div><div class="cc-field"><label>Delivery Method</label><select id="cc-gh-method"><optgroup label="Send via"><option>Bank transfer</option><option>MoneyGram</option><option>WorldRemit</option><option>Remit Union</option><option>Vodafone Cash</option></optgroup><optgroup label="From my account">'+acctOpts+'</optgroup></select></div></div>'
       +'<div id="cc-income"'+(incm?'':' style="display:none;"')+'><div class="cc-field"><label>Income type</label><select id="cc-in-src" onchange="incSrcChange()"><option value="work">💼 Abicare — Employment</option><option value="work">🏠 Live-in Care</option><option value="selfemp">🧑‍🔧 Self-Employment</option><option value="pamikyx">🏢 Pamikyx Ltd</option><option value="pamikyx">🧑‍⚕️ Private Care Client</option><option value="work">🏢 Agency</option><option value="pamikyx">💼 Business</option><option value="royal">👑 Royal Income</option><option value="royal-assets">👑 Royal Assets Paid (Vodafone Cash, Ghana)</option><option value="investment">📈 Investment</option><option value="other-in">📦 Other income</option></select></div><div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Amount £</label><input id="cc-in-amount" type="number" inputmode="decimal" placeholder="0"></div><div style="flex:1;"><label>Date</label><input id="cc-in-date" type="date" value="'+todayIso()+'"></div></div><div class="cc-field"><label>Employer / Client</label><input id="cc-in-who" type="text" placeholder="e.g. Abicare, Country Cousins"></div><div class="cc-field"><label>Account Received</label><select id="cc-in-method">'+acctOpts+'</select></div><div class="cc-field"><label>Link to a Goal</label><select id="cc-in-goal">'+ccGoalOpts()+'</select></div><div class="cc-field"><label>Note (optional)</label><input id="cc-in-note" type="text" placeholder="payslip ref, invoice no…"></div></div>'
       +'<div id="cc-expense"'+(exp?'':' style="display:none;"')+'><div class="cc-field"><label>Category</label><select id="cc-ex-cat"><optgroup label="Essentials"><option value="food">🛒 Food & Groceries</option><option value="transport">🚗 Transport / Fuel</option><option value="utilities">🏠 Utilities / Bills</option><option value="clothing">👔 Clothing</option><option value="health">💊 Health & Medical</option><option value="household">🏡 Household</option><option value="subscriptions">📱 Subscriptions</option><option value="other-ex">📦 Other Expense</option></optgroup><optgroup label="Personal"><option value="p-food">🍽️ Eating Out</option><option value="p-entertainment">🎬 Entertainment</option><option value="p-gifts">🎁 Gifts</option><option value="p-selfcare">✂️ Self Care</option><option value="p-travel">✈️ Travel</option><option value="p-other">📦 Other Personal</option></optgroup></select></div><div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Amount £</label><input id="cc-ex-amount" type="number" inputmode="decimal" placeholder="0"></div><div style="flex:1;"><label>Date</label><input id="cc-ex-date" type="date" value="'+todayIso()+'"></div></div><div class="cc-field"><label>Merchant / Shop</label><input id="cc-ex-who" type="text" placeholder="e.g. Tesco, Amazon"></div><div class="cc-field"><label>Paid from</label><select id="cc-ex-method">'+acctOpts+'</select></div><div class="cc-field"><label>Link to a Goal</label><select id="cc-ex-goal">'+ccGoalOpts()+'</select></div><div class="cc-field"><label>Note (optional)</label><input id="cc-ex-note" type="text" placeholder="optional note"></div></div>'
+      +'<div id="cc-chief"'+(chf?'':' style="display:none;"')+'><div class="cc-field"><label>What are you logging?</label><select id="cc-ch-kind" onchange="ccChKind()"><option value="legal">⚖️ Court / legal matter</option><option value="coronation">👑 Coronation activity</option><option value="exp">💷 Chieftaincy cost</option></select></div><div class="cc-field"><label id="cc-ch-tlbl">Title</label><input id="cc-ch-title" type="text" placeholder="e.g. High Court hearing / Durbar planning meeting"></div><div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label id="cc-ch-dlbl">Next court date</label><input id="cc-ch-date" type="date" value="'+todayIso()+'"></div><div style="flex:1;display:none;" id="cc-ch-amtwrap"><label>Amount £</label><input id="cc-ch-amount" type="number" inputmode="decimal" placeholder="0"></div></div><div class="cc-field" id="cc-ch-catwrap" style="display:none;"><label>Cost type</label><select id="cc-ch-cat"><option>Legal Fees</option><option>Travel Costs</option><option>Meeting Costs</option><option>Ceremony Costs</option><option>Documentation Costs</option><option>Land-Related Costs</option><option>Emergency Costs</option><option>Other</option></select></div><div id="cc-ch-expmore" style="display:none;"><div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Time</label><input id="cc-ch-time" type="time"></div><div style="flex:1;"><label>Paid to</label><input id="cc-ch-payee" type="text" placeholder="person"></div></div><div class="cc-field"><label>Company / firm</label><input id="cc-ch-company" type="text" placeholder="firm / contractor"></div><div class="cc-field"><label>Kind of contract / agreement</label><select id="cc-ch-contract">'+chContractOpts+'</select></div><div class="cc-field"><label>Linked stakeholder</label><select id="cc-ch-stake">'+chStakeOpts+'</select></div><div class="cc-field"><label>Reason for payment</label><input id="cc-ch-reason" type="text" placeholder="why you are paying"></div></div><div class="cc-field"><label>Notes (optional)</label><input id="cc-ch-notes" type="text" placeholder="status, court, who…"></div></div>'
       +'<a class="cc-openpage" id="cc-openpage"'+(ai?' style="display:none;"':'')+' onclick="ccGoPage(\''+pageOf(t.type)+'\')">Open '+esc(PAGES[pageOf(t.type)]||'page')+' →</a>'
-      +'<div class="cc-modal-btns"><button class="cc-cancel" onclick="ccModalClose()">Cancel</button>'+(edit?'<button class="cc-cancel" style="flex:0 0 auto;color:#E0524F" onclick="ccDeleteTask(\''+edit.id+'\')">🗑</button>':'')+'<button class="cc-save" id="cc-primary" onclick="ccPrimary()">'+(ai?'🤖 Open AI Rota Generator':res?'💷 Save Residence Spend':gh?'💸 Save Ghana Transfer':incm?'💷 Save Income':exp?'🛒 Save Expense':'Save')+'</button></div>';
+      +'<div class="cc-modal-btns"><button class="cc-cancel" onclick="ccModalClose()">Cancel</button>'+(edit?'<button class="cc-cancel" style="flex:0 0 auto;color:#E0524F" onclick="ccDeleteTask(\''+edit.id+'\')">🗑</button>':'')+'<button class="cc-save" id="cc-primary" onclick="ccPrimary()">'+(ai?'🤖 Open AI Rota Generator':res?'💷 Save Residence Spend':gh?'💸 Save Ghana Transfer':incm?'💷 Save Income':exp?'🛒 Save Expense':chf?'⚖️ Save to Chieftaincy':'Save')+'</button></div>';
   }
   function ccQuickAdd(){ccEditId=null;ccModalType='task';ccAdjusted=false;ccDateTouched=false;var c=document.getElementById('cc-modal-card');c.innerHTML=modalHtml(null);document.getElementById('cc-modal').classList.add('open');ccParsePreview();}
   function ccTouch(){ccDateTouched=true;}
@@ -14382,15 +14411,147 @@ window.addEventListener('beforeunload',function(e){
     var bf=document.getElementById('cc-f-brief');if(bf)bf.placeholder=brfPlaceholder(k);
     var lb=document.getElementById('cc-lbl-brief');if(lb)lb.textContent='Quick brief — '+ty.l;
     var std=document.getElementById('cc-standard'),aiB=document.getElementById('cc-ai'),resB=document.getElementById('cc-residence'),ghB=document.getElementById('cc-ghana'),incB=document.getElementById('cc-income'),expB=document.getElementById('cc-expense'),op=document.getElementById('cc-openpage'),pr=document.getElementById('cc-primary');
-    function _hideAll(){if(std)std.style.display='none';if(aiB)aiB.style.display='none';if(resB)resB.style.display='none';if(ghB)ghB.style.display='none';if(incB)incB.style.display='none';if(expB)expB.style.display='none';}
+    var chB=document.getElementById('cc-chief');
+    function _hideAll(){if(std)std.style.display='none';if(aiB)aiB.style.display='none';if(resB)resB.style.display='none';if(ghB)ghB.style.display='none';if(incB)incB.style.display='none';if(expB)expB.style.display='none';if(chB)chB.style.display='none';}
     if(k==='smartrota'){_hideAll();if(aiB)aiB.style.display='';if(op)op.style.display='none';if(pr)pr.textContent='🤖 Open AI Rota Generator';}
     else if(k==='residence'){_hideAll();if(resB)resB.style.display='';if(op){op.style.display='';op.textContent='Open Royal Residence →';op.setAttribute('onclick','ccGoPage(\'residence\')');}if(pr)pr.textContent='💷 Save Residence Spend';}
     else if(k==='ghana'){_hideAll();if(ghB)ghB.style.display='';if(op){op.style.display='';op.textContent='Open Royal Family Support →';op.setAttribute('onclick','ccGoPage(\'family\')');}if(pr)pr.textContent='💸 Save Ghana Transfer';ghPreview();}
     else if(k==='income'){_hideAll();if(incB)incB.style.display='';if(op){op.style.display='';op.textContent='Open Income & Wealth →';op.setAttribute('onclick','ccGoPage(\'income\')');}if(pr)pr.textContent='💷 Save Income';}
     else if(k==='expense'){_hideAll();if(expB)expB.style.display='';if(op){op.style.display='';op.textContent='Open Spending →';op.setAttribute('onclick','ccGoPage(\'expense\')');}if(pr)pr.textContent='🛒 Save Expense';}
+    else if(k==='chief'){_hideAll();if(chB)chB.style.display='';if(op){op.style.display='';op.textContent='Open Chieftaincy & Coronation →';op.setAttribute('onclick','ccGoPage(\'chief\')');}if(pr)pr.textContent='⚖️ Save to Chieftaincy';if(typeof ccChKind==='function')ccChKind();}
     else{_hideAll();if(std)std.style.display='';if(op){op.style.display='';op.textContent='Open '+(PAGES[pageOf(k)]||'page')+' →';op.setAttribute('onclick','ccGoPage(\''+pageOf(k)+'\')');}if(pr)pr.textContent='Save';ccParsePreview();}
   }
-  function ccPrimary(){ if(ccModalType==='smartrota') ccOpenSmartRota(); else if(ccModalType==='residence') ccSaveResidence(); else if(ccModalType==='ghana') ccSaveGhana(); else if(ccModalType==='income') ccSaveIncome(); else if(ccModalType==='expense') ccSaveExpense(); else ccSaveTask(); }
+  function ccPrimary(){ if(ccModalType==='smartrota') ccOpenSmartRota(); else if(ccModalType==='residence') ccSaveResidence(); else if(ccModalType==='ghana') ccSaveGhana(); else if(ccModalType==='income') ccSaveIncome(); else if(ccModalType==='expense') ccSaveExpense(); else if(ccModalType==='chief') ccSaveChief(); else ccSaveTask(); }
+  function ccSaveExpense(){
+    var catEl=document.getElementById('cc-ex-cat');var cat=catEl?catEl.value:'other-ex';var catLbl=(catEl&&catEl.selectedIndex>=0)?catEl.options[catEl.selectedIndex].text:'';
+    var type=(cat.indexOf('p-')===0)?'personal':'expense';
+    var amt=parseFloat((document.getElementById('cc-ex-amount')||{}).value)||0;
+    var date=(document.getElementById('cc-ex-date')||{}).value||todayIso();
+    var who=((document.getElementById('cc-ex-who')||{}).value||'').trim();
+    var method=(document.getElementById('cc-ex-method')||{}).value||'';
+    var note=((document.getElementById('cc-ex-note')||{}).value||'').trim();
+    if(!amt||amt<=0){alert('Please enter an amount.');return;}
+    try{ if(typeof mhData==='function'&&typeof mhSave_data==='function'){ var arr=mhData(); arr.push({id:Date.now(),type:type,amount:amt,date:date,desc:(note||who||catLbl),cat:cat,extra:who,recipient:'',beneficiary:'',method:method,source:method}); mhSave_data(arr); } }catch(e){}
+    ccLinkGoal((document.getElementById('cc-ex-goal')||{}).value,'expense',amt,date,'Expense — '+catLbl);
+    ccModalClose();
+    if(typeof showToast==='function') showToast('🛒 Expense saved: £'+amt+' · '+catLbl);
+    if(typeof buildExpense==='function') buildExpense();
+    if(typeof buildIncome==='function') buildIncome();
+    if(typeof buildWealth==='function') buildWealth();
+    var sc=document.getElementById('s-command');if(sc&&sc.classList.contains('active'))buildCommandCentre();
+  }
+  function ccSaveIncome(){
+    var sEl=document.getElementById('cc-in-src');var cat=sEl?sEl.value:'other-in';var srcLbl=(sEl&&sEl.selectedIndex>=0)?sEl.options[sEl.selectedIndex].text:'';
+    var amt=parseFloat((document.getElementById('cc-in-amount')||{}).value)||0;
+    var date=(document.getElementById('cc-in-date')||{}).value||todayIso();
+    var who=((document.getElementById('cc-in-who')||{}).value||'').trim();
+    var method=(document.getElementById('cc-in-method')||{}).value||'';
+    var note=((document.getElementById('cc-in-note')||{}).value||'').trim();
+    if(!amt||amt<=0){alert('Please enter an amount.');return;}
+    try{ if(typeof mhData==='function'&&typeof mhSave_data==='function'){ var arr=mhData(); arr.push({id:Date.now(),type:'income',amount:amt,date:date,desc:(note||who||srcLbl),cat:cat,extra:who,recipient:'',beneficiary:'',method:method,source:method,sourceAccountLabel:method}); mhSave_data(arr); } }catch(e){}
+    ccLinkGoal((document.getElementById('cc-in-goal')||{}).value,'income',amt,date,'Income — '+srcLbl);
+    ccModalClose();
+    if(typeof showToast==='function') showToast('💷 Income saved: £'+amt+' · '+srcLbl);
+    if(typeof buildIncome==='function') buildIncome();
+    var sc=document.getElementById('s-command');if(sc&&sc.classList.contains('active'))buildCommandCentre();
+  }
+  function ghGroupOf(name){var a=(typeof rcAll==='function')?rcAll():[];for(var i=0;i<a.length;i++){if(a[i].name===name)return a[i].group||'';}return '';}
+  function ghPhoneOf(name){var a=(typeof rcAll==='function')?rcAll():[];for(var i=0;i<a.length;i++){if(a[i].name===name)return a[i].phone||'';}return '';}
+  function ghRelOf(name){var a=(typeof rcAll==='function')?rcAll():[];for(var i=0;i<a.length;i++){if(a[i].name===name)return a[i].relationship||'';}return '';}
+  function ghRecipChange(){var rEl=document.getElementById('cc-gh-recip');var mEl=document.getElementById('cc-gh-mobile');if(rEl&&mEl){var ph=ghPhoneOf(rEl.value);if(ph)mEl.value=ph;}ghPreview();}
+  function ghCategorise(p,grp){
+    var s=(p||'').toLowerCase();
+    function has(){for(var i=0;i<arguments.length;i++){if(s.indexOf(arguments[i])>=0)return true;}return false;}
+    if(has('cement','block','roof','build','plaster','electric','plumb','foundation','pop','paint','construction','residence','window','door','tiles','sand','gravel','iron','rod','wiring')) return {type:'ghana',cat:'home-construction',label:'🏗️ Home Residence Construction'};
+    if(has('land','plot','acre')) return {type:'ghana',cat:'land',label:'🌍 Land / Property'};
+    if(has('chief','stool','traditional','ceremon','throne','durbar','libation','royal affair')) return {type:'ghana',cat:'ceremony',label:'👑 Ceremony / Royal Affairs'};
+    if(has('stanbic','invest','deposit','policy')) return {type:'ghana',cat:'stanbic-invest',label:'💰 Stanbic Investment'};
+    if(has('school','fees','tuition','univers','college','jss','education','book')) return {type:'family',cat:'school-fees',label:'📚 School / Education'};
+    if(has('hospital','medical','medicine','health','clinic','drug','treatment','doctor')) return {type:'family',cat:'family-medical',label:'💊 Family Medical'};
+    if(has('mother','mum','mama','allowance','feeding','upkeep','welfare','family','rent','food','support','wife','son','daughter','child','brother','sister','dad','father')) return {type:'family',cat:'family-house',label:'🏡 Family Support / Upkeep'};
+    if(grp&&/family/i.test(grp)) return {type:'family',cat:'family-house',label:'🏡 Family Support / Upkeep'};
+    return {type:'family',cat:'family-misc',label:'📦 Family — Other'};
+  }
+  function ghPreview(){var el=document.getElementById('cc-gh-cat');if(!el)return;var p=(document.getElementById('cc-gh-purpose')||{}).value||'';var recip=(document.getElementById('cc-gh-recip')||{}).value||'';var grp=ghGroupOf(recip);if(!p.trim()&&!grp){el.innerHTML='Type a purpose and I’ll file it automatically.';return;}var c=ghCategorise(p,grp);el.innerHTML='Will file under: <b>'+c.label+'</b>'+(grp?' · 👤 '+esc(grp):'');}
+  function ccSaveGhana(){
+    var recip=((document.getElementById('cc-gh-recip')||{}).value||'').trim();
+    var amt=parseFloat((document.getElementById('cc-gh-amount')||{}).value)||0;
+    var date=(document.getElementById('cc-gh-date')||{}).value||todayIso();
+    var purpose=((document.getElementById('cc-gh-purpose')||{}).value||'').trim();
+    var method=(document.getElementById('cc-gh-method')||{}).value||'';
+    var mobile=((document.getElementById('cc-gh-mobile')||{}).value||'').trim();
+    var ref=((document.getElementById('cc-gh-ref')||{}).value||'').trim();
+    if(!amt||amt<=0){alert('Please enter an amount.');return;}
+    var c=ghCategorise(purpose, ghGroupOf(recip));
+    try{ if(typeof mhData==='function'&&typeof mhSave_data==='function'){ var arr=mhData(); arr.push({id:Date.now(),type:c.type,amount:amt,date:date,desc:(purpose||c.label),cat:c.cat,extra:ref,recipient:recip,beneficiary:recip,method:method,source:'',phone:mobile,ref:ref}); mhSave_data(arr); } }catch(e){}
+    ccLinkGoal((document.getElementById('cc-gh-goal')||{}).value,'investment',amt,date,'Money to Ghana — '+(purpose||c.label));
+    ccModalClose();
+    if(typeof showToast==='function') showToast('💸 Sent to Ghana: £'+amt+' · '+c.label);
+    if(typeof buildFamily==='function') buildFamily();
+    if(typeof buildResidence==='function') buildResidence();
+    var sc=document.getElementById('s-command');if(sc&&sc.classList.contains('active'))buildCommandCentre();
+  }
+  function ccSaveResidence(){
+    var stEl=document.getElementById('cc-r-stage');var stage=stEl?stEl.value:'';
+    var amt=parseFloat((document.getElementById('cc-r-amount')||{}).value)||0;
+    var date=(document.getElementById('cc-r-date')||{}).value||todayIso();
+    var note=((document.getElementById('cc-r-note')||{}).value||'').trim();
+    if(!stage){alert('Open Royal Residence once to set up your build stages, then try again.');return;}
+    if(!amt||amt<=0){alert('Please enter an amount.');return;}
+    var secName='';var secs=(typeof window.rrSections==='function')?window.rrSections():[];secs.forEach(function(sx){if(sx.id===stage)secName=sx.name;});
+    try{ if(typeof mhData==='function'&&typeof mhSave_data==='function'){ var arr=mhData(); arr.push({id:Date.now(),type:'ghana',amount:amt,date:date,desc:(note||('Residence — '+secName)),cat:'home-construction',extra:'Residence: '+secName,recipient:'',beneficiary:'',method:'',source:''}); mhSave_data(arr); } }catch(e){}
+    if(typeof window.rrAddSpend==='function') window.rrAddSpend(stage,amt);
+    ccLinkGoal((document.getElementById('cc-r-goal')||{}).value,'investment',amt,date,'Royal Residence — '+secName);
+    ccModalClose();
+    if(typeof showToast==='function') showToast('🏰 Residence spend saved: £'+amt+' · '+secName);
+    if(typeof buildResidence==='function') buildResidence();
+    var sc=document.getElementById('s-command');if(sc&&sc.classList.contains('active'))buildCommandCentre();
+  }
+  function ccChKind(){
+    var k=(document.getElementById('cc-ch-kind')||{}).value||'legal';
+    var amtw=document.getElementById('cc-ch-amtwrap'),catw=document.getElementById('cc-ch-catwrap');
+    var tl=document.getElementById('cc-ch-tlbl'),dl=document.getElementById('cc-ch-dlbl');
+    var more=document.getElementById('cc-ch-expmore');
+    if(k==='exp'){if(amtw)amtw.style.display='';if(catw)catw.style.display='';if(more)more.style.display='';if(tl)tl.textContent='What for';if(dl)dl.textContent='Date';}
+    else{if(amtw)amtw.style.display='none';if(catw)catw.style.display='none';if(more)more.style.display='none';if(tl)tl.textContent='Title';if(dl)dl.textContent=(k==='legal'?'Next court date':'Date');}
+  }
+  function ccSaveChief(){
+    var kind=(document.getElementById('cc-ch-kind')||{}).value||'legal';
+    var title=((document.getElementById('cc-ch-title')||{}).value||'').trim();
+    var date=(document.getElementById('cc-ch-date')||{}).value||'';
+    var notes=((document.getElementById('cc-ch-notes')||{}).value||'').trim();
+    if(kind==='exp'){
+      var amt=parseFloat((document.getElementById('cc-ch-amount')||{}).value)||0;
+      var cat=(document.getElementById('cc-ch-cat')||{}).value||'Other';
+      if(!amt||amt<=0){alert('Please enter an amount.');return;}
+      var time=(document.getElementById('cc-ch-time')||{}).value||'';
+      var payee=((document.getElementById('cc-ch-payee')||{}).value||'').trim();
+      var company=((document.getElementById('cc-ch-company')||{}).value||'').trim();
+      var contract=(document.getElementById('cc-ch-contract')||{}).value||'';
+      var reason=((document.getElementById('cc-ch-reason')||{}).value||'').trim();
+      var stakeId=(document.getElementById('cc-ch-stake')||{}).value||'';
+      var stakeName='';if(stakeId){try{var _sd=JSON.parse(localStorage.getItem('royal_chief_v1')||'null');if(_sd&&_sd.stake){var _sp=_sd.stake.filter(function(i){return i.id===stakeId;})[0];if(_sp)stakeName=_sp.name;}}catch(e){}}
+      var _dp=[];if(reason)_dp.push(reason);if(payee)_dp.push('to '+payee);if(company)_dp.push('('+company+')');
+      var cdesc=title||notes||_dp.join(' ')||('Chieftaincy — '+cat);
+      try{ if(typeof mhData==='function'&&typeof mhSave_data==='function'){ var arr=mhData(); arr.push({id:Date.now(),type:'ghana',cat:'ceremony',amount:amt,date:date||todayIso(),time:time,desc:cdesc,extra:'Chieftaincy — '+cat,chief:cat,payee:payee,company:company,contract:contract,reason:reason,stakeId:stakeId,stakeName:stakeName,recipient:payee,beneficiary:payee,method:'',source:''}); mhSave_data(arr); } }catch(e){}
+      if(typeof showToast==='function') showToast('💷 Chieftaincy cost saved: £'+amt+' · '+cat);
+    } else {
+      if(!title){alert('Please enter a title.');return;}
+      try{
+        var d=JSON.parse(localStorage.getItem('royal_chief_v1')||'null')||{_v:1,legal:[],coronation:[],stake:[]};
+        d.legal=d.legal||[];d.coronation=d.coronation||[];d.stake=d.stake||[];
+        var rec={id:'ch'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,date:date,notes:notes,status:(kind==='legal'?'Active':'Planned'),kind:(kind==='legal'?'Court Case':'Meeting')};
+        d[kind].push(rec);
+        localStorage.setItem('royal_chief_v1',JSON.stringify(d));
+        if(typeof window.chSyncDiary==='function'){window.chSyncDiary(rec,kind);localStorage.setItem('royal_chief_v1',JSON.stringify(d));}
+      }catch(e){}
+      if(typeof showToast==='function') showToast(kind==='legal'?'⚖️ Court / legal item saved':'👑 Coronation item saved');
+    }
+    ccModalClose();
+    if(typeof buildChief==='function') buildChief();
+    if(typeof buildDiary==='function'){try{buildDiary();}catch(e){}}
+    var sc=document.getElementById('s-command');if(sc&&sc.classList.contains('active')&&typeof buildCommandCentre==='function')buildCommandCentre();
+  }
   function ccSaveExpense(){
     var catEl=document.getElementById('cc-ex-cat');var cat=catEl?catEl.value:'other-ex';var catLbl=(catEl&&catEl.selectedIndex>=0)?catEl.options[catEl.selectedIndex].text:'';
     var type=(cat.indexOf('p-')===0)?'personal':'expense';
@@ -14669,6 +14830,300 @@ window.addEventListener('beforeunload',function(e){
   window.rrSections=function(){return rrAll().sections;};
   window.rrAddSpend=function(stageId,amount,pctOpt){var d=rrAll();d.sections.forEach(function(sx){if(sx.id===stageId){sx.spent=(+sx.spent||0)+(+amount||0);if(pctOpt!=null&&!isNaN(+pctOpt))sx.pct=+pctOpt;}});rrSaveData(d);buildResidence();};
   var mod=document.getElementById('rr-modal');if(mod)mod.addEventListener('click',function(e){if(e.target===mod)rrClose();});
+})();
+</script>
+<style id="ch-style">
+#ch-modal{position:fixed;inset:0;z-index:10050;background:rgba(0,0,0,0.6);display:none;align-items:flex-end;justify-content:center;}
+#ch-modal.open{display:flex;}
+#ch-modal-card input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:1;cursor:pointer;}
+.ch-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 12px;}
+.ch-tab{flex:1 1 auto;min-width:74px;background:var(--card);border:1px solid var(--sep);color:var(--text2);border-radius:11px;padding:9px 8px;font-size:13px;font-weight:700;cursor:pointer;}
+.ch-tab.on{background:rgba(212,175,55,0.14);border-color:rgba(212,175,55,0.5);color:var(--gold);}
+.ch-item{background:var(--card);border:1px solid var(--sep);border-radius:13px;padding:12px 13px;margin-bottom:9px;}
+.ch-item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.ch-item-name{font-size:14.5px;font-weight:800;color:var(--text);}
+.ch-item-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+.ch-pill{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap;}
+.ch-pill.green{background:rgba(91,185,140,0.18);color:#5BB98C;}
+.ch-pill.amber{background:rgba(230,160,60,0.18);color:#E0A23C;}
+.ch-pill.red{background:rgba(224,82,79,0.18);color:#E0524F;}
+.ch-pill.grey{background:rgba(160,160,170,0.16);color:var(--text2);}
+.ch-meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:12px;color:var(--text2);}
+.ch-meta b{color:var(--text);font-weight:700;}
+.ch-acts{display:flex;gap:7px;margin-top:10px;}
+.ch-rep-row{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--sep);font-size:13px;}
+.ch-rep-row:last-child{border-bottom:none;}
+.ch-rbtns{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
+.ch-rbtn{background:rgba(191,90,242,0.12);border:1px solid rgba(191,90,242,0.35);color:#C98BF5;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:700;cursor:pointer;}
+</style>
+<script>
+/* ════════════════════════════════════════════
+   CHIEFTAINCY AFFAIRS & CORONATION
+   - own store royal_chief_v1 (legal / coronation / stakeholders)
+   - costs read & write the existing Money Hub (cat 'ceremony') — no double store
+   - dated legal/coronation items mirror into Royal Diary so Home shows them
+════════════════════════════════════════════ */
+(function(){
+  var CK='royal_chief_v1', CV=1, DK='royal_diary_v1';
+  var CORONATION_TARGET='2028-12-31';
+  function g(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+  function s(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function fmt(n){return '£'+(Math.round(n||0)).toLocaleString('en-GB');}
+  function el(id){return document.getElementById(id);}
+  function uid(){return 'ch'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+  function todayIso(){return new Date().toISOString().slice(0,10);}
+  function fmtDate(d){if(!d)return '—';var x=new Date(d);if(isNaN(x))return esc(d);return x.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+  function daysFrom(d){if(!d)return null;var x=new Date(d);if(isNaN(x))return null;return Math.ceil((x-new Date())/86400000);}
+  function daysToCoronation(){var n=daysFrom(CORONATION_TARGET);return n==null?0:Math.max(0,n);}
+
+  var LEGAL_KINDS=['Court Case','Land Dispute','Opposition Challenge','Documentation','Other'];
+  var LEGAL_STATUS=['Active','Awaiting Hearing','Adjourned','On Hold','Won','Settled','Lost'];
+  var COR_KINDS=['Meeting','Ceremony','Traditional Activity','Negotiation','Travel','Documentation','Other'];
+  var COR_STATUS=['Planned','In Progress','Done'];
+  var STAKE_ROLES=['Chief','Elder','Family Member','Lawyer','Government Official','Kingmaker','Supporter','Other'];
+  var STAKE_STANCE=['Ally','Neutral','Opposition','Unknown'];
+  var EXP_CATS=['Legal Fees','Travel Costs','Meeting Costs','Ceremony Costs','Documentation Costs','Land-Related Costs','Emergency Costs','Other'];
+  var CONTRACT_KINDS=['One-off payment','Verbal agreement','Written contract','Service agreement','Retainer','Consultancy','Salary / wage','Expense reimbursement','Other'];
+  function stakeOpts(sel){var d=chAll();var o='<option value="">— Not linked —</option>';d.stake.forEach(function(p){o+='<option value="'+esc(p.id)+'"'+(p.id===sel?' selected':'')+'>'+esc(p.name)+(p.role?' ('+esc(p.role)+')':'')+'</option>';});return o;}
+
+  function chAll(){var d=g(CK,null);if(!d||typeof d!=='object'){d={_v:CV,legal:[],coronation:[],stake:[]};s(CK,d);}d.legal=d.legal||[];d.coronation=d.coronation||[];d.stake=d.stake||[];return d;}
+  function chSave(d){s(CK,d);}
+  function expRows(){var all=(typeof mhData==='function')?mhData():[];return all.filter(function(t){return t&&(t.chief||t.cat==='ceremony');});}
+  function expCatOf(t){return t.chief||'Ceremony / Royal Affairs';}
+
+  /* ---- Diary mirror so Home Command Centre shows dated items ---- */
+  function chSyncDiary(item,kind){
+    var entries=g(DK,[]);if(!Array.isArray(entries))entries=[];
+    if(!item.date){ if(item.diaryId){entries=entries.filter(function(e){return e.id!==item.diaryId;});s(DK,entries);item.diaryId=null;} return; }
+    var pre=(kind==='legal'?'⚖️ Court / Legal: ':'👑 Coronation: ');
+    var title=pre+(item.title||'(untitled)');
+    var bits=[];if(item.status)bits.push('Status: '+item.status);if(item.kind)bits.push(item.kind);if(item.court)bits.push(item.court);if(item.rep)bits.push('Rep: '+item.rep);if(item.notes)bits.push(item.notes);
+    var text=bits.join(' · ');
+    var found=false;
+    entries.forEach(function(e){if(item.diaryId&&e.id===item.diaryId){e.date=item.date;e.time=item.time||e.time||'';e.title=title;e.text=text;found=true;}});
+    if(!found){var nid='dr'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);entries.push({id:nid,date:item.date,time:item.time||'',mood:'',title:title,text:text});item.diaryId=nid;}
+    s(DK,entries);
+    if(typeof buildDiary==='function'){try{buildDiary();}catch(e){}}
+  }
+  function chRemoveDiary(item){if(item&&item.diaryId){var entries=g(DK,[]);if(Array.isArray(entries)){entries=entries.filter(function(e){return e.id!==item.diaryId;});s(DK,entries);}}}
+  window.chSyncDiary=chSyncDiary;
+
+  function statusPill(st){var t=(st||'').toLowerCase();var c='grey';if(/won|settled|done|complete/.test(t))c='green';else if(/active|progress|await|adjourn/.test(t))c='amber';else if(/lost|hold/.test(t))c='red';return '<span class="ch-pill '+c+'">'+esc(st||'—')+'</span>';}
+  function stancePill(st){var t=(st||'').toLowerCase();var c='grey';if(t==='ally')c='green';else if(t==='opposition')c='red';else if(t==='neutral')c='amber';return '<span class="ch-pill '+c+'">'+esc(st||'Unknown')+'</span>';}
+
+  function nextCourt(){var d=chAll();var up=d.legal.filter(function(x){return x.date&&daysFrom(x.date)>=0&&!/won|settled|lost/i.test(x.status||'');}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});return up[0]||null;}
+
+  /* ---- HERO ---- */
+  function renderHero(){
+    var d=chAll();
+    var active=d.legal.filter(function(x){return /active|await|adjourn|hold/i.test(x.status||'');}).length;
+    var corDone=d.coronation.filter(function(x){return /done/i.test(x.status||'');}).length;
+    var spend=expRows().reduce(function(a,t){return a+(parseFloat(t.amount)||0);},0);
+    var nx=nextCourt();
+    var readiness=d.coronation.length?Math.round(corDone/d.coronation.length*100):0;
+    el('ch-hero').innerHTML='<div class="cc-hero">'
+      +'<div class="cc-hero-date">Coronation countdown · target '+fmtDate(CORONATION_TARGET)+'</div>'
+      +'<div class="cc-hero-time">'+daysToCoronation().toLocaleString('en-GB')+' days</div>'
+      +'<div class="cc-hero-grid">'
+        +'<div class="cc-hero-cell"><div class="l">Active legal matters</div><div class="v">'+active+'</div></div>'
+        +'<div class="cc-hero-cell"><div class="l">Next court date</div><div class="v" style="font-size:15px;">'+(nx?fmtDate(nx.date):'—')+'</div></div>'
+        +'<div class="cc-hero-cell"><div class="l">Coronation tasks done</div><div class="v">'+corDone+'/'+d.coronation.length+'</div></div>'
+        +'<div class="cc-hero-cell"><div class="l">Total spend</div><div class="v">'+fmt(spend)+'</div></div>'
+      +'</div>'
+      +'<div class="cc-score" style="margin-top:12px;display:block;"><div class="cc-score-lbl">Coronation readiness — '+readiness+'%</div><div class="cc-bar"><i style="width:'+readiness+'%;background:var(--gold)"></i></div></div>'
+      +'</div>';
+  }
+
+  /* ---- AI MONITOR ---- */
+  function renderMonitor(){
+    var d=chAll();var lines=[];
+    d.legal.forEach(function(x){if(x.date){var dd=daysFrom(x.date);if(dd!=null&&!/won|settled|lost/i.test(x.status||'')){if(dd<0)lines.push('🔴 <b>'+esc(x.title)+'</b> — court date was '+fmtDate(x.date)+'. Update the outcome or set the next date.');else if(dd<=14)lines.push('🟠 <b>'+esc(x.title)+'</b> — court date in '+dd+' day'+(dd===1?'':'s')+' ('+fmtDate(x.date)+').');}}});
+    var opp=d.stake.filter(function(x){return /opposition/i.test(x.stance||'');});
+    if(opp.length)lines.push('⚠️ '+opp.length+' stakeholder'+(opp.length>1?'s':'')+' marked as <b>opposition</b> — keep allies close and your evidence ready.');
+    var corUp=d.coronation.filter(function(x){return x.date&&daysFrom(x.date)>=0&&!/done/i.test(x.status||'');}).sort(function(a,b){return new Date(a.date)-new Date(b.date);})[0];
+    if(corUp)lines.push('👑 Next coronation step: <b>'+esc(corUp.title)+'</b> on '+fmtDate(corUp.date)+'.');
+    var pend=d.coronation.filter(function(x){return !/done/i.test(x.status||'');}).length;
+    if(pend)lines.push('📋 '+pend+' coronation preparation task'+(pend>1?'s':'')+' still open.');
+    var active=d.legal.filter(function(x){return /active|await|adjourn|hold/i.test(x.status||'');}).length;
+    if(active)lines.push('⚖️ '+active+' legal matter'+(active>1?'s are':' is')+' active. Confirm your representative and next dates are current.');
+    if(!lines.length)lines.push('Add your court cases, coronation activities and stakeholders below. This monitor will then track court dates, opposition and readiness for you automatically.');
+    el('ch-monitor').innerHTML='<div class="cc-h">🤖 AI Chieftaincy Monitor</div><div class="cc-card">'+lines.map(function(l){return '<div class="cc-li"><span class="b">›</span> <span>'+l+'</span></div>';}).join('')+'</div>';
+  }
+
+  /* ---- LISTS ---- */
+  function legalCard(x){
+    return '<div class="ch-item"><div class="ch-item-top"><div><div class="ch-item-name">'+esc(x.title||'Untitled matter')+'</div><div class="ch-item-sub">'+esc(x.kind||'Matter')+'</div></div>'+statusPill(x.status)+'</div>'
+      +'<div class="ch-meta">'+(x.date?'<span>📅 Next date: <b>'+fmtDate(x.date)+'</b></span>':'')+(x.court?'<span>🏛 <b>'+esc(x.court)+'</b></span>':'')+(x.rep?'<span>👤 <b>'+esc(x.rep)+'</b></span>':'')+'</div>'
+      +(x.outcome?'<div style="font-size:12.5px;color:var(--text2);margin-top:7px;">⚖️ Outcome: '+esc(x.outcome)+'</div>':'')
+      +(x.notes?'<div style="font-size:12.5px;color:var(--text3);margin-top:6px;">📝 '+esc(x.notes)+'</div>':'')
+      +'<div class="ch-acts"><button class="cc-act" onclick="chEdit(\'legal\',\''+x.id+'\')">✏️ Edit</button><button class="cc-act" onclick="chDel(\'legal\',\''+x.id+'\')">🗑 Remove</button></div></div>';
+  }
+  function corCard(x){
+    var dd=x.date?daysFrom(x.date):null;
+    return '<div class="ch-item"><div class="ch-item-top"><div><div class="ch-item-name">'+esc(x.title||'Untitled activity')+'</div><div class="ch-item-sub">'+esc(x.kind||'Activity')+(x.date?' · '+fmtDate(x.date)+(dd!=null&&dd>=0&&!/done/i.test(x.status||'')?' ('+dd+'d)':''):'')+'</div></div>'+statusPill(x.status)+'</div>'
+      +(x.notes?'<div style="font-size:12.5px;color:var(--text3);margin-top:7px;">📝 '+esc(x.notes)+'</div>':'')
+      +'<div class="ch-acts"><button class="cc-act" onclick="chEdit(\'coronation\',\''+x.id+'\')">✏️ Edit</button><button class="cc-act" onclick="chDel(\'coronation\',\''+x.id+'\')">🗑 Remove</button></div></div>';
+  }
+  function stakeCard(x){
+    return '<div class="ch-item"><div class="ch-item-top"><div><div class="ch-item-name">'+esc(x.name||'Unnamed')+'</div><div class="ch-item-sub">'+esc(x.role||'Stakeholder')+'</div></div>'+stancePill(x.stance)+'</div>'
+      +'<div class="ch-meta">'+(x.contact?'<span>📞 <b>'+esc(x.contact)+'</b></span>':'')+'</div>'
+      +(x.notes?'<div style="font-size:12.5px;color:var(--text3);margin-top:6px;">📝 '+esc(x.notes)+'</div>':'')
+      +'<div class="ch-acts"><button class="cc-act" onclick="chEdit(\'stake\',\''+x.id+'\')">✏️ Edit</button><button class="cc-act" onclick="chDel(\'stake\',\''+x.id+'\')">🗑 Remove</button></div></div>';
+  }
+  function renderBody(){
+    var tab=window._chTab||'legal';var d=chAll();var html='';
+    document.querySelectorAll('#ch-tabs .ch-tab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-ct')===tab);});
+    if(tab==='legal'){
+      html='<div class="cc-h">⚖️ Legal Matters<span class="c">'+d.legal.length+'</span></div>';
+      html+=d.legal.length?d.legal.map(legalCard).join(''):'<div class="cc-card" style="color:var(--text3);">No legal matters yet. Add court cases, land disputes and opposition challenges here.</div>';
+      html+='<button class="cc-notif-btn" onclick="chAdd(\'legal\')">＋ Add a legal matter</button>';
+    } else if(tab==='coronation'){
+      html='<div class="cc-h">👑 Coronation Preparation<span class="c">'+d.coronation.length+'</span></div>';
+      html+=d.coronation.length?d.coronation.slice().sort(function(a,b){return (a.date?new Date(a.date):9e15)-(b.date?new Date(b.date):9e15);}).map(corCard).join(''):'<div class="cc-card" style="color:var(--text3);">No coronation activities yet. Add meetings, ceremonies, traditional activities, negotiations and travel.</div>';
+      html+='<button class="cc-notif-btn" onclick="chAdd(\'coronation\')">＋ Add a coronation activity</button>';
+    } else if(tab==='stake'){
+      html='<div class="cc-h">🤝 Stakeholders<span class="c">'+d.stake.length+'</span></div>';
+      html+=d.stake.length?d.stake.map(stakeCard).join(''):'<div class="cc-card" style="color:var(--text3);">No stakeholders yet. Add chiefs, elders, family, lawyers, officials and supporters.</div>';
+      html+='<button class="cc-notif-btn" onclick="chAdd(\'stake\')">＋ Add a stakeholder</button>';
+    } else {
+      var rows=expRows().slice().sort(function(a,b){return new Date(b.date||0)-new Date(a.date||0);});
+      var total=rows.reduce(function(a,t){return a+(parseFloat(t.amount)||0);},0);
+      var byCat={};rows.forEach(function(t){var c=expCatOf(t);byCat[c]=(byCat[c]||0)+(parseFloat(t.amount)||0);});
+      html='<div class="cc-h">💷 Chieftaincy &amp; Coronation Costs<span class="c">'+fmt(total)+'</span></div>';
+      html+='<div class="cc-card">'+(Object.keys(byCat).length?Object.keys(byCat).sort(function(a,b){return byCat[b]-byCat[a];}).map(function(c){return '<div class="ch-rep-row"><span>'+esc(c)+'</span><b>'+fmt(byCat[c])+'</b></div>';}).join(''):'<div style="color:var(--text3);">No costs logged yet.</div>')+'</div>';
+      html+='<button class="cc-notif-btn" onclick="chAdd(\'exp\')">＋ Add a cost</button>';
+      if(rows.length){html+='<div class="cc-h" style="margin-top:14px;">Recent</div>';html+=rows.slice(0,12).map(function(t){
+        var sub=esc(expCatOf(t))+' · '+fmtDate(t.date)+(t.time?(' · '+esc(t.time)):'');
+        var meta=[];if(t.payee)meta.push('👤 '+esc(t.payee));if(t.company)meta.push('🏢 '+esc(t.company));if(t.contract)meta.push('📄 '+esc(t.contract));if(t.stakeName)meta.push('🤝 '+esc(t.stakeName));
+        return '<div class="ch-item"><div class="ch-item-top"><div style="min-width:0;"><div class="ch-item-name">'+fmt(parseFloat(t.amount)||0)+'</div><div class="ch-item-sub">'+sub+'</div></div></div>'
+          +(t.reason?'<div style="font-size:12.5px;color:var(--text2);margin-top:6px;">📝 '+esc(t.reason)+'</div>':(t.desc?'<div style="font-size:12.5px;color:var(--text3);margin-top:6px;">'+esc(t.desc)+'</div>':''))
+          +(meta.length?'<div class="ch-meta">'+meta.map(function(z){return '<span>'+z+'</span>';}).join('')+'</div>':'')
+          +'</div>';}).join('');}
+      html+='<div class="cc-foot" style="margin-top:8px;">Costs are stored in your Money Hub. To edit or remove a cost, open <a style="color:var(--gold);cursor:pointer;" onclick="go(\'moneyhub\')">Money Hub</a>.</div>';
+    }
+    el('ch-body').innerHTML=html;
+  }
+  function chTab(t){window._chTab=t;renderBody();}
+  window.chTab=chTab;
+
+  /* ---- AI REPORTS (on-device) ---- */
+  function reportHtml(type){
+    var d=chAll();var rows=expRows();var spend=rows.reduce(function(a,t){return a+(parseFloat(t.amount)||0);},0);
+    var head='<h1>⚖️ Chieftaincy &amp; Coronation — '+(type==='risk'?'Risk Assessment':type==='ready'?'Coronation Readiness':'Summary')+'</h1><p>Generated '+new Date().toLocaleString('en-GB')+' · HRH Prince Kwame Nkrabea</p>';
+    var out=head;
+    if(type==='risk'){
+      var risks=[];
+      d.legal.forEach(function(x){if(x.date){var dd=daysFrom(x.date);if(dd!=null&&dd<0&&!/won|settled|lost/i.test(x.status||''))risks.push('HIGH — '+esc(x.title)+': court date passed ('+fmtDate(x.date)+') with no outcome recorded.');else if(dd!=null&&dd>=0&&dd<=14)risks.push('MEDIUM — '+esc(x.title)+': court date in '+dd+' days.');}});
+      d.stake.filter(function(x){return /opposition/i.test(x.stance||'');}).forEach(function(x){risks.push('WATCH — '+esc(x.name)+' ('+esc(x.role||'')+') is marked as opposition.');});
+      out+='<h2>Risks ('+risks.length+')</h2><ul>'+(risks.length?risks.map(function(r){return '<li>'+r+'</li>';}).join(''):'<li>No active risks recorded.</li>')+'</ul>';
+    } else if(type==='ready'){
+      var done=d.coronation.filter(function(x){return /done/i.test(x.status||'');}).length;
+      var pct=d.coronation.length?Math.round(done/d.coronation.length*100):0;
+      out+='<h2>Readiness: '+pct+'% ('+done+' of '+d.coronation.length+' done) · '+daysToCoronation()+' days to target</h2>';
+      out+='<h2>Open activities</h2><ul>'+(d.coronation.filter(function(x){return !/done/i.test(x.status||'');}).map(function(x){return '<li>'+esc(x.title)+(x.date?' — '+fmtDate(x.date):'')+' ['+esc(x.status||'')+']</li>';}).join('')||'<li>None.</li>')+'</ul>';
+    } else {
+      out+='<h2>Legal matters ('+d.legal.length+')</h2><ul>'+(d.legal.map(function(x){return '<li>'+esc(x.title)+' — '+esc(x.status||'')+(x.date?', next '+fmtDate(x.date):'')+(x.rep?', rep '+esc(x.rep):'')+'</li>';}).join('')||'<li>None.</li>')+'</ul>';
+      out+='<h2>Coronation preparation ('+d.coronation.length+')</h2><ul>'+(d.coronation.map(function(x){return '<li>'+esc(x.title)+' — '+esc(x.status||'')+(x.date?', '+fmtDate(x.date):'')+'</li>';}).join('')||'<li>None.</li>')+'</ul>';
+      out+='<h2>Stakeholders ('+d.stake.length+')</h2><ul>'+(d.stake.map(function(x){return '<li>'+esc(x.name)+' — '+esc(x.role||'')+' ['+esc(x.stance||'')+']</li>';}).join('')||'<li>None.</li>')+'</ul>';
+      out+='<h2>Total spend: '+fmt(spend)+'</h2>';
+    }
+    return out;
+  }
+  function chReport(type){
+    var html=reportHtml(type);
+    el('ch-report').innerHTML='<div class="cc-h">🤖 AI Report</div><div class="cc-card">'+html.replace(/<h1>/g,'<div style="font-size:15px;font-weight:800;color:var(--gold);margin-bottom:4px;">').replace(/<\/h1>/g,'</div>').replace(/<h2>/g,'<div style="font-size:13.5px;font-weight:800;color:var(--text);margin:10px 0 4px;">').replace(/<\/h2>/g,'</div>').replace(/<p>/g,'<div style="font-size:11.5px;color:var(--text3);margin-bottom:8px;">').replace(/<\/p>/g,'</div>').replace(/<ul>/g,'<div style="font-size:12.5px;color:var(--text2);line-height:1.6;">').replace(/<\/ul>/g,'</div>').replace(/<li>/g,'• ').replace(/<\/li>/g,'<br>')
+      +'<div style="margin-top:12px;"><button class="ch-rbtn" onclick="chPrint(\''+type+'\')">🖨 Print / Save PDF</button></div></div>';
+    el('ch-report').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+  function chPrint(type){var w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print the report.');return;}w.document.write('<html><head><title>Chieftaincy Report</title><style>body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:28px;color:#111;line-height:1.5;}h1{font-size:20px;margin:0 0 4px;}h2{font-size:15px;margin:18px 0 6px;}p{color:#666;font-size:12px;margin:0 0 10px;}li{margin:4px 0;}</style></head><body>'+reportHtml(type)+'</body></html>');w.document.close();w.focus();setTimeout(function(){try{w.print();}catch(e){}},350);}
+  window.chReport=chReport;window.chPrint=chPrint;
+  function renderReportBtns(){el('ch-report').innerHTML='<div class="ch-rbtns"><button class="ch-rbtn" onclick="chReport(\'summary\')">📋 AI Summary</button><button class="ch-rbtn" onclick="chReport(\'risk\')">⚠️ Risk Report</button><button class="ch-rbtn" onclick="chReport(\'ready\')">👑 Readiness Report</button></div>';}
+
+  function buildChief(){if(!window._chTab)window._chTab='legal';renderHero();renderMonitor();renderBody();renderReportBtns();}
+  window.buildChief=buildChief;
+
+  /* ---- MODAL: add / edit ---- */
+  function opt(list,sel){return list.map(function(o){return '<option'+(o===sel?' selected':'')+'>'+esc(o)+'</option>';}).join('');}
+  function chModal(kind,x){
+    x=x||{};var c=el('ch-modal-card');var h='';
+    if(kind==='legal'){
+      h='<div class="cc-modal-h">'+(x.id?'Edit legal matter':'New legal matter')+'</div>'
+        +'<div class="cc-field"><label>Title</label><input id="ch-f-title" type="text" value="'+esc(x.title||'')+'" placeholder="e.g. Suaman Dadiaso stool — High Court case"></div>'
+        +'<div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Type</label><select id="ch-f-kind">'+opt(LEGAL_KINDS,x.kind)+'</select></div><div style="flex:1;"><label>Status</label><select id="ch-f-status">'+opt(LEGAL_STATUS,x.status)+'</select></div></div>'
+        +'<div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Next court date</label><input id="ch-f-date" type="date" value="'+esc(x.date||'')+'"></div><div style="flex:1;"><label>Court</label><input id="ch-f-court" type="text" value="'+esc(x.court||'')+'" placeholder="e.g. Sefwi Wiawso High Court"></div></div>'
+        +'<div class="cc-field"><label>Legal representative</label><input id="ch-f-rep" type="text" value="'+esc(x.rep||'')+'" placeholder="solicitor / counsel name"></div>'
+        +'<div class="cc-field"><label>Outcome (if any)</label><input id="ch-f-outcome" type="text" value="'+esc(x.outcome||'')+'" placeholder="ruling, adjournment, settlement…"></div>'
+        +'<div class="cc-field"><label>Notes</label><textarea id="ch-f-notes" rows="2" placeholder="background, evidence, next steps…">'+esc(x.notes||'')+'</textarea></div>';
+    } else if(kind==='coronation'){
+      h='<div class="cc-modal-h">'+(x.id?'Edit coronation activity':'New coronation activity')+'</div>'
+        +'<div class="cc-field"><label>Title</label><input id="ch-f-title" type="text" value="'+esc(x.title||'')+'" placeholder="e.g. Durbar planning meeting with elders"></div>'
+        +'<div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Type</label><select id="ch-f-kind">'+opt(COR_KINDS,x.kind)+'</select></div><div style="flex:1;"><label>Status</label><select id="ch-f-status">'+opt(COR_STATUS,x.status)+'</select></div></div>'
+        +'<div class="cc-field"><label>Date</label><input id="ch-f-date" type="date" value="'+esc(x.date||'')+'"></div>'
+        +'<div class="cc-field"><label>Notes</label><textarea id="ch-f-notes" rows="2" placeholder="who, where, what needs doing…">'+esc(x.notes||'')+'</textarea></div>';
+    } else if(kind==='stake'){
+      h='<div class="cc-modal-h">'+(x.id?'Edit stakeholder':'New stakeholder')+'</div>'
+        +'<div class="cc-field"><label>Name</label><input id="ch-f-name" type="text" value="'+esc(x.name||'')+'" placeholder="full name / title"></div>'
+        +'<div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Role</label><select id="ch-f-role">'+opt(STAKE_ROLES,x.role)+'</select></div><div style="flex:1;"><label>Stance</label><select id="ch-f-stance">'+opt(STAKE_STANCE,x.stance)+'</select></div></div>'
+        +'<div class="cc-field"><label>Contact</label><input id="ch-f-contact" type="text" value="'+esc(x.contact||'')+'" placeholder="phone / email (optional)"></div>'
+        +'<div class="cc-field"><label>Notes</label><textarea id="ch-f-notes" rows="2" placeholder="relationship, role in the matter…">'+esc(x.notes||'')+'</textarea></div>';
+    } else {
+      h='<div class="cc-modal-h">New cost</div>'
+        +'<div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Amount £</label><input id="ch-f-amount" type="number" inputmode="decimal" placeholder="0"></div><div style="flex:1;"><label>Cost type</label><select id="ch-f-cat">'+opt(EXP_CATS,x.cat)+'</select></div></div>'
+        +'<div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Date</label><input id="ch-f-date" type="date" value="'+todayIso()+'"></div><div style="flex:1;"><label>Time</label><input id="ch-f-time" type="time" value="'+esc(x.time||'')+'"></div></div>'
+        +'<div class="cc-field"><label>Paid to (person)</label><input id="ch-f-payee" type="text" value="'+esc(x.payee||'')+'" placeholder="full name of the person"></div>'
+        +'<div class="cc-field"><label>Company / firm</label><input id="ch-f-company" type="text" value="'+esc(x.company||'')+'" placeholder="e.g. chambers, law firm, contractor"></div>'
+        +'<div class="cc-field"><label>Kind of contract / agreement</label><select id="ch-f-contract">'+opt(CONTRACT_KINDS,x.contract)+'</select></div>'
+        +'<div class="cc-field"><label>Linked stakeholder</label><select id="ch-f-stake">'+stakeOpts(x.stakeId)+'</select></div>'
+        +'<div class="cc-field"><label>Reason for payment</label><input id="ch-f-reason" type="text" value="'+esc(x.reason||'')+'" placeholder="e.g. court representation fee for the stool case"></div>'
+        +'<div class="cc-field"><label>Notes (optional)</label><input id="ch-f-desc" type="text" placeholder="receipt no, extra detail"></div>';
+    }
+    h+='<div class="cc-modal-btns"><button class="cc-cancel" onclick="chClose()">Cancel</button>'+(x.id?'<button class="cc-cancel" style="flex:0 0 auto;color:#E0524F" onclick="chDel(\''+kind+'\',\''+x.id+'\')">🗑</button>':'')+'<button class="cc-save" onclick="chSaveItem()">Save</button></div>';
+    c.innerHTML=h;el('ch-modal').classList.add('open');window._chKind=kind;window._chEditId=x.id||null;
+  }
+  function chAdd(kind){chModal(kind,{});}
+  function chEdit(kind,id){var d=chAll();var x=(d[kind]||[]).filter(function(i){return i.id===id;})[0];if(x)chModal(kind,x);}
+  function chClose(){el('ch-modal').classList.remove('open');window._chEditId=null;}
+  function val(id){var e=el(id);return e?(e.value||'').trim():'';}
+  function chSaveItem(){
+    var kind=window._chKind;var d=chAll();
+    if(kind==='exp'){
+      var amt=parseFloat(val('ch-f-amount'))||0;if(!amt||amt<=0){alert('Please enter an amount.');return;}
+      var cat=val('ch-f-cat')||'Other';var date=val('ch-f-date')||todayIso();var time=val('ch-f-time');
+      var payee=val('ch-f-payee');var company=val('ch-f-company');var contract=val('ch-f-contract');var reason=val('ch-f-reason');var notes=val('ch-f-desc');
+      var stakeId=val('ch-f-stake');var stakeName='';if(stakeId){var sp=(d.stake||[]).filter(function(i){return i.id===stakeId;})[0];if(sp)stakeName=sp.name;}
+      var dp=[];if(reason)dp.push(reason);if(payee)dp.push('to '+payee);if(company)dp.push('('+company+')');
+      var desc=notes||dp.join(' ')||('Chieftaincy — '+cat);
+      try{if(typeof mhData==='function'&&typeof mhSave_data==='function'){var arr=mhData();arr.push({id:Date.now(),type:'ghana',cat:'ceremony',amount:amt,date:date,time:time,desc:desc,extra:'Chieftaincy — '+cat,chief:cat,payee:payee,company:company,contract:contract,reason:reason,stakeId:stakeId,stakeName:stakeName,recipient:payee,beneficiary:payee,method:'',source:''});mhSave_data(arr);}}catch(e){}
+      chClose();buildChief();
+      if(typeof showToast==='function')showToast('💷 Cost saved: '+fmt(amt)+' · '+cat+(payee?(' · '+payee):''));
+      if(typeof buildFamily==='function')buildFamily();
+      var sc=el('s-command');if(sc&&sc.classList.contains('active')&&typeof buildCommandCentre==='function')buildCommandCentre();
+      return;
+    }
+    var rec;
+    if(kind==='legal'){var t=val('ch-f-title');if(!t){alert('Please enter a title.');return;}rec={title:t,kind:val('ch-f-kind'),status:val('ch-f-status'),date:val('ch-f-date'),court:val('ch-f-court'),rep:val('ch-f-rep'),outcome:val('ch-f-outcome'),notes:val('ch-f-notes')};}
+    else if(kind==='coronation'){var t2=val('ch-f-title');if(!t2){alert('Please enter a title.');return;}rec={title:t2,kind:val('ch-f-kind'),status:val('ch-f-status'),date:val('ch-f-date'),notes:val('ch-f-notes')};}
+    else {var nm=val('ch-f-name');if(!nm){alert('Please enter a name.');return;}rec={name:nm,role:val('ch-f-role'),stance:val('ch-f-stance'),contact:val('ch-f-contact'),notes:val('ch-f-notes')};}
+    if(window._chEditId){
+      (d[kind]||[]).forEach(function(i){if(i.id===window._chEditId){for(var k in rec)i[k]=rec[k];if(kind!=='stake')chSyncDiary(i,kind);}});
+    } else {
+      rec.id=uid();d[kind].push(rec);if(kind!=='stake')chSyncDiary(rec,kind);
+    }
+    chSave(d);chClose();buildChief();
+    if(typeof showToast==='function')showToast('✅ Saved');
+    var sc2=el('s-command');if(sc2&&sc2.classList.contains('active')&&typeof buildCommandCentre==='function')buildCommandCentre();
+  }
+  function chDel(kind,id){
+    if(!confirm('Remove this item?'))return;var d=chAll();
+    var item=(d[kind]||[]).filter(function(i){return i.id===id;})[0];
+    if(item&&kind!=='stake')chRemoveDiary(item);
+    d[kind]=(d[kind]||[]).filter(function(i){return i.id!==id;});
+    chSave(d);chClose();buildChief();
+    if(typeof buildDiary==='function'){try{buildDiary();}catch(e){}}
+  }
+  window.chAdd=chAdd;window.chEdit=chEdit;window.chClose=chClose;window.chSaveItem=chSaveItem;window.chDel=chDel;
+  var m=el('ch-modal');if(m)m.addEventListener('click',function(e){if(e.target===m)chClose();});
 })();
 </script>
 <style id="fs-style">
@@ -15640,7 +16095,8 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 #s-scholars .scl-jrn-dot{width:24px;height:24px;flex-shrink:0;border-radius:50%;border:2px solid var(--text4,#4A4640);background:transparent;color:#fff;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 #s-scholars .scl-jrn-item.done .scl-jrn-dot{background:#4CAF7D;border-color:#4CAF7D;}
 #s-scholars .scl-jrn-item.current .scl-jrn-dot{border-color:var(--gold,#C9A84C);box-shadow:0 0 0 3px rgba(201,168,76,0.18);}
-#s-scholars .scl-jrn-lbl{flex:1;font-size:13px;font-weight:700;color:var(--text,#F0EBE0);}
+#s-scholars .scl-jrn-lbl{flex:1;font-size:13px;font-weight:700;color:var(--text,#F0EBE0);cursor:pointer;}
+#s-scholars .scl-jrn-edit{font-size:10px;color:var(--text4,#4A4640);opacity:.7;}
 #s-scholars .scl-jrn-item.todo .scl-jrn-lbl{color:var(--text3,#7A7268);font-weight:600;}
 #s-scholars .scl-jrn-fin{color:#4CAF7D;font-weight:700;font-size:11px;}
 #s-scholars .scl-jrn-now{color:var(--gold,#C9A84C);font-weight:700;font-size:11px;}
@@ -15746,7 +16202,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
        var ss=st.status, cls=(ss==='done')?'done':(ss==='progress'?'current':'todo');
        var mark=ss==='done'?'✓':(ss==='progress'?'•':'');
        return '<div class="scl-jrn-item '+cls+'"><span class="scl-jrn-dot">'+mark+'</span>'
-         +'<div class="scl-jrn-lbl">'+esc(st.label)+'</div>'
+         +'<div class="scl-jrn-lbl" onclick="window.RRSCH.jrnRename(\''+s.id+'\','+idx+')" title="Tap to rename this stage">'+esc(st.label)+' <span class="scl-jrn-edit">✎</span></div>'
          +'<select class="scl-jrn-sel" onchange="window.RRSCH.jrnStatus(\''+s.id+'\','+idx+',this.value)">'+jstatOpts(ss)+'</select>'
          +'<button class="scl-jrn-x" onclick="window.RRSCH.jrnDel(\''+s.id+'\','+idx+')" title="Remove stage">✕</button></div>';
      }).join('')+'</div>'
@@ -15756,6 +16212,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
  }
 
  function load(){try{var v=JSON.parse(localStorage.getItem(KEY));return Array.isArray(v)?v:[];}catch(e){return [];}}
+ function fixIds(list){ var seen={},changed=false; list.forEach(function(s){ if(!s.id||seen[s.id]){ s.id=uid(); changed=true; } seen[s.id]=1; }); if(changed)save(list); return list; }
  function save(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
  function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
  function gbp(n){return '£'+(Math.round(+n||0)).toLocaleString('en-GB');}
@@ -15800,7 +16257,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
  function build(){
    ensureScreen();
    var root=document.getElementById('scl-root'); if(!root)return;
-   var list=load();
+   var list=fixIds(load());
    var total=list.reduce(function(a,s){return a+(+s.totalInvested||0);},0);
    var enrolled=list.filter(function(s){return (s.status||'Enrolled')==='Enrolled';}).length;
    var grad=list.filter(function(s){return s.status==='Graduated'||s.status==='Completed';}).length;
@@ -15989,6 +16446,7 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
    jrnStatus:function(id,idx,val){ var list=load(); var s=list.filter(function(x){return x.id===id;})[0]; if(!s)return; s.journey=getJourney(s); if(s.journey[idx]){ s.journey[idx].status=val; s.journey[idx].done=(val==='done'); } save(list); build(); },
    jrnAdd:function(id){ var list=load(); var s=list.filter(function(x){return x.id===id;})[0]; if(!s)return; var n=(prompt('Add an education stage (e.g. Pupillage, Masters, Called to the Bar):')||'').trim(); if(!n)return; s.journey=getJourney(s); s.journey.push({label:n,done:false,status:'todo'}); save(list); openJrn[id]=true; build(); },
    jrnDel:function(id,idx){ var list=load(); var s=list.filter(function(x){return x.id===id;})[0]; if(!s)return; s.journey=getJourney(s); s.journey.splice(idx,1); save(list); build(); },
+   jrnRename:function(id,idx){ var list=load(); var s=list.filter(function(x){return x.id===id;})[0]; if(!s)return; s.journey=getJourney(s); var cur=s.journey[idx]?s.journey[idx].label:''; var n=(prompt('Rename this stage:',cur)||'').trim(); if(!n)return; if(s.journey[idx])s.journey[idx].label=n; save(list); openJrn[id]=true; build(); },
    addPick:function(sel,key,label){
      if(sel.value==='__add__'){
        var n=(prompt('Add a new '+label+':')||'').trim();
@@ -17009,5 +17467,85 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 })();
 </script>
 <!-- ════════════ END DAILY LIFE HUB ════════════ -->
+<!-- ════════════ FLOATING-BUTTON HIDE/SHOW (rrfh) ════════════
+     Hides the 4 floating buttons (Quick Capture ➕, Command 🧭, Refresh 🔄, Voice 🎙)
+     by default so they don't distract. A small corner toggle reveals/hides them.
+     Auto-hides again whenever a page is opened. Idempotent. Touches nothing else. -->
+<style id="rrfh-css">
+#rrfh-handle{position:fixed;bottom:22px;right:20px;z-index:100001;width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(135deg,#C9A84C,#7A5F1A);color:#1a1408;font-size:17px;font-weight:800;line-height:1;box-shadow:0 4px 16px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:transform .15s;}
+#rrfh-handle:active{transform:scale(.88);}
+body.rrfh-hidden #cc-fab,
+body.rrfh-hidden #cc-add-fab,
+body.rrfh-hidden #voice-fab,
+body.rrfh-hidden #rr-refresh-fab{opacity:0 !important;pointer-events:none !important;transform:scale(.2) !important;transition:opacity .18s,transform .18s;}
+</style>
+<script id="rrfh-js">
+(function(){
+  if(window.RRFH)return; window.RRFH=true;
+  function upd(){ var b=document.getElementById('rrfh-handle'); if(!b)return; var hidden=document.body.classList.contains('rrfh-hidden'); b.textContent=hidden?'⋯':'✕'; b.title=hidden?'Show tools':'Hide tools'; }
+  function ensureHandle(){
+    if(document.getElementById('rrfh-handle')||!document.body)return;
+    var b=document.createElement('button'); b.id='rrfh-handle'; b.type='button';
+    b.setAttribute('aria-label','Show or hide the floating tool buttons');
+    b.onclick=function(e){ e.stopPropagation(); document.body.classList.toggle('rrfh-hidden'); upd(); };
+    document.body.appendChild(b); upd();
+  }
+  function hideNow(){ if(document.body){ document.body.classList.add('rrfh-hidden'); upd(); } }
+  function hook(fn){ var o=window[fn]; if(typeof o!=='function'||o._rrfh)return; var w=function(){ var r=o.apply(this,arguments); hideNow(); return r; }; w._rrfh=true; window[fn]=w; }
+  function init(){ ensureHandle(); hideNow(); hook('go'); hook('royalTab'); }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+  setInterval(function(){ if(!document.getElementById('rrfh-handle'))init(); else upd(); },1500);
+})();
+</script>
+<!-- ════════════ END rrfh ════════════ -->
+<!-- RR-GLOBAL-DROPDOWNS -->
+<script>
+/* ════════════════════════════════════════════
+   GLOBAL: "➕ Add your own…" on every dropdown
+   - appends an add-your-own option to each <select>
+   - remembers custom values per dropdown (royal_dd_custom_v1)
+   - works on dynamically rendered forms (MutationObserver)
+   - skips numeric date/time spinners & view-control selects
+════════════════════════════════════════════ */
+(function(){
+  var KEY='royal_dd_custom_v1', ADD='__rr_add_custom__';
+  var SKIP_IDS=['cc-d-day','cc-d-mon','cc-d-yr','cc-t-hr','cc-t-min','cc-f-level','rep-period-sel'];
+  var SKIP_RE=/(^|[-_])(sort|period|filter|view|range|mode|tab)([-_]|$)/i;
+  function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}}
+  function save(o){try{localStorage.setItem(KEY,JSON.stringify(o));}catch(e){}}
+  function keyOf(s){return s.id||s.name||'';}
+  function hasCustom(s){for(var i=0;i<s.options.length;i++){var t=s.options[i].text||'';if(/add (another|your own|new)|＋|➕/i.test(t))return true;}return false;}
+  function skip(s){var k=keyOf(s);if(!k)return true;if(s.multiple)return true;if(SKIP_IDS.indexOf(k)>=0)return true;if(SKIP_RE.test(k))return true;if(s.classList.contains('no-add'))return true;if(s.getAttribute('data-noadd')!=null)return true;return false;}
+  function enhance(s){
+    if(!s||s.dataset.ddDone)return;
+    if(skip(s)){s.dataset.ddDone='1';return;}
+    if(hasCustom(s)){s.dataset.ddDone='1';return;}
+    var store=load(),k=keyOf(s),customs=store[k]||[];
+    customs.forEach(function(v){var ex=false;for(var i=0;i<s.options.length;i++){if(s.options[i].value===v){ex=true;break;}}if(!ex){var o=document.createElement('option');o.value=v;o.text=v;s.appendChild(o);}});
+    var ao=document.createElement('option');ao.value=ADD;ao.text='➕ Add your own…';ao.className='rr-dd-add';s.appendChild(ao);
+    s.dataset.ddDone='1';s.dataset.ddPrev=s.value;
+  }
+  function scan(root){try{(root||document).querySelectorAll('select').forEach(enhance);}catch(e){}}
+  document.addEventListener('change',function(e){
+    var s=e.target;if(!s||s.tagName!=='SELECT')return;
+    if(s.value!==ADD){s.dataset.ddPrev=s.value;return;}
+    e.stopImmediatePropagation();
+    var prev=s.dataset.ddPrev||'';
+    var v=window.prompt('Type your own option:','');
+    if(v&&v.trim()){
+      v=v.trim();var ex=false;for(var i=0;i<s.options.length;i++){if(s.options[i].value===v){ex=true;break;}}
+      if(!ex){var o=document.createElement('option');o.value=v;o.text=v;var addOpt=s.querySelector('option.rr-dd-add');s.insertBefore(o,addOpt);}
+      s.value=v;s.dataset.ddPrev=v;
+      var store=load(),k=keyOf(s);store[k]=store[k]||[];if(store[k].indexOf(v)<0){store[k].push(v);save(store);}
+      s.dispatchEvent(new Event('change',{bubbles:true}));
+    } else { s.value=prev; }
+  },true);
+  function boot(){scan(document);}
+  if(document.readyState!=='loading')boot();else document.addEventListener('DOMContentLoaded',boot);
+  try{var mo=new MutationObserver(function(m){var n=false;m.forEach(function(x){if(x.addedNodes&&x.addedNodes.length)n=true;});if(n)scan(document);});mo.observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
+  window.rrScanDropdowns=scan;
+})();
+</script>
+
 </body>
 </html>
