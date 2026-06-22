@@ -2875,6 +2875,8 @@ button{font-family:'Inter',sans-serif;}
         <div class="cc-subtitle">Where your money goes — tracked &amp; categorised</div>
       </div>
       <div id="ex-hero" class="cc-block"></div>
+      <div class="cc-block"><button type="button" onclick="if(typeof expOpenAdd==='function')expOpenAdd()" style="width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#1a1408;font-weight:800;border:none;border-radius:14px;padding:14px 16px;font-size:14.5px;cursor:pointer;">＋ Add Expense — with receipts &amp; documents</button></div>
+      <div id="exp-docs-list" class="cc-block"></div>
       <div id="ex-budget" class="cc-block"></div>
       <div id="ex-cats" class="cc-block"></div>
       <div id="ex-trend" class="cc-block"></div>
@@ -15070,6 +15072,105 @@ window.addEventListener('beforeunload',function(e){
   window.buildExpense=buildExpense;window.exSetBudget=exSetBudget;
 })();
 </script>
+
+<!-- DETAILED EXPENSE ENTRY + receipts/documents (rrexpdoc) -->
+<script>
+(function(){
+  var ACC=['Lloyds Club Platinum','Lloyds Classic','Lloyds Business','Monzo Business','Manchester Credit Union','Stanbic Bank GH','Vodafone Cash (Ghana)','Cash','Other'];
+  var CATS=[['food','🛒 Food & Groceries'],['transport','🚗 Transport / Fuel'],['utilities','🏠 Utilities / Bills'],['clothing','👔 Clothing'],['health','💊 Health & Medical'],['household','🏡 Household'],['subscriptions','📱 Subscriptions'],['other-ex','📦 Other Expense'],['p-food','🍽️ Eating Out'],['p-entertainment','🎬 Entertainment'],['p-gifts','🎁 Gifts'],['p-selfcare','✂️ Self Care'],['p-travel','✈️ Travel'],['p-other','📦 Other Personal']];
+  var temp=[];
+  function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function fmt(n){return '£'+(Math.round(parseFloat(n)||0)).toLocaleString('en-GB');}
+  function todayIso(){return new Date().toISOString().slice(0,10);}
+  function ensureModal(){
+    if(document.getElementById('exp-modal'))return;
+    var d=document.createElement('div');d.id='exp-modal';
+    d.style.cssText='position:fixed;inset:0;z-index:10060;background:rgba(0,0,0,0.6);display:none;align-items:flex-end;justify-content:center;';
+    d.innerHTML='<div class="cc-modal-card" id="exp-modal-card" style="max-height:88vh;overflow:auto;"></div>';
+    d.addEventListener('click',function(e){if(e.target===d)window.expClose();});
+    document.body.appendChild(d);
+  }
+  function lightboxImg(src){var lb=document.getElementById('receipt-lightbox');var im=document.getElementById('receipt-lb-img');if(lb&&im){im.src=src;lb.classList.add('open');}else{var w=window.open();if(w)w.document.write('<img src="'+src+'" style="max-width:100%">');}}
+  window.expViewDoc=function(txid,idx){
+    try{var arr=mhData();var t=null;for(var i=0;i<arr.length;i++){if(String(arr[i].id)===String(txid)){t=arr[i];break;}}if(!t||!t.docs||!t.docs[idx])return;var doc=t.docs[idx];
+      if((doc.t||'').indexOf('pdf')>=0){var w=window.open();if(w){w.document.write('<iframe src="'+doc.d+'" style="border:0;width:100vw;height:100vh"></iframe>');}else{alert('Allow pop-ups to view the PDF.');}}
+      else{lightboxImg(doc.d);}
+    }catch(e){}
+  };
+  function tile(doc,onclick,rmIdx){
+    var isimg=(doc.t||'').indexOf('image')>=0;
+    var inner=isimg?'<img src="'+doc.d+'" style="width:54px;height:54px;object-fit:cover;border-radius:8px;display:block;">':'<div style="width:54px;height:54px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--sep);display:flex;align-items:center;justify-content:center;font-size:22px;">📄</div>';
+    var rm=(rmIdx!=null)?'<button onclick="event.stopPropagation();expRemoveTemp('+rmIdx+')" style="position:absolute;top:-6px;right:-6px;background:#E0524F;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;line-height:1;cursor:pointer;">×</button>':'';
+    return '<div style="position:relative;cursor:pointer;"'+(onclick?(' onclick="'+onclick+'"'):'')+'>'+inner+rm+'</div>';
+  }
+  function renderTempThumbs(){var z=document.getElementById('exp-temp-thumbs');if(!z)return;z.innerHTML=temp.length?('<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">'+temp.map(function(d,i){return tile(d,'',i);}).join('')+'</div>'):'';}
+  window.expRemoveTemp=function(i){temp.splice(i,1);renderTempThumbs();};
+  window.expFile=function(inp){
+    var files=inp.files;if(!files)return;
+    for(var i=0;i<files.length;i++){(function(file){
+      if(file.type.indexOf('image')>=0 && typeof compressReceiptImage==='function'){
+        compressReceiptImage(file,function(b64){temp.push({n:file.name,t:'image/jpeg',d:b64});renderTempThumbs();});
+      } else {
+        if(file.size>4*1024*1024){alert('"'+file.name+'" is too large (max 4MB).');return;}
+        var r=new FileReader();r.onload=function(ev){temp.push({n:file.name,t:file.type||'application/octet-stream',d:ev.target.result});renderTempThumbs();};r.readAsDataURL(file);
+      }
+    })(files[i]);}
+    inp.value='';
+  };
+  function catOpts(){return CATS.map(function(c){return '<option value="'+c[0]+'">'+esc(c[1])+'</option>';}).join('');}
+  function accOpts(){return ACC.map(function(a){return '<option>'+esc(a)+'</option>';}).join('');}
+  window.expOpenAdd=function(){
+    ensureModal();temp=[];
+    var c=document.getElementById('exp-modal-card');
+    c.innerHTML='<div class="cc-modal-h">＋ Add Expense</div>'
+      +'<div class="cc-field" style="display:flex;gap:10px;"><div style="flex:1;"><label>Amount £</label><input id="exp-amount" type="number" inputmode="decimal" placeholder="0"></div><div style="flex:1;"><label>Date</label><input id="exp-date" type="date" value="'+todayIso()+'"></div></div>'
+      +'<div class="cc-field"><label>Category</label><select id="exp-cat">'+catOpts()+'</select></div>'
+      +'<div class="cc-field"><label>Merchant / Shop</label><input id="exp-who" type="text" placeholder="e.g. Tesco, Amazon"></div>'
+      +'<div class="cc-field"><label>Paid from</label><select id="exp-method">'+accOpts()+'</select></div>'
+      +'<div class="cc-field"><label>Reason / Note</label><input id="exp-note" type="text" placeholder="what it was for"></div>'
+      +'<div class="cc-field"><label>Receipts &amp; documents</label>'
+        +'<input type="file" id="exp-file" accept="image/*,application/pdf" multiple capture="environment" style="display:none" onchange="expFile(this)">'
+        +'<button type="button" class="cc-act" style="width:100%;" onclick="document.getElementById(\'exp-file\').click()">📎 Attach receipt or document (PDF, JPG, PNG)</button>'
+        +'<div id="exp-temp-thumbs"></div>'
+        +'<div style="font-size:11px;color:var(--text3);margin-top:6px;">Photos are shrunk automatically. Stored on this device &amp; included in backups.</div>'
+      +'</div>'
+      +'<div class="cc-modal-btns"><button class="cc-cancel" onclick="expClose()">Cancel</button><button class="cc-save" onclick="expSave()">💷 Save Expense</button></div>';
+    document.getElementById('exp-modal').style.display='flex';
+    renderTempThumbs();
+  };
+  window.expClose=function(){var m=document.getElementById('exp-modal');if(m)m.style.display='none';temp=[];};
+  window.expSave=function(){
+    var amt=parseFloat((document.getElementById('exp-amount')||{}).value)||0;
+    if(!amt||amt<=0){alert('Please enter an amount.');return;}
+    var catEl=document.getElementById('exp-cat');var cat=catEl?catEl.value:'other-ex';var catLbl=(catEl&&catEl.selectedIndex>=0)?catEl.options[catEl.selectedIndex].text:'';
+    var type=(cat.indexOf('p-')===0)?'personal':'expense';
+    var date=(document.getElementById('exp-date')||{}).value||todayIso();
+    var who=((document.getElementById('exp-who')||{}).value||'').trim();
+    var method=(document.getElementById('exp-method')||{}).value||'';
+    var note=((document.getElementById('exp-note')||{}).value||'').trim();
+    try{if(typeof mhData==='function'&&typeof mhSave_data==='function'){var arr=mhData();arr.push({id:Date.now(),type:type,amount:amt,date:date,desc:(note||who||catLbl),cat:cat,extra:who,recipient:'',beneficiary:'',method:method,source:method,docs:temp.slice()});mhSave_data(arr);}}catch(e){}
+    expClose();
+    if(typeof showToast==='function')showToast('💷 Expense saved: '+fmt(amt)+' · '+catLbl+(temp.length?' · 📎'+temp.length:''));
+    if(typeof buildExpense==='function')buildExpense();
+    var sc=document.getElementById('s-command');if(sc&&sc.classList.contains('active')&&typeof buildCommandCentre==='function')buildCommandCentre();
+  };
+  window.expRenderDocs=function(){
+    var box=document.getElementById('exp-docs-list');if(!box)return;
+    var arr=(typeof mhData==='function')?mhData():[];
+    var rows=arr.filter(function(t){return t&&t.docs&&t.docs.length&&(t.type==='expense'||t.type==='personal');}).sort(function(a,b){return new Date(b.date||0)-new Date(a.date||0);});
+    if(!rows.length){box.innerHTML='';return;}
+    var html='<div class="cc-h">📎 Expenses with receipts &amp; documents<span class="c">'+rows.length+'</span></div>';
+    rows.slice(0,20).forEach(function(t){
+      html+='<div class="cc-card" style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;gap:8px;"><div><b>'+fmt(t.amount)+'</b> · '+esc(t.desc||t.extra||'Expense')+'</div><div style="font-size:12px;color:var(--text3);">'+esc(t.date||'')+'</div></div>';
+      html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">'+t.docs.map(function(doc,i){return tile(doc,'expViewDoc(\''+t.id+'\','+i+')',null);}).join('')+'</div></div>';
+    });
+    box.innerHTML=html;
+  };
+  var _ob=window.buildExpense;
+  window.buildExpense=function(){ if(typeof _ob==='function'){try{_ob();}catch(e){}} try{window.expRenderDocs();}catch(e){} };
+})();
+</script>
+
 
 <!-- ════════════════════════════════════════════════════════════════
      ROYAL DIARY — AI COMMAND CENTRE  (merged module)
