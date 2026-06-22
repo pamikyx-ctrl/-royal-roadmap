@@ -17590,5 +17590,17 @@ window.rrUniversalSearch=function(raw, saidHtml){
 };
 </script>
 
+<!-- RR-AICHAT-FAB -->
+<style>
+#rr-aichat-fab{position:fixed;z-index:100000;display:flex;align-items:center;gap:7px;
+  bottom:calc(82px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#C9A84C,#BF5AF2);color:#fff;border:none;border-radius:999px;
+  padding:11px 18px;font-size:14px;font-weight:800;letter-spacing:.2px;
+  box-shadow:0 6px 22px rgba(0,0,0,0.45);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+#rr-aichat-fab:active{transform:translateX(-50%) scale(.96);}
+@media(min-width:1025px){#rr-aichat-fab{bottom:24px;left:auto;right:24px;transform:none;}#rr-aichat-fab:active{transform:scale(.96);}}
+</style>
+<button id="rr-aichat-fab" type="button" onclick="if(typeof voiceToggle==='function'){voiceToggle();}else{alert('AI Chat is loading — try again in a second.');}">🎙️ AI Chat &amp; Search</button>
+
 </body>
 </html>
