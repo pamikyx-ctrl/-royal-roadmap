@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="rr-build" content="23jun-fix3">
 <meta charset="UTF-8">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
@@ -8,7 +12,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Royal Roadmap — iPad Pro</title>
+<title>Royal Roadmap — iPad Pro · build 23jun-fix3</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2817,6 +2821,179 @@ button{font-family:'Inter',sans-serif;}
       </div>
       <div id="ch-hero" class="cc-block"></div>
       <div id="ch-monitor" class="cc-block"></div>
+      <!-- [C] LEGAL MATTERS — dynamic case manager (added 23 Jun 2026) -->
+      <div id="ch-cases" class="cc-block">
+        <style>
+          #ch-cases .lm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:10px;}
+          #ch-cases .lm-h-title{font-size:16px;font-weight:800;color:var(--gold);}
+          #ch-cases .lm-add{background:linear-gradient(135deg,var(--gold),var(--gold-dim,#a9842f));color:#1a1408;font-weight:800;border:none;border-radius:12px;padding:9px 13px;font-size:13px;cursor:pointer;white-space:nowrap;}
+          #ch-cases .lm-sub{font-size:11.5px;color:var(--text3);margin-bottom:10px;}
+          #ch-cases details.lm-case{border:1px solid var(--sep);border-radius:14px;overflow:hidden;margin-bottom:10px;background:linear-gradient(150deg,rgba(201,168,76,0.10),rgba(201,168,76,0.02));}
+          #ch-cases details.lm-case > summary{list-style:none;cursor:pointer;padding:13px 15px;display:flex;align-items:flex-start;gap:10px;}
+          #ch-cases details.lm-case > summary::-webkit-details-marker{display:none;}
+          #ch-cases details.lm-case[open] .lm-chev{transform:rotate(180deg);}
+          #ch-cases .lm-chev{transition:transform .2s ease;color:var(--gold);font-size:13px;margin-top:3px;}
+          #ch-cases .lm-chip{display:inline-block;margin:8px 6px 0 0;font-size:11px;font-weight:800;border-radius:999px;padding:3px 10px;}
+          #ch-cases .lm-body{padding:6px 15px 14px;border-top:1px solid var(--sep);}
+          #ch-cases .lm-row{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--sep);font-size:13px;line-height:1.5;}
+          #ch-cases .lm-row:last-child{border-bottom:none;}
+          #ch-cases .lm-k{flex:0 0 108px;color:var(--text3);font-weight:600;}
+          #ch-cases .lm-v{flex:1;color:var(--text);}
+          #ch-cases .lm-att{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;}
+          #ch-cases .lm-att button{background:rgba(201,168,76,.16);color:var(--gold);border:1px solid var(--sep);border-radius:8px;padding:3px 9px;font-size:12px;cursor:pointer;}
+          #ch-cases .lm-actions{display:flex;gap:8px;margin-top:14px;}
+          #ch-cases .lm-btn{flex:1;border:1px solid var(--sep);border-radius:11px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.05);color:var(--text);}
+          #ch-cases .lm-btn.edit{background:linear-gradient(135deg,var(--gold),var(--gold-dim,#a9842f));color:#1a1408;border:none;}
+          #lm-modal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);overflow:auto;padding:18px;}
+          #lm-card{max-width:640px;margin:0 auto;background:var(--card,var(--bg,#16171c));border:1px solid var(--sep);border-radius:18px;padding:18px;}
+          #lm-card h3{margin:0 0 12px;font-size:18px;color:var(--gold);}
+          #lm-card label{display:block;font-size:12px;color:var(--text3);font-weight:700;margin:11px 0 4px;}
+          #lm-card .lm-in{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid var(--sep);color:var(--text);border-radius:10px;padding:9px 11px;font-size:13.5px;font-family:inherit;}
+          #lm-card textarea.lm-in{min-height:60px;resize:vertical;}
+          #lm-card .lm-formact{display:flex;gap:8px;margin-top:18px;position:sticky;bottom:0;background:var(--card,var(--bg,#16171c));padding:12px 0 4px;border-top:1px solid var(--sep);z-index:2;}
+          #lm-card .lm-formact button{flex:1;border-radius:11px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;border:1px solid var(--sep);}
+          #lm-card .lm-save{background:linear-gradient(135deg,var(--gold),var(--gold-dim,#a9842f));color:#1a1408;border:none;}
+          #lm-card .lm-cancel{background:rgba(255,255,255,.05);color:var(--text);}
+          #lm-card .lm-del{background:#5a1d1d;color:#ffd9d9;border:none;flex:0 0 auto;padding:12px 14px;}@media (max-width:480px){#ch-cases .lm-row{flex-direction:column;gap:2px;}#ch-cases .lm-k{flex:none;font-size:11.5px;}#ch-cases .lm-h-title{font-size:15px;}#ch-cases .lm-add{font-size:12px;padding:8px 11px;}#ch-cases details.lm-case > summary{padding:11px 12px;}#ch-cases .lm-body{padding:6px 12px 12px;}#ch-cases #lm-costs + div{flex-wrap:wrap;}#lm-modal{padding:10px;}#lm-card{padding:14px;}#lm-card .lm-in{font-size:16px;}}
+        </style>
+        <div class="lm-head">
+          <div class="lm-h-title">📁 Court Cases &amp; Legal Matters</div>
+          <button type="button" class="lm-add" onclick="LM.openForm()">＋ Add Legal Matter</button>
+        </div>
+        <div class="lm-sub">Your reusable legal register — add any case, attach its documents, and track follow-ups, actions &amp; outcomes.</div>
+        <div id="lm-count" class="lm-sub"></div>
+        <div id="lm-list"></div>
+      </div>
+      <div id="lm-modal"><div id="lm-card"></div></div>
+      <script>
+      (function(){
+        var KEY='royal_legal_v1';
+        var DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var STAGES=['Filed','Served','Defence filed','Injunction / interlocutory','Pre-trial / directions','Trial / hearing','Awaiting judgement','Judgement delivered','Closed / completed'];
+        function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+        function nl(s){return esc(s).replace(/\n/g,'<br>');}
+        function fmt(iso){if(!iso)return '';var p=iso.split('-');if(p.length!==3)return iso;var d=new Date(+p[0],+p[1]-1,+p[2]);if(isNaN(d))return iso;return DAYS[d.getDay()]+' '+(+p[2])+' '+MON[+p[1]-1]+' '+p[0];}
+        function chip(t,bg,fg){return '<span class="lm-chip" style="background:'+bg+';color:'+fg+';">'+esc(t)+'</span>';}
+        function seed(){
+          return {_v:1,opts:{
+            caseType:["Land dispute","Chieftaincy / succession","Stool property","Boundary","Family","Civil","Criminal","Other"],
+            status:["Active — awaiting hearing","Filed","Adjourned","In progress","Awaiting judgment","Won","Lost","Settled","Closed","On hold"],
+            court:["District Court — Enchi","High Court","Circuit Court","Regional House of Chiefs — Sefwi Wiawso","National House of Chiefs — Kumasi","Suaman Traditional Council","Other"]
+          },cases:[]};
+        }
+        function migrate(d){return false;} function load(){var d;try{d=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){d=null;}if(!d||!d.cases){d=seed();}if(!d.opts)d.opts=seed().opts;if(!d.opts.stage)d.opts.stage=STAGES.slice();if(migrate(d)){save(d);}return d;}
+        function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));return true;}catch(e){alert('Could not save — storage may be full (large attachments). Try a smaller file, or keep the document in your folder.');return false;}}
+        function dataURLtoBlob(durl){try{var parts=durl.split(',');var mime=(parts[0].match(/:(.*?);/)||[])[1]||'application/octet-stream';var bstr=atob(parts[1]);var n=bstr.length;var u8=new Uint8Array(n);while(n--)u8[n]=bstr.charCodeAt(n);return new Blob([u8],{type:mime});}catch(e){return null;}}
+
+        var LM={};
+        LM._draft=null;LM._editing=null;
+
+        LM.bar=function(stage){var i=STAGES.indexOf(stage);var pct,lab;if(i<0){pct=stage?50:0;lab=stage||'Not started';}else{pct=Math.round(i/(STAGES.length-1)*100);lab=stage;}var col=(stage===STAGES[STAGES.length-1])?'#3da35d':'var(--gold)';return '<div style="margin-top:9px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:3px;"><span>📊 '+esc(lab)+'</span><span>'+pct+'%</span></div><div style="height:7px;border-radius:6px;background:rgba(255,255,255,.10);overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:6px;"></div></div></div>';};
+
+        LM.render=function(){
+          var d=load();var box=document.getElementById('lm-list');if(!box)return;
+          var cs=d.cases||[];
+          var cnt=document.getElementById('lm-count');if(cnt)cnt.textContent=cs.length+(cs.length===1?' case on file':' cases on file');
+          if(!cs.length){box.innerHTML='<div style="border:1px dashed var(--sep);border-radius:14px;padding:18px;text-align:center;color:var(--text3);font-size:13px;">No legal matters yet. Tap ＋ Add Legal Matter to file your first case.</div>';return;}
+          var rows=[['Status','status'],['Stage','stage'],['Type','caseType'],['Court','court'],['Suit No.','suitNo'],['Plaintiff','plaintiff'],['Defendants','defendants'],['Served on','servedOn'],['Land / subject','land'],['Claims','claims'],['Summary','summary'],['Why it matters','why'],['Follow-up','followUp'],['Action','action'],['Lawyer follow-up / action','lawyerAction'],['Judge','judge'],['Judgement date','judgementDate'],['Judgement / ruling','judgement'],['Outcome','outcome'],['Dated','dated'],['Filed copy','filedRef']];
+          box.innerHTML=cs.map(function(c){
+            var statusChip=c.status?chip(c.status,'rgba(201,168,76,.18)','var(--gold)'):'';
+            var dchip='';
+            if(c.nextDate){var t=new Date(c.nextDate+'T00:00:00');var days=Math.ceil((t-new Date())/864e5);var past=days<0,soon=days<=7;var bg=past?'#ffd9d9':(soon?'#ffe9cc':'rgba(255,255,255,.08)');var fg=past?'#7a1f1f':(soon?'#7a4a12':'var(--text)');var pre=past?'⚠️ Past · ':(soon?'⚠️ ':'📅 ');dchip=chip(pre+fmt(c.nextDate),bg,fg);}
+            var body=rows.map(function(r){var v=c[r[1]];if(!v)return '';return '<div class="lm-row"><div class="lm-k">'+esc(r[0])+'</div><div class="lm-v">'+nl(v)+'</div></div>';}).join('');
+            var pbar=LM.bar(c.stage);
+            var costs=(c.costs||[]);var ctot=0;for(var ci=0;ci<costs.length;ci++){ctot+=(+costs[ci].amount||0);}
+            var costChip=ctot>0?chip('\u00a3'+ctot.toLocaleString()+' costs','rgba(61,163,93,.18)','#7fe0a0'):'';
+            var costHtml='<div class="lm-row"><div class="lm-k">Costs</div><div class="lm-v">'+(costs.length?('<b>\u00a3'+ctot.toLocaleString()+'</b> total<div style="margin-top:4px;color:var(--text3);">'+costs.map(function(x){return '\u2022 '+esc(x.date||'')+' '+esc(x.desc||'')+' \u2014 \u00a3'+(+x.amount||0).toLocaleString();}).join('<br>')+'</div>'):'<span style="color:var(--text3)">None recorded</span>')+'</div></div>';
+            var atts=(c.attachments||[]);
+            var attHtml='<div class="lm-row"><div class="lm-k">Attachments</div><div class="lm-v">'+(atts.length?atts.map(function(a,i){return '<div class="lm-att">📎 '+esc(a.name)+' <button type="button" onclick="LM.viewAtt(\''+c.id+'\','+i+')">View</button></div>';}).join(''):'<span style="color:var(--text3)">None attached yet</span>')+'</div></div>';
+            return '<details class="lm-case"><summary><span style="font-size:18px;">⚖️</span><span style="flex:1;"><span style="display:block;font-weight:800;font-size:14.5px;color:var(--text);">'+esc(c.title||'Untitled matter')+'</span>'+(c.plaintiff||c.defendants?'<span style="display:block;font-size:12.5px;color:var(--text3);margin-top:2px;">'+esc((c.plaintiff||'').split(',')[0])+' v '+esc((c.defendants||'').split('\n')[0].replace(/^[0-9]\)\s*/,''))+'</span>':'')+statusChip+dchip+costChip+pbar+'</span><span class="lm-chev">▼</span></summary><div class="lm-body">'+body+costHtml+attHtml+'<div style="margin-top:12px;"><button type="button" class="lm-btn" style="width:100%;background:rgba(201,168,76,.14);color:var(--gold);" onclick="LM.ai(\''+c.id+'\')">🤖 Generate AI Summary</button></div><div id="lm-ai-'+c.id+'" class="lm-ai-out" style="margin-top:10px;"></div><div class="lm-actions"><button type="button" class="lm-btn edit" onclick="LM.openForm(\''+c.id+'\')">✏️ Edit</button></div></div></details>';
+          }).join('');
+        };
+
+        LM.viewAtt=function(cid,idx){var d=load();var c=(d.cases||[]).filter(function(x){return x.id===cid;})[0];if(!c||!c.attachments||!c.attachments[idx])return;var a=c.attachments[idx];var b=dataURLtoBlob(a.data);if(b){var u=URL.createObjectURL(b);window.open(u,'_blank');}else{window.open(a.data,'_blank');}};
+
+        function selHtml(kind,cur){var d=load();var opts=(d.opts&&d.opts[kind])||[];var has=cur&&opts.indexOf(cur)<0;var o=opts.map(function(x){return '<option'+(x===cur?' selected':'')+'>'+esc(x)+'</option>';}).join('');if(has)o='<option selected>'+esc(cur)+'</option>'+o;return '<select class="lm-in" data-kind="'+kind+'" onchange="LM.onSel(this)"><option value="">— choose —</option>'+o+'<option value="__add__">➕ Add my own…</option></select>';}
+
+        LM.onSel=function(s){if(s.value!=='__add__')return;var v=prompt('Type the new option to add:');if(!v||!v.trim()){s.value='';return;}v=v.trim();var kind=s.getAttribute('data-kind');var d=load();if(kind&&d.opts[kind]&&d.opts[kind].indexOf(v)<0){d.opts[kind].push(v);save(d);}var opt=document.createElement('option');opt.text=v;opt.value=v;s.add(opt,s.options[s.options.length-1]);opt.selected=true;};
+
+        function val(id){var e=document.getElementById(id);return e?e.value.trim():'';}
+        function selVal(id){var e=document.getElementById(id);if(!e)return '';return e.value==='__add__'?'':e.value;}
+
+        LM.openForm=function(id){
+          var d=load();var c=id?JSON.parse(JSON.stringify((d.cases||[]).filter(function(x){return x.id===id;})[0]||{})):{attachments:[]};
+          if(!c.attachments)c.attachments=[];if(!c.costs)c.costs=[];
+          LM._draft=c;LM._editing=id||null;
+          function field(label,fid,type,v){if(type==='textarea')return '<label>'+label+'</label><textarea id="'+fid+'" class="lm-in">'+esc(v||'')+'</textarea>';if(type==='date')return '<label>'+label+'</label><input id="'+fid+'" type="date" class="lm-in" value="'+esc(v||'')+'">';return '<label>'+label+'</label><input id="'+fid+'" type="text" class="lm-in" value="'+esc(v||'')+'">';}
+          var html='<h3>'+(id?'Edit legal matter':'Add legal matter')+'</h3>'
+            +field('Case title','lm-f-title','text',c.title)
+            +'<label>Type</label>'+selHtml('caseType',c.caseType)
+            +'<label>Status</label>'+selHtml('status',c.status)
+            +'<label>Progress stage</label>'+selHtml('stage',c.stage)
+            +'<label>Court</label>'+selHtml('court',c.court)
+            +field('Suit number','lm-f-suitNo','text',c.suitNo)
+            +field('Next court / hearing date','lm-f-nextDate','date',c.nextDate)
+            +field('Plaintiff','lm-f-plaintiff','text',c.plaintiff)
+            +field('Defendant(s)','lm-f-defendants','textarea',c.defendants)
+            +field('Served on (who it is for)','lm-f-servedOn','text',c.servedOn)
+            +field('Land / subject matter','lm-f-land','text',c.land)
+            +field('Claims / what is sought','lm-f-claims','textarea',c.claims)
+            +field('Summary / details','lm-f-summary','textarea',c.summary)
+            +field('Why it matters','lm-f-why','textarea',c.why)
+            +field('Follow-up','lm-f-followUp','textarea',c.followUp)
+            +field('Action','lm-f-action','textarea',c.action)
+            +field('Action due date','lm-f-actionDue','date',c.actionDue)
+            +field('Follow-up / Action from my Lawyer','lm-f-lawyerAction','textarea',c.lawyerAction)
+            +field('Judge','lm-f-judge','text',c.judge)
+            +field('Judgement date','lm-f-judgementDate','date',c.judgementDate)
+            +field('Judgement / ruling','lm-f-judgement','textarea',c.judgement)
+            +field('Outcome','lm-f-outcome','textarea',c.outcome)
+            +'<label>Costs related to this case</label><div id="lm-costs"></div>'
+            +'<div style="display:flex;gap:6px;margin-top:6px;"><input id="lm-c-date" type="date" class="lm-in" style="flex:0 0 40%;"><input id="lm-c-desc" type="text" placeholder="What for" class="lm-in" style="flex:1;"><input id="lm-c-amt" type="number" placeholder="\u00a3" class="lm-in" style="flex:0 0 84px;"></div>'
+            +'<button type="button" class="lm-cancel" style="margin-top:6px;padding:8px;border-radius:9px;width:100%;" onclick="LM.addCost()">\uff0b Add cost</button>'
+            +field('Document dated','lm-f-dated','text',c.dated)
+            +field('Filed copy / location','lm-f-filedRef','text',c.filedRef)
+            +'<label>Attachments (documents for this case)</label><div id="lm-atts"></div>'
+            +'<input id="lm-file" type="file" multiple class="lm-in" style="margin-top:6px;" onchange="LM.addFiles(this)">'
+            +'<div class="lm-formact">'+(id?'<button type="button" class="lm-del" onclick="LM.del(\''+id+'\')">🗑 Delete</button>':'')+'<button type="button" class="lm-cancel" onclick="LM.close()">Cancel</button><button type="button" class="lm-save" onclick="LM.save_()">Save</button></div>';
+          document.getElementById('lm-card').innerHTML=html;
+          document.getElementById('lm-modal').style.display='block';
+          LM.renderAtts();LM.renderCosts();
+        };
+
+        LM.renderAtts=function(){var box=document.getElementById('lm-atts');if(!box)return;var a=LM._draft.attachments||[];box.innerHTML=a.length?a.map(function(x,i){return '<div class="lm-att">📎 '+esc(x.name)+' <button type="button" onclick="LM.viewDraft('+i+')">View</button> <button type="button" onclick="LM.rmFile('+i+')" style="background:#5a1d1d;color:#ffd9d9;">×</button></div>';}).join(''):'<div style="color:var(--text3);font-size:12.5px;">No documents attached yet.</div>';};
+        LM.viewDraft=function(i){var a=LM._draft.attachments[i];if(!a)return;var b=dataURLtoBlob(a.data);if(b){window.open(URL.createObjectURL(b),'_blank');}else{window.open(a.data,'_blank');}};
+        LM.rmFile=function(i){LM._draft.attachments.splice(i,1);LM.renderAtts();};
+        LM.renderCosts=function(){var box=document.getElementById('lm-costs');if(!box)return;var cs=LM._draft.costs||[];var tot=0;cs.forEach(function(x){tot+=(+x.amount||0);});box.innerHTML=(cs.length?cs.map(function(x,i){return '<div class="lm-att">\u00a3'+(+x.amount||0).toLocaleString()+' \u00b7 '+esc(x.desc||'')+(x.date?(' \u00b7 '+esc(x.date)):'')+' <button type="button" onclick="LM.rmCost('+i+')" style="background:#5a1d1d;color:#ffd9d9;">\u00d7</button></div>';}).join(''):'<div style="color:var(--text3);font-size:12.5px;">No costs recorded yet.</div>')+(cs.length?'<div style="margin-top:6px;font-weight:800;color:var(--gold);">Total: \u00a3'+tot.toLocaleString()+'</div>':'');};
+        LM.addCost=function(){var dt=document.getElementById('lm-c-date').value;var ds=document.getElementById('lm-c-desc').value.trim();var a=parseFloat(document.getElementById('lm-c-amt').value);if(!ds&&isNaN(a)){alert('Add a description or amount for the cost.');return;}LM._draft.costs.push({date:dt,desc:ds,amount:isNaN(a)?0:a});document.getElementById('lm-c-desc').value='';document.getElementById('lm-c-amt').value='';document.getElementById('lm-c-date').value='';LM.renderCosts();};
+        LM.rmCost=function(i){LM._draft.costs.splice(i,1);LM.renderCosts();};
+        LM._ai={};
+        LM.ai=function(id){var d=load();var c=null,arr=d.cases||[];for(var i=0;i<arr.length;i++){if(arr[i].id===id)c=arr[i];}var box=document.getElementById('lm-ai-'+id);if(!c||!box)return;function v(x){return x&&String(x).trim();}var si=STAGES.indexOf(c.stage);var pct=si<0?(c.stage?'—':'0'):Math.round(si/(STAGES.length-1)*100);var datePhrase='not set';if(c.nextDate){var t=new Date(c.nextDate+'T00:00:00');var days=Math.ceil((t-new Date())/864e5);datePhrase=fmt(c.nextDate)+(days<0?' (passed)':(days===0?' (today)':' (in '+days+' day'+(days===1?'':'s')+')'));}var costs=c.costs||[];var ctot=0;costs.forEach(function(x){ctot+=(+x.amount||0);});var parties='';if(v(c.plaintiff))parties+=c.plaintiff.split(',')[0].trim();if(v(c.defendants)){var dd=c.defendants.split('\n').map(function(l){return l.replace(/^[0-9]\)\s*/,'').trim();}).filter(Boolean).join(' and ');parties+=(parties?' against ':'')+dd;}var overview=(v(c.title)||'This matter');overview+=v(c.caseType)?(' is a '+c.caseType.toLowerCase()+' matter'):' is a legal matter';overview+=v(c.court)?(' before the '+c.court):'';overview+='.';if(parties)overview+=' It is '+parties+'.';if(v(c.land))overview+=' The dispute concerns '+c.land+'.';else if(v(c.claims))overview+=' The claims are: '+c.claims+'.';if(v(c.suitNo))overview+=' Suit number '+c.suitNo+'.';var standing='The case is at the "'+(v(c.stage)||'—')+'" stage'+(pct!=='—'?(' (about '+pct+'% of the way to completion)'):'')+'. ';if(v(c.status))standing+='Status: '+c.status+'. ';standing+='Next court date: '+datePhrase+'.';var notes=[];[['Summary','summary'],['Why it matters','why'],['Follow-up','followUp'],['Action','action'],['Lawyer follow-up / action','lawyerAction']].forEach(function(r){if(v(c[r[1]]))notes.push([r[0],c[r[1]]]);});var docs=(c.attachments||[]).map(function(a){return a.name;});var outcome;if(v(c.judgement)||v(c.outcome)){outcome=(v(c.judgement)?c.judgement:'')+(v(c.judge)?(' (Judge: '+c.judge+(v(c.judgementDate)?(', '+fmt(c.judgementDate)):'')+')'):'')+(v(c.outcome)?(' '+c.outcome):'');}else{outcome='Not yet decided. The case is ongoing — currently at the "'+(v(c.stage)||'—')+'" stage, with the next court date '+datePhrase+'.';}var html='';html+='<div style="border:1px solid var(--sep);border-radius:12px;padding:13px;background:rgba(201,168,76,0.06);">';html+='<div style="font-weight:800;color:var(--gold);margin-bottom:8px;">🤖 AI Case Summary</div>';html+='<div style="font-size:12.5px;line-height:1.55;color:var(--text);">';html+='<b>Overview.</b> '+esc(overview)+'<br><br>';html+='<b>Where it stands.</b> '+esc(standing)+'<br><br>';html+='<b>Reports &amp; notes on file.</b>'+(notes.length?('<ul style="margin:6px 0 8px;padding-left:18px;">'+notes.map(function(n){return '<li><b>'+esc(n[0])+':</b> '+esc(n[1])+'</li>';}).join('')+'</ul>'):' None recorded yet.<br><br>');html+='<b>Documents on file.</b> '+(docs.length?esc(docs.join('; ')):'None attached.')+'<br><br>';html+='<b>Costs.</b> '+(ctot>0?('£'+ctot.toLocaleString()+' recorded across '+costs.length+' item'+(costs.length===1?'':'s')+'.'):'None recorded.')+'<br><br>';html+='<b>Outcome.</b> '+esc(outcome);html+='</div>';html+='<div style="display:flex;gap:8px;margin-top:12px;"><button type="button" class="lm-btn" onclick="LM.copyAI(\''+id+'\')">📋 Copy</button><button type="button" class="lm-btn" onclick="LM.printAI(\''+id+'\')">🖨 Print</button></div>';html+='<div style="font-size:10.5px;color:var(--text3);margin-top:8px;">Generated on-device from what you have recorded in this case. Update the case and regenerate to refresh.</div>';html+='</div>';box.innerHTML=html;var txt=[];txt.push('AI CASE SUMMARY — '+(v(c.title)||'Matter'));txt.push('');txt.push('OVERVIEW');txt.push(overview);txt.push('');txt.push('WHERE IT STANDS');txt.push(standing);txt.push('');txt.push('REPORTS & NOTES ON FILE');if(notes.length){notes.forEach(function(n){txt.push('- '+n[0]+': '+n[1]);});}else{txt.push('None recorded yet.');}txt.push('');txt.push('DOCUMENTS ON FILE');txt.push(docs.length?docs.join('; '):'None attached.');txt.push('');txt.push('COSTS');txt.push(ctot>0?('£'+ctot.toLocaleString()+' across '+costs.length+' item(s)'):'None recorded.');txt.push('');txt.push('OUTCOME');txt.push(outcome);LM._ai[id]=txt.join('\n');};
+        LM.copyAI=function(id){var t=LM._ai[id]||'';if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){alert('Summary copied.');},function(){alert('Could not copy.');});}else{try{var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert('Summary copied.');}catch(e){alert('Could not copy.');}}};
+        LM.printAI=function(id){var t=LM._ai[id]||'';var w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print.');return;}w.document.write('<html><head><title>AI Case Summary</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:28px;white-space:pre-wrap;line-height:1.5;">'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</body></html>');w.document.close();w.focus();setTimeout(function(){try{w.print();}catch(e){}},300);};
+        LM.addFiles=function(inp){var fs=inp.files;if(!fs||!fs.length)return;var n=fs.length,done=0;
+          function fin(){done++;if(done===n){inp.value='';LM.renderAtts();}}
+          for(var i=0;i<n;i++){(function(f){var r=new FileReader();r.onload=function(){var data=r.result;if(f.type.indexOf('image/')===0){var img=new Image();img.onload=function(){var mx=1400,w=img.width,h=img.height;if(w>mx||h>mx){if(w>h){h=Math.round(h*mx/w);w=mx;}else{w=Math.round(w*mx/h);h=mx;}}var cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);LM._draft.attachments.push({name:f.name,type:'image/jpeg',data:cv.toDataURL('image/jpeg',0.72)});fin();};img.onerror=function(){LM._draft.attachments.push({name:f.name,type:f.type,data:data});fin();};img.src=data;}else{LM._draft.attachments.push({name:f.name,type:f.type,data:data});fin();}};r.onerror=fin;r.readAsDataURL(f);})(fs[i]);}
+        };
+
+        LM.save_=function(){
+          var t=val('lm-f-title');if(!t){alert('Please give the case a title.');return;}
+          var c=LM._draft;c.title=t;c.suitNo=val('lm-f-suitNo');c.nextDate=val('lm-f-nextDate');c.plaintiff=val('lm-f-plaintiff');c.defendants=val('lm-f-defendants');c.servedOn=val('lm-f-servedOn');c.land=val('lm-f-land');c.claims=val('lm-f-claims');c.summary=val('lm-f-summary');c.why=val('lm-f-why');c.followUp=val('lm-f-followUp');c.action=val('lm-f-action');c.actionDue=val('lm-f-actionDue');c.lawyerAction=val('lm-f-lawyerAction');c.judge=val('lm-f-judge');c.judgementDate=val('lm-f-judgementDate');c.judgement=val('lm-f-judgement');c.outcome=val('lm-f-outcome');c.dated=val('lm-f-dated');c.filedRef=val('lm-f-filedRef');
+          var sels=document.querySelectorAll('#lm-card select[data-kind]');for(var i=0;i<sels.length;i++){var k=sels[i].getAttribute('data-kind');c[k]=sels[i].value==='__add__'?'':sels[i].value;}
+          var d=load();
+          if(LM._editing){d.cases=d.cases.map(function(x){return x.id===LM._editing?c:x;});}
+          else{c.id='case-'+Date.now()+'-'+Math.floor(Math.random()*1000);c.created=Date.now();d.cases.unshift(c);}
+          if(save(d)){LM.close();LM.render();}
+        };
+        LM.del=function(id){if(!confirm('Delete this legal matter? This cannot be undone.'))return;var d=load();d.cases=(d.cases||[]).filter(function(x){return x.id!==id;});save(d);LM.close();LM.render();};
+        LM.close=function(){var m=document.getElementById('lm-modal');if(m)m.style.display='none';LM._draft=null;LM._editing=null;};
+
+        window.LM=LM;
+        try{LM.render();}catch(e){}
+        document.addEventListener('click',function(ev){var m=document.getElementById('lm-modal');if(m&&ev.target===m)LM.close();});
+      })();
+      </script>
       <div class="ch-tabs" id="ch-tabs">
         <button type="button" class="ch-tab on" data-ct="legal" onclick="chTab('legal')">⚖️ Legal</button>
         <button type="button" class="ch-tab" data-ct="coronation" onclick="chTab('coronation')">👑 Coronation</button>
@@ -16213,10 +16390,10 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
    wrapped._rrsch=true; window[fnName]=wrapped;
  }
  function init(){ ensureScreen(); ensureNav(); hook('go'); hook('royalTab');
-   var s=document.getElementById('s-scholars'); if(s&&s.classList.contains('active'))build();
+   var s=document.getElementById('s-scholars'); if(s&&s.classList.contains('active')&&!showForm)build();
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
- setInterval(function(){ if(!document.getElementById('nb-scholars')||!document.getElementById('s-scholars'))init();
+ setInterval(function(){ if(showForm)return;if(!(document.getElementById('nb-scholars')||document.querySelector('.rms-item[data-scl]'))||!document.getElementById('s-scholars'))init();
    var s=document.getElementById('s-scholars'); if(s&&s.classList.contains('active')&&!document.getElementById('scl-root').innerHTML)build();
  },1500);
 })();
@@ -17263,5 +17440,18 @@ window.rrUniversalSearch=function(raw, saidHtml){
 })();
 </script>
 
+<script id="rr-typeshield">
+(function(){
+  if(window.__rrTypeShield)return; window.__rrTypeShield=1;
+  function af(){var a=document.activeElement;return (a&&(a.tagName==='INPUT'||a.tagName==='SELECT'||a.tagName==='TEXTAREA'))?a:null;}
+  var P=Element.prototype, d=Object.getOwnPropertyDescriptor(P,'innerHTML');
+  if(!d||!d.set){try{P=HTMLElement.prototype; d=Object.getOwnPropertyDescriptor(P,'innerHTML');}catch(e){}}
+  if(d&&d.set&&d.configurable){
+    Object.defineProperty(P,'innerHTML',{configurable:true,enumerable:d.enumerable,
+      get:function(){return d.get.call(this);},
+      set:function(v){var f=af(); if(f&&this!==f&&this.contains&&this.contains(f)){return;} return d.set.call(this,v);}});
+  }
+})();
+</script>
 </body>
 </html>
