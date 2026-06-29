@@ -1555,6 +1555,16 @@ input, select, textarea, button {
 .ssync-btn-copy{background:rgba(91,141,217,0.12);border-color:rgba(91,141,217,0.35);color:#5B8DD9;}
 .ssync-url-out{background:#0A0A0F;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;font-size:11px;font-family:monospace;color:#C9A84C;word-break:break-all;margin:8px 0;display:none;max-height:80px;overflow-y:auto;}
 #ssync-auto-msg{background:rgba(48,209,88,0.1);border:1px solid rgba(48,209,88,0.3);border-radius:8px;padding:12px 14px;font-size:13px;color:#30D158;display:none;margin-top:8px;}
+/* === Money Hub scoped Light (Day) theme === */
+html.app-light{--dark2:#efe9dc;--dark3:#ffffff;--dark4:#ffffff;--dark5:#f1ece0;--text:#1c1a17;--text2:#46413a;--text3:#6f675b;--text4:#9b9488;--gold-light:#9a7b1e;}
+html.app-light body{background:#f6f2ea;}
+html.app-light .sidebar{background:linear-gradient(180deg,#ffffff 0%,#f1ece0 100%);border-right-color:rgba(201,168,76,0.25);}
+html.app-light .nav-btn{color:#46413a;}
+html.app-light .mh-input,html.app-light .mh-select,html.app-light .mh-textarea{border-color:#e2dac8;}
+html.app-light .mh-tx-item{border-bottom-color:rgba(0,0,0,0.06);}
+html.app-light .mh-kpi,html.app-light .mh-panel{box-shadow:0 1px 2px rgba(0,0,0,.05),0 6px 16px rgba(0,0,0,.06);}
+/* AI Finance Dashboard retired — merged into Money Hub (Goals Progress) */
+#nb-tracker,[data-tab="tracker"]{display:none!important;}
 </style>
 </head>
 <body>
@@ -2064,13 +2074,13 @@ input, select, textarea, button {
     <!-- RESULTS TABLE -->
     <div class="report-table-wrap">
       <div class="report-table-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div class="report-table-label" id="rep-result-label">Report Results</div>
+        <div onclick="repToggleTable()" style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;"><span id="rep-table-chev" style="color:var(--gold);font-size:12px;">▾</span><div class="report-table-label" id="rep-result-label">Report Results</div></div>
         <div style="display:flex;gap:8px;">
           <button type="button" class="print-btn" id="print-btn">🖨️ Print</button>
           <button type="button" class="btn btn-outline btn-sm" onclick="repExportCSV()">⬇️ Export CSV</button>
         </div>
       </div>
-      <table class="rep-table">
+      <table class="rep-table" id="rep-table">
         <thead><tr><th>Date</th><th>Source</th><th>Type</th><th>Category / Goal</th><th>Amount</th><th>Description</th><th>Reference</th></tr></thead>
         <tbody id="rep-table-body"><tr><td colspan="7" class="rep-empty">👆 Choose a preset or set filters above, then tap Generate Report.</td></tr></tbody>
       </table>
@@ -2236,6 +2246,138 @@ input, select, textarea, button {
       <select id="mh-kpi-month-sel" onchange="mhKpiMonthChange(this.value)" style="flex:1;min-width:140px;max-width:200px;background:var(--dark4);border:1px solid rgba(201,168,76,0.25);border-radius:8px;color:var(--text);padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;-webkit-appearance:none;appearance:none;"><option value="">All Time</option></select>
       <span id="mh-kpi-period-badge" style="font-size:11px;font-weight:700;color:var(--gold);background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.22);border-radius:20px;padding:4px 12px;white-space:nowrap;">This Month</span>
       <span style="font-size:10px;color:var(--text4);flex:1;">Changes all 9 taps + All Transactions in sync</span>
+      <button id="mh-theme-btn" onclick="mhToggleTheme()" title="Switch between Day (light) and Dark" style="background:var(--dark4);border:1px solid rgba(201,168,76,0.3);border-radius:8px;color:var(--gold);padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">🌙 Dark</button>
+    </div>
+
+    <!-- AI Money Assistant (added: live £→GH₵ + natural-language search) -->
+    <div id="mh-ai-panel" style="margin-bottom:18px;padding:16px 18px;background:linear-gradient(135deg,rgba(201,168,76,0.10),rgba(201,168,76,0.03));border:1px solid rgba(201,168,76,0.25);border-radius:14px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+        <span style="font-size:20px;">💬</span>
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Ask your Money Hub</span>
+        <span id="mh-fx-badge" title="Live British Pound to Ghanaian Cedi rate" style="margin-left:auto;font-size:11px;font-weight:700;color:var(--gold);background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.22);border-radius:20px;padding:4px 12px;white-space:nowrap;">£1 = GH₵ —</span>
+        <button onclick="mhFxRefresh(true)" title="Refresh the live British Pound → Ghanaian Cedi rate" style="background:var(--dark4);border:1px solid rgba(201,168,76,0.25);border-radius:8px;color:var(--gold);padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">↻ Rate</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="mh-ai-input" placeholder="e.g. What did I spend in Ghana? · How much income this month?" onkeydown="if(event.key==='Enter')mhAsk()" style="flex:1;min-width:0;background:var(--dark4);border:1px solid rgba(201,168,76,0.25);border-radius:10px;color:var(--text);padding:10px 13px;font-size:13px;">
+        <button onclick="mhAsk()" style="background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--dark);border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Ask</button>
+      </div>
+      <div id="mh-ai-chips" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;">
+        <button class="mh-ai-chip" onclick="mhAskChip('Show all expenses this month')" style="font-size:11px;padding:5px 11px;border-radius:20px;border:1px solid rgba(201,168,76,0.22);background:transparent;color:var(--text3);cursor:pointer;">Expenses this month</button>
+        <button class="mh-ai-chip" onclick="mhAskChip('What did I spend in Ghana?')" style="font-size:11px;padding:5px 11px;border-radius:20px;border:1px solid rgba(201,168,76,0.22);background:transparent;color:var(--text3);cursor:pointer;">Spent in Ghana</button>
+        <button class="mh-ai-chip" onclick="mhAskChip('Show my income this year')" style="font-size:11px;padding:5px 11px;border-radius:20px;border:1px solid rgba(201,168,76,0.22);background:transparent;color:var(--text3);cursor:pointer;">Income this year</button>
+        <button class="mh-ai-chip" onclick="mhAskChip('How much have I paid on debt?')" style="font-size:11px;padding:5px 11px;border-radius:20px;border:1px solid rgba(201,168,76,0.22);background:transparent;color:var(--text3);cursor:pointer;">Debt paid</button>
+        <button class="mh-ai-chip" onclick="mhAskChip('Show Stanbic investments')" style="font-size:11px;padding:5px 11px;border-radius:20px;border:1px solid rgba(201,168,76,0.22);background:transparent;color:var(--text3);cursor:pointer;">Stanbic investments</button>
+        <button class="mh-ai-chip" onclick="mhAskChip('Total sent via Vodafone Cash')" style="font-size:11px;padding:5px 11px;border-radius:20px;border:1px solid rgba(201,168,76,0.22);background:transparent;color:var(--text3);cursor:pointer;">Vodafone Cash total</button>
+      </div>
+      <div id="mh-ai-result"></div>
+    </div>
+
+    <!-- Financial Intelligence Centre (added: unified overview + contacts + insights, one ledger) -->
+    <div id="mh-fic" style="margin-bottom:22px;padding:18px;background:linear-gradient(135deg,rgba(201,168,76,0.07),rgba(201,168,76,0.02));border:1px solid rgba(201,168,76,0.22);border-radius:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <span style="font-size:20px;">👑</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">Financial Intelligence Centre</div>
+          <div style="font-size:11px;color:var(--text4);">One unified view of every pound — powered by your Money Hub ledger</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+        <button onclick="mhJumpTax()" style="background:var(--dark4);border:1px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:10px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer;">💼 Bookkeeping</button>
+        <button onclick="mhFicAddTx()" style="background:var(--dark4);border:1px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:10px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer;">➕ Quick Entry</button>
+        <button onclick="mhFicAddTx()" style="background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--dark);border:none;border-radius:10px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer;">＋ Add Transaction</button>
+      </div>
+      <div id="mh-fic-overview" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;"></div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:16px;">
+        <div style="background:var(--dark4);border:1px solid rgba(201,168,76,0.12);border-radius:14px;padding:14px 16px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span style="font-size:14px;">📊</span><span style="font-size:12.5px;font-weight:700;color:var(--text);">Cash Flow</span><span style="font-size:10.5px;color:var(--text4);margin-left:auto;">last 6 months</span></div>
+          <div id="mh-fic-flow"></div>
+        </div>
+        <div style="background:var(--dark4);border:1px solid rgba(201,168,76,0.12);border-radius:14px;padding:14px 16px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span style="font-size:14px;">❤️</span><span style="font-size:12.5px;font-weight:700;color:var(--text);">Financial Health</span></div>
+          <div id="mh-fic-health"></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:16px;">
+        <div style="background:var(--dark4);border:1px solid rgba(201,168,76,0.12);border-radius:14px;padding:14px 16px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span style="font-size:14px;">🍩</span><span style="font-size:12.5px;font-weight:700;color:var(--text);">Spending by Category</span></div>
+          <div id="mh-fic-cat"></div>
+        </div>
+        <div style="background:var(--dark4);border:1px solid rgba(201,168,76,0.12);border-radius:14px;padding:14px 16px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span style="font-size:14px;">🔁</span><span style="font-size:12.5px;font-weight:700;color:var(--text);">Upcoming &amp; Recurring</span></div>
+          <div id="mh-fic-recurring"></div>
+        </div>
+      </div>
+
+      <!-- AI Insights -->
+      <div style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:14px;">💡</span><span style="font-size:12.5px;font-weight:700;color:var(--text);">AI Insights</span></div>
+        <div id="mh-fic-insights"></div>
+      </div>
+
+      <!-- Contact Intelligence (collapsible — all contacts, sent-at-a-glance) -->
+      <div style="margin-bottom:16px;background:var(--dark4);border:1px solid rgba(201,168,76,0.12);border-radius:14px;overflow:hidden;">
+        <div onclick="mhFicToggleContacts()" style="display:flex;align-items:center;gap:8px;padding:13px 16px;cursor:pointer;user-select:none;">
+          <span style="font-size:14px;">👤</span>
+          <span style="font-size:12.5px;font-weight:700;color:var(--text);">Contact Intelligence</span>
+          <span id="mh-fic-contacts-glance" style="font-size:11px;color:var(--text4);"></span>
+          <span id="mh-fic-contacts-chev" style="margin-left:auto;font-size:12px;color:var(--gold);">▸</span>
+        </div>
+        <div id="mh-fic-contacts-body" style="display:none;padding:0 16px 14px;">
+          <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+            <button id="mhcf-all" onclick="mhFicContactFilter('all')" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid rgba(201,168,76,0.3);background:var(--gold);color:var(--dark);font-weight:700;cursor:pointer;">All</button>
+            <button id="mhcf-in" onclick="mhFicContactFilter('in')" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid rgba(201,168,76,0.25);background:transparent;color:var(--text3);font-weight:600;cursor:pointer;">↓ Received from</button>
+            <button id="mhcf-out" onclick="mhFicContactFilter('out')" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid rgba(201,168,76,0.25);background:transparent;color:var(--text3);font-weight:600;cursor:pointer;">↑ Sent to</button>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center;">
+            <span style="font-size:10px;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;">View</span>
+            <button id="mhcv-list" onclick="mhFicContactView('list')" style="font-size:11px;padding:5px 11px;border-radius:8px;border:1px solid rgba(201,168,76,0.25);background:var(--gold);color:var(--dark);font-weight:700;cursor:pointer;">☰ List</button>
+            <button id="mhcv-gallery" onclick="mhFicContactView('gallery')" style="font-size:11px;padding:5px 11px;border-radius:8px;border:1px solid rgba(201,168,76,0.25);background:transparent;color:var(--text3);font-weight:600;cursor:pointer;">▦ Gallery</button>
+          </div>
+          <input id="mh-fic-contact-search" oninput="mhFicSearch()" placeholder="🔍 Search any name or group…" style="width:100%;background:rgba(0,0,0,0.18);border:1px solid rgba(201,168,76,0.2);border-radius:9px;color:var(--text);padding:8px 11px;font-size:12px;margin-bottom:8px;">
+          <div id="mh-fic-contacts" style="max-height:360px;overflow-y:auto;"></div>
+        </div>
+      </div>
+
+      <div style="background:var(--dark4);border:1px solid rgba(201,168,76,0.12);border-radius:14px;overflow:hidden;">
+        <div onclick="mhFicToggleRecent()" style="display:flex;align-items:center;gap:8px;padding:13px 16px;cursor:pointer;user-select:none;">
+          <span style="font-size:14px;">🕑</span>
+          <span style="font-size:12.5px;font-weight:700;color:var(--text);">Recent Activity</span>
+          <span id="mh-fic-recent-chev" style="margin-left:auto;font-size:12px;color:var(--gold);">▾</span>
+        </div>
+        <div id="mh-fic-recent-body" style="padding:0 16px 14px;">
+          <div id="mh-fic-recent"></div>
+        </div>
+      </div>
+
+      <!-- Goals Progress -->
+      <div style="background:var(--dark4);border:1px solid rgba(201,168,76,0.12);border-radius:14px;overflow:hidden;margin-top:16px;">
+        <div onclick="mhFicToggleGoals()" style="display:flex;align-items:center;gap:8px;padding:13px 16px;cursor:pointer;user-select:none;">
+          <span style="font-size:14px;">🎯</span>
+          <span style="font-size:12.5px;font-weight:700;color:var(--text);">Goals Progress</span>
+          <span id="mh-fic-goals-glance" style="font-size:11px;color:var(--text4);"></span>
+          <span id="mh-fic-goals-chev" style="margin-left:auto;font-size:12px;color:var(--gold);">▸</span>
+        </div>
+        <div id="mh-fic-goals-body" style="display:none;padding:0 16px 14px;">
+          <div id="mh-fic-goals"></div>
+        </div>
+      </div>
+
+      <!-- Tax & Bookkeeping -->
+      <div style="background:var(--dark4);border:1px solid rgba(201,168,76,0.12);border-radius:14px;overflow:hidden;margin-top:16px;">
+        <div onclick="mhFicToggleTax()" style="display:flex;align-items:center;gap:8px;padding:13px 16px;cursor:pointer;user-select:none;">
+          <span style="font-size:14px;">💼</span>
+          <span style="font-size:12.5px;font-weight:700;color:var(--text);">Tax &amp; Bookkeeping</span>
+          <span id="mh-fic-tax-glance" style="font-size:11px;color:var(--text4);"></span>
+          <span id="mh-fic-tax-chev" style="margin-left:auto;font-size:12px;color:var(--gold);">▸</span>
+        </div>
+        <div id="mh-fic-tax-body" style="display:none;padding:0 16px 14px;">
+          <div id="mh-fic-period"></div>
+          <div id="mh-fic-purpose"></div>
+          <div id="mh-fic-tax"></div>
+        </div>
+      </div>
     </div>
 
     <!-- KPI Strip -->
@@ -2264,7 +2406,7 @@ input, select, textarea, button {
       <div class="mh-left">
 
         <!-- Quick Entry -->
-        <div class="mh-panel">
+        <div class="mh-panel" id="mh-quick-entry">
           <div class="mh-panel-head">
             <span class="mh-panel-title">➕ Quick Entry</span>
             <span style="font-size:11px;color:var(--text3);">Choose type then fill in below</span>
@@ -2282,6 +2424,28 @@ input, select, textarea, button {
 <button class="mh-etab et-vodafone-cash" onclick="mhSetType('vodafone-cash',this)">📱 Vodafone Cash GH</button>
           </div>
           <div class="mh-form-grid" id="mh-form-grid">
+            <div class="mh-full">
+              <div class="mh-field-label">Book / Type <span style="color:var(--text4);font-weight:400;">(for tax)</span></div>
+              <select class="mh-select" id="mh-f-stream">
+                <option value="personal">🏠 Personal</option>
+                <option value="self-employed">🧰 Self-Employed</option>
+                <option value="pamikyx">🏢 Pamikyx Ltd (Business)</option>
+                <option value="employee">👔 Employee (Abicare) expenses</option>
+                <option value="shared">🔀 Shared</option>
+                <option value="investment">📈 Investment</option>
+                <option value="royal">👑 Royal Roadmap Project</option>
+              </select>
+            </div>
+            <div class="mh-full">
+              <div class="mh-field-label">Purpose <span style="color:var(--text4);font-weight:400;">(optional — auto-sorted if left blank)</span></div>
+              <select class="mh-select" id="mh-f-purpose">
+                <option value="">✨ Auto-sort</option>
+                <option value="chieftaincy">👑 Chieftaincy Affairs</option>
+                <option value="family">🏘️ Family Support</option>
+                <option value="residence">🏗️ Royal Residence Development</option>
+                <option value="personal">🏠 Personal (UK & Education)</option>
+              </select>
+            </div>
             <div>
               <div class="mh-field-label">Amount (£)</div>
               <input type="number" class="mh-input" id="mh-f-amount" placeholder="0.00" min="0" step="0.01">
@@ -2297,15 +2461,32 @@ input, select, textarea, button {
             <div id="mh-f-cat-wrap">
               <div class="mh-field-label" id="mh-f-cat-label">Category</div>
               <select class="mh-select" id="mh-f-cat">
-                <option value="work">💼 Work / Employment</option>
-                <option value="business">🏢 Pamikyx Business</option>
-                <option value="royal">👑 Royal Income</option>
-                <option value="other-in">Other Income</option>
+                <option value="employment">💼 Employment</option>
+                <option value="self-employment">🧰 Self-Employment</option>
+                <option value="other-in">Other</option>
               </select>
             </div>
             <div id="mh-f-extra-wrap">
               <div class="mh-field-label" id="mh-f-extra-label">Ref / Notes</div>
               <input type="text" class="mh-input" id="mh-f-extra" placeholder="optional reference…">
+            </div>
+            <div>
+              <div class="mh-field-label">Location</div>
+              <select class="mh-select" id="mh-f-location">
+                <option value="">— Select —</option>
+                <option value="England">🏴 England</option>
+                <option value="Wales">🏴 Wales</option>
+                <option value="Scotland">🏴 Scotland</option>
+                <option value="Ghana">🇬🇭 Ghana</option>
+              </select>
+            </div>
+            <div>
+              <div class="mh-field-label">Reference / Invoice</div>
+              <input type="text" class="mh-input" id="mh-f-ref" placeholder="Optional">
+            </div>
+            <div class="mh-full">
+              <div class="mh-field-label">Notes</div>
+              <input type="text" class="mh-input" id="mh-f-notes" placeholder="Optional">
             </div>
             <!-- AI Autofill Panel (Ghana / Family only) -->
             <div id="mh-ai-autofill-panel" style="display:none;" class="mh-full">
@@ -3282,7 +3463,6 @@ input, select, textarea, button {
 window.ROYAL_GROUPS = {
   money:{title:'Money',items:[
     {ic:'💷',lbl:'Money Hub',go:"royalTab('moneyhub',null)"},
-    {ic:'🤖',lbl:'AI Finance',go:"royalTab('tracker',null)"},
     {ic:'💳',lbl:'Debts',go:"royalTab('debts',null)"},
     {ic:'💎',lbl:'Finance Plan',go:"royalTab('fin',null)"},
     {ic:'📋',lbl:'Rota',go:"royalTab('rota',null)"},
@@ -9436,7 +9616,7 @@ var MH_KEY = 'royal_moneyhub_v1';
 var mhType = 'income'; // current entry type
 
 var MH_CATS = {
-  income:   [{v:'work',l:'💼 Work / Employment — Abicare'},{v:'pamikyx',l:'🏢 Pamikyx Business Income'},{v:'royal',l:'👑 Royal Income'},{v:'investment',l:'📈 Investment Return'},{v:'self-emp-cousins',l:'🧑‍⚕️ Self-Employment — Country Cousins'},{v:'other-in',l:'Other Income'}],
+  income:   [{v:'employment',l:'💼 Employment'},{v:'self-employment',l:'🧰 Self-Employment'},{v:'other-in',l:'Other'}],
   expense:  [{v:'food',l:'🛒 Food & Groceries'},{v:'transport',l:'🚗 Transport / Fuel'},{v:'utilities',l:'🏠 Utilities / Bills'},{v:'clothing',l:'👔 Clothing'},{v:'health',l:'💊 Health & Medical'},{v:'household',l:'🏡 Household'},{v:'subscriptions',l:'📱 Subscriptions'},{v:'other-ex',l:'Other Expense'}],
   personal: [{v:'p-food',l:'🍽️ Eating Out'},{v:'p-entertainment',l:'🎬 Entertainment'},{v:'p-gifts',l:'🎁 Gifts'},{v:'p-selfcare',l:'✂️ Self Care'},{v:'p-travel',l:'✈️ Travel'},{v:'p-family-upkeep-uk',l:'🏠 Family Upkeep UK'},{v:'p-other',l:'Other Personal'}],
   debt:     [{v:'hmrc',l:'🏛️ HMRC / Tax'},{v:'aqua',l:'💳 Aqua'},{v:'vanquis',l:'💳 Vanquis'},{v:'zable',l:'💳 Zable'},{v:'118118',l:'💳 118 118 Money'},{v:'zopa',l:'💳 Zopa'},{v:'thinkmoney',l:'💳 Thinkmoney'},{v:'tesco',l:'💳 Tesco'},{v:'ocean',l:'💳 Ocean'},{v:'marbles',l:'💳 Marbles'},{v:'capitalontap',l:'💳 Capitalontap (Business)'},{v:'lloyds-loan',l:'🏦 Lloyds Business Loan'},{v:'iwoca',l:'🏦 iwoca Loan'},{v:'rent',l:'🏠 Rent / Arrears'},{v:'vehicle',l:'🚗 Vehicle Finance'},{v:'other-debt',l:'Other Debt'}],
@@ -9520,12 +9700,17 @@ function mhSave(){
   var benefPersonal=(document.getElementById('mh-f-benef-personal')||{}).value||'';
   var method    = (document.getElementById('mh-f-method')||{}).value || '';
   var source    = (document.getElementById('mh-f-source')||{}).value || '';
+  var stream    = (document.getElementById('mh-f-stream')||{}).value || 'personal';
+  var purpose   = (document.getElementById('mh-f-purpose')||{}).value || '';
+  var location  = (document.getElementById('mh-f-location')||{}).value || '';
+  var refInv    = (document.getElementById('mh-f-ref')||{}).value || '';
+  var notesF    = (document.getElementById('mh-f-notes')||{}).value || '';
 
   if(!amount || amount <= 0){ alert('Please enter a valid amount.'); return; }
   if(!date){ alert('Please select a date.'); return; }
   if(!desc){ alert('Please enter a description.'); return; }
 
-  var entry = { id: Date.now(), type: mhType, amount: amount, date: date, desc: desc, cat: cat, extra: extra, recipient: recipient, beneficiary: (mhType==='personal' && benefPersonal ? benefPersonal : beneficiary), method: method, source: source ,
+  var entry = { id: Date.now(), type: mhType, amount: amount, date: date, desc: desc, cat: cat, extra: extra, stream: stream, purpose: purpose, loc: (location||'').trim(), ref: (refInv||'').trim(), notes: (notesF||'').trim(), recipient: recipient, beneficiary: (mhType==='personal' && benefPersonal ? benefPersonal : beneficiary), method: method, source: source ,
 sourceAccount: (document.getElementById('mh-f-source-account')||{}).value||'',
 sourceAccountLabel: (function(){ var s=document.getElementById('mh-f-source-account'); return s&&s.selectedIndex>0?s.options[s.selectedIndex].text:''; })()
 };
@@ -9537,6 +9722,9 @@ sourceAccountLabel: (function(){ var s=document.getElementById('mh-f-source-acco
   document.getElementById('mh-f-amount').value = '';
   document.getElementById('mh-f-desc').value   = '';
   document.getElementById('mh-f-extra').value  = '';
+  var _l=document.getElementById('mh-f-location'); if(_l)_l.value='';
+  var _r=document.getElementById('mh-f-ref'); if(_r)_r.value='';
+  var _n=document.getElementById('mh-f-notes'); if(_n)_n.value='';
 
   // Cross-link: Finance Plan live feed + study/goal tracking
   mhCheckCrossLink(entry);
@@ -17388,5 +17576,756 @@ window.rrUniversalSearch=function(raw, saidHtml){
   }
 })();
 </script>
+<!-- ============================================================
+     MONEY HUB AI ADD-ON  (additive, non-destructive)
+     Adds: live £→GH₵ conversion + natural-language Ask-AI search.
+     Reuses existing ledger (royal_moneyhub_v1) and helpers.
+     ============================================================ -->
+<script>
+(function(){
+  if (typeof sGet !== 'function' || typeof mhData !== 'function') return; // safety: only run inside the Roadmap
+
+  var MHFX_KEY = 'royal_fx_gbp_ghs_v1';
+  var FALLBACK = 19.6;
+
+  function fxGet(){ var f = sGet(MHFX_KEY, null); return (f && f.rate) ? f : {rate:FALLBACK, date:null, source:'fallback'}; }
+  function mhRate(){ return fxGet().rate || FALLBACK; }
+  window.mhRate = mhRate;
+
+  function mhCedi(n){
+    var v = Math.abs((parseFloat(n)||0)) * mhRate();
+    return 'GH₵' + v.toLocaleString('en-GB',{minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  window.mhCedi = mhCedi;
+
+  function parseNum(s){ s = String(s==null?'':s).replace(/[^0-9.\-]/g,''); var n = parseFloat(s); return isNaN(n)?0:n; }
+
+  function fxBadge(){
+    var b = document.getElementById('mh-fx-badge'); if(!b) return;
+    var f = fxGet();
+    b.textContent = '£1 = GH₵ ' + f.rate.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}) + (f.source==='live'?' · live':' · saved');
+  }
+
+  function fxRefresh(manual){
+    var b = document.getElementById('mh-fx-badge'); if(manual && b) b.textContent = 'updating…';
+    fetch('https://open.er-api.com/v6/latest/GBP')
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        if(j && j.rates && j.rates.GHS){
+          sSet(MHFX_KEY, {rate:+(j.rates.GHS).toFixed(4), date:new Date().toISOString(), source:'live'});
+        }
+        fxBadge(); enhanceKpiCedi(); enhanceTxCedi();
+        if(typeof window.mhRenderFIC==='function'){ try{ window.mhRenderFIC(); }catch(e){} }
+      })
+      .catch(function(){ fxBadge(); enhanceKpiCedi(); enhanceTxCedi(); if(typeof window.mhRenderFIC==='function'){ try{ window.mhRenderFIC(); }catch(e){} } });
+  }
+  window.mhFxRefresh = fxRefresh;
+
+  /* ---- Cedi annotations under KPI cards ---- */
+  function cediSet(id){
+    var el = document.getElementById(id); if(!el) return;
+    var n = parseNum(el.textContent);
+    var cid = id + '-cedi';
+    var c = document.getElementById(cid);
+    if(!c){
+      c = document.createElement('div');
+      c.id = cid; c.className = 'mh-cedi';
+      c.style.cssText = 'font-size:10.5px;color:var(--gold);font-weight:600;margin-top:2px;line-height:1.2;';
+      el.parentNode.insertBefore(c, el.nextSibling);
+    }
+    c.textContent = '≈ ' + mhCedi(n);
+  }
+  function enhanceKpiCedi(){
+    ['mh-k-income','mh-k-expense','mh-k-debt','mh-k-ghana','mh-k-net','mh-k-stanbic','mh-k-misc','mh-k-vodafone'].forEach(cediSet);
+    var g = document.getElementById('mh-ghana-total'); if(g && !document.getElementById('mh-ghana-total-cedi')){ var d=document.createElement('span'); d.id='mh-ghana-total-cedi'; d.style.cssText='font-size:12px;color:var(--gold);font-weight:600;margin-left:8px;'; g.parentNode.insertBefore(d, g.nextSibling); }
+    var gc = document.getElementById('mh-ghana-total-cedi'); if(gc && g) gc.textContent = '≈ ' + mhCedi(parseNum(g.textContent));
+  }
+
+  /* ---- Cedi annotation on each transaction row ---- */
+  function enhanceTxCedi(){
+    var list = document.getElementById('mh-tx-list'); if(!list) return;
+    var amts = list.querySelectorAll('.mh-tx-amt');
+    for(var i=0;i<amts.length;i++){
+      var el = amts[i];
+      if(el.querySelector('.mh-cedi-sm')) continue;
+      var n = parseNum(el.textContent);
+      var s = document.createElement('div');
+      s.className = 'mh-cedi-sm';
+      s.style.cssText = 'font-size:9.5px;color:var(--gold-dim);font-weight:600;opacity:.85;margin-top:1px;';
+      s.textContent = '≈ ' + mhCedi(n);
+      el.appendChild(s);
+    }
+  }
+
+  /* ---- Live "≈ Ghanaian Cedi" field on the Quick Entry amount ---- */
+  function mhActiveEntryType(){
+    var a=document.querySelector('.mh-entry-tabs .active'); if(!a) return '';
+    var m=a.className.match(/et-([a-z-]+)/); return m?m[1]:'';
+  }
+  function mhAmtPreview(){
+    var inp=document.getElementById('mh-f-amount'); var box=document.getElementById('mh-f-amount-cedi'); if(!inp||!box) return;
+    var n=parseFloat(inp.value)||0;
+    var t=mhActiveEntryType();
+    var toGhana=(t==='ghana'||t==='family'||t==='vodafone-cash'||t==='stanbic');
+    var lab=box.querySelector('.mhc-lab'), val=box.querySelector('.mhc-val');
+    if(val) val.textContent = n ? mhCedi(n) : 'GH\u20b5 \u2014';
+    if(lab) lab.textContent = toGhana ? '\u2248 Ghanaian Cedi (sending to Ghana)' : '\u2248 Ghanaian Cedi';
+    box.style.borderColor = toGhana ? 'rgba(201,168,76,.6)' : 'rgba(201,168,76,.3)';
+    box.style.background  = toGhana ? 'rgba(201,168,76,.14)' : 'rgba(201,168,76,.06)';
+  }
+  function amtPreviewInit(){
+    var inp=document.getElementById('mh-f-amount'); if(!inp) return;
+    if(!document.getElementById('mh-f-amount-cedi')){
+      var p=document.createElement('div');
+      p.id='mh-f-amount-cedi';
+      p.style.cssText='margin-top:6px;border:1px solid rgba(201,168,76,.3);background:rgba(201,168,76,.06);border-radius:8px;padding:7px 10px;';
+      p.innerHTML='<div class="mhc-lab" style="font-size:10px;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;">\u2248 Ghanaian Cedi</div><div class="mhc-val" style="font-size:15px;font-weight:700;color:var(--gold);margin-top:1px;">GH\u20b5 \u2014</div>';
+      inp.parentNode.appendChild(p);
+    }
+    if(!inp._cediHooked){ inp._cediHooked=true; inp.addEventListener('input', mhAmtPreview); }
+    mhAmtPreview();
+  }
+  /* keep the label in step when the entry type changes */
+  (function(){ var o=window.mhSetType; if(typeof o==='function' && !o._cediHooked){ window.mhSetType=function(){ var r=o.apply(this,arguments); try{ mhAmtPreview(); }catch(e){} return r; }; window.mhSetType._cediHooked=true; } })();
+
+  /* ============ Ask-AI natural-language search ============ */
+  function answer(qRaw){
+    var q = (qRaw||'').toLowerCase();
+    var all = mhData();
+    var list = all.slice();
+    var label = '', matched = false, dir = null;
+
+    if(/owed to me|owes me|owe me/.test(q)){
+      return note("Your Money Hub records the money you spend and send. It doesn't currently track money owed <i>to</i> you. If you log those as transactions, I'll total them here.");
+    }
+    if(/tax relief|deductible|qualify|allowable/.test(q)){
+      var dl=all.filter(function(t){ return t.type!=='income' && (t.stream==='self-employed'||t.stream==='pamikyx'||t.stream==='employee'); });
+      return block('Possible tax-deductible business expenses', dl.reduce(function(s,t){return s+(parseFloat(t.amount)||0);},0), dl);
+    }
+
+    /* book / stream */
+    if(/pamikyx|company|\bltd\b|business/.test(q)){ list=list.filter(function(t){return t.stream==='pamikyx';}); label=' for Pamikyx Ltd'+label; matched=true; }
+    else if(/self.?employ|sole.?trader/.test(q)){ list=list.filter(function(t){return t.stream==='self-employed';}); label=' (self-employed)'+label; matched=true; }
+    else if(/employee|abicare/.test(q)){ list=list.filter(function(t){return t.stream==='employee';}); label=' (employee)'+label; matched=true; }
+
+    /* time window */
+    if(/this month|current month/.test(q)){ var cm=mhCurrentMonth(); list=list.filter(function(t){return mhMonthKey(t.date||'')===cm;}); label+=' this month'; matched=true; }
+    else if(/last month/.test(q)){ var d=new Date(); var lm=new Date(d.getFullYear(),d.getMonth()-1,1); var lk=lm.getFullYear()+'-'+String(lm.getMonth()+1).padStart(2,'0'); list=list.filter(function(t){return mhMonthKey(t.date||'')===lk;}); label+=' last month'; matched=true; }
+    else if(/this year|year/.test(q)){ var y=String(new Date().getFullYear()); list=list.filter(function(t){return (t.date||'').slice(0,4)===y;}); label+=' this year'; matched=true; }
+
+    /* category / area */
+    if(/ghana|throne/.test(q)){ list=list.filter(function(t){return t.type==='ghana'||t.type==='family'||/gh/i.test(t.source||'')||/ghana/i.test((t.desc||'')+(t.extra||''));}); label=' to Ghana / Throne'+label; matched=true; }
+    else if(/vodafone/.test(q)){ list=list.filter(function(t){return t.source==='vodafone-cash'||t.sourceAccount==='vodafone-cash'||t.type==='vodafone-cash';}); label=' via Vodafone Cash'+label; matched=true; }
+    else if(/stanbic|invest/.test(q)){ list=list.filter(function(t){return t.type==='stanbic';}); label=' in Stanbic investments'+label; matched=true; }
+    else if(/debt|owe/.test(q)){ list=list.filter(function(t){return t.type==='debt';}); label=' on debt'+label; matched=true; dir='out'; }
+    else if(/education|tuition|university|course|school fee/.test(q)){ list=list.filter(function(t){return t.type==='education';}); label=' on education'+label; matched=true; }
+    else if(/family/.test(q)){ list=list.filter(function(t){return t.type==='family';}); label=' on family'+label; matched=true; }
+    else if(/personal/.test(q)){ list=list.filter(function(t){return t.type==='personal';}); label=' on personal'+label; matched=true; }
+    else if(/misc/.test(q)){ list=list.filter(function(t){return t.type==='misc';}); label=' on miscellaneous'+label; matched=true; }
+
+    /* direction / income vs spending */
+    if(/income|earn|salary|received|came in|money in|wages?/.test(q)){ list=list.filter(function(t){return t.type==='income';}); dir='in'; matched=true; }
+    else if(dir!=='out' && /spen|expense|cost|paid|spending|outgoing/.test(q) && !/ghana|stanbic|vodafone|family|education|invest|debt/.test(q)){ list=list.filter(function(t){return t.type==='expense'||t.type==='personal';}); dir='out'; matched=true; }
+
+    /* recipient / beneficiary / free-text fallback */
+    if(!matched){
+      var words = q.replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(function(w){return w.length>2 && !/show|all|how|much|have|the|what|did|spend|spent|total|been|with|for|and/.test(w);});
+      if(words.length){
+        list = all.filter(function(t){
+          var hay = (t.desc+' '+(t.cat||'')+' '+(t.extra||'')+' '+(t.recipient||'')+' '+(t.beneficiary||'')+' '+(t.type||'')).toLowerCase();
+          return words.some(function(w){ return hay.indexOf(w)>-1; });
+        });
+        label = ' matching “'+esc(qRaw.trim())+'”';
+        matched = list.length>0;
+      }
+    }
+
+    var total = list.reduce(function(s,t){ return s + (parseFloat(t.amount)||0); }, 0);
+    var title = (dir==='in'?'Income':dir==='out'?'Spending':'Transactions') + label;
+    return block(title.trim(), total, list);
+  }
+
+  function note(msg){
+    return '<div style="margin-top:12px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px 16px;font-size:12.5px;color:var(--text3);line-height:1.6;">'+msg+'</div>';
+  }
+
+  function block(title, total, list){
+    if(!list.length) return note("No matching records found in your Money Hub yet. Try one of the suggestions above, or rephrase.");
+    list = list.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+    var rows = list.slice(0,40).map(function(t){
+      var sign = (t.type==='income') ? '+' : '−';
+      var meta = [t.date, t.cat, t.type].filter(Boolean).join(' · ');
+      return '<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.08);">'
+        +'<div style="min-width:0;"><div style="font-size:12.5px;color:var(--text);">'+esc(t.desc||'(no description)')+'</div>'
+        +'<div style="font-size:10.5px;color:var(--text4);">'+esc(meta)+'</div></div>'
+        +'<div style="text-align:right;white-space:nowrap;"><div style="font-size:12.5px;font-weight:700;color:var(--text);">'+sign+mhFmt(t.amount)+'</div>'
+        +'<div style="font-size:10px;color:var(--gold);font-weight:600;">'+mhCedi(t.amount)+'</div></div></div>';
+    }).join('');
+    return '<div style="margin-top:12px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px 16px;">'
+      +'<div style="font-size:10.5px;color:var(--text4);text-transform:uppercase;letter-spacing:1px;">'+esc(title)+' — '+list.length+' record'+(list.length>1?'s':'')+'</div>'
+      +'<div style="font-size:24px;font-weight:700;color:var(--gold-light);font-family:\'Cormorant Garamond\',serif;margin-top:4px;">'+mhFmt(total)+' <span style="font-size:14px;color:var(--gold);">≈ '+mhCedi(total)+'</span></div>'
+      +'<div style="margin-top:10px;max-height:300px;overflow-y:auto;">'+rows+'</div></div>';
+  }
+
+  window.mhAsk = function(){
+    var inp = document.getElementById('mh-ai-input'); if(!inp) return;
+    var q = (inp.value||'').trim(); if(!q) return;
+    var out = document.getElementById('mh-ai-result'); if(out) out.innerHTML = answer(q);
+  };
+  window.mhAskChip = function(q){ var inp=document.getElementById('mh-ai-input'); if(inp){ inp.value=q; } window.mhAsk(); };
+
+  /* ---- wrap existing renderers so Cedi stays in sync, non-destructively ---- */
+  function wrap(name, after){
+    var orig = window[name];
+    if(typeof orig !== 'function' || orig._cediWrapped) return;
+    window[name] = function(){ var r = orig.apply(this, arguments); try{ after(); }catch(e){} return r; };
+    window[name]._cediWrapped = true;
+  }
+  wrap('mhRenderKPIs', enhanceKpiCedi);
+  wrap('mhRenderTx', enhanceTxCedi);
+  wrap('mhRenderGhana', enhanceKpiCedi);
+  wrap('buildMoneyHub', function(){ fxBadge(); enhanceKpiCedi(); enhanceTxCedi(); amtPreviewInit(); });
+
+  /* ---- boot ---- */
+  function boot(){ fxBadge(); fxRefresh(false); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+<!-- ============================================================
+     FINANCIAL INTELLIGENCE CENTRE  (additive, one ledger)
+     Unified overview + health score + contact intelligence + insights.
+     Reads existing royal_moneyhub_v1 only. No second data store.
+     ============================================================ -->
+<script>
+(function(){
+  if(typeof mhData !== 'function') return;
+  function num(n){ var x=parseFloat(n); return isNaN(x)?0:x; }
+  function rate(){ return (typeof window.mhRate==='function') ? window.mhRate() : 19.6; }
+  function cedi(n){ return (typeof window.mhCedi==='function') ? window.mhCedi(n) : ('GH₵'+(Math.abs(num(n))*rate()).toFixed(2)); }
+  function gbp(n){ return (typeof mhFmt==='function') ? mhFmt(num(n)) : ('£'+num(n).toFixed(2)); }
+  function mk(d){ return (d||'').substring(0,7); }
+  function curMonth(){ return new Date().toISOString().substring(0,7); }
+  function safeEsc(s){ return (typeof esc==='function') ? esc(s) : String(s==null?'':s); }
+
+  function calc(){
+    var all = mhData();
+    var inAll=0, out=0, invest=0, ghana=0;
+    all.forEach(function(t){
+      var a=num(t.amount);
+      if(t.type==='income'){ inAll+=a; }
+      else { out+=a; if(t.type==='stanbic') invest+=a; if(t.type==='ghana'||t.type==='family') ghana+=a; }
+    });
+    var balance = inAll-out;
+    var netWorth = balance + invest + ghana;
+    var cm=curMonth(); var d=new Date(); var lm=new Date(d.getFullYear(),d.getMonth()-1,1);
+    var lk=lm.getFullYear()+'-'+String(lm.getMonth()+1).padStart(2,'0');
+    function mIn(k){ return all.filter(function(t){return t.type==='income'&&mk(t.date)===k;}).reduce(function(s,t){return s+num(t.amount);},0); }
+    function mOut(k){ return all.filter(function(t){return t.type!=='income'&&mk(t.date)===k;}).reduce(function(s,t){return s+num(t.amount);},0); }
+    var mIncome=mIn(cm), mOutNow=mOut(cm), lOut=mOut(lk);
+    return { all:all, inAll:inAll, out:out, balance:balance, invest:invest, ghana:ghana, netWorth:netWorth, mIncome:mIncome, mOut:mOutNow, lOut:lOut, cash:mIncome-mOutNow };
+  }
+
+  function health(m){
+    var s=50, r=m.mIncome>0?(m.cash/m.mIncome):0;
+    s+=Math.max(-25,Math.min(30,r*60));
+    if(m.invest>0)s+=8; if(m.ghana>0)s+=6; if(m.cash<0)s-=12; if(m.balance<0)s-=15;
+    return Math.max(5,Math.min(99,Math.round(s)));
+  }
+  function ring(score){
+    var c=2*Math.PI*34, off=c*(1-score/100);
+    var col=score>=75?'#30D158':score>=55?'var(--gold)':'#E05252';
+    return '<div style="position:relative;width:84px;height:84px;flex:none;"><svg width="84" height="84" style="transform:rotate(-90deg);"><circle cx="42" cy="42" r="34" fill="none" stroke="rgba(201,168,76,0.15)" stroke-width="8"/><circle cx="42" cy="42" r="34" fill="none" stroke="'+col+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'"/></svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><b style="font-size:22px;color:var(--text);">'+score+'</b><span style="font-size:9px;color:var(--text4);">/100</span></div></div>';
+  }
+  function kpiCard(lab,val,sub){
+    return '<div style="flex:1;min-width:120px;background:var(--dark4);border:1px solid rgba(201,168,76,0.15);border-radius:12px;padding:12px 14px;"><div style="font-size:10.5px;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;">'+lab+'</div><div style="font-size:20px;font-weight:700;color:var(--text);margin-top:4px;font-family:\'Cormorant Garamond\',serif;">'+val+'</div><div style="font-size:10.5px;color:var(--gold);font-weight:600;margin-top:1px;">'+sub+'</div></div>';
+  }
+  function renderOverview(m){
+    var el=document.getElementById('mh-fic-overview'); if(!el) return;
+    el.innerHTML =
+      kpiCard('Current Balance',(m.balance<0?'−':'')+gbp(Math.abs(m.balance)),'≈ '+cedi(m.balance))
+      +kpiCard('Money In (all time)',gbp(m.inAll),'≈ '+cedi(m.inAll))
+      +kpiCard('Money Out (all time)',gbp(m.out),'≈ '+cedi(m.out))
+      +kpiCard('Net Worth',(m.netWorth<0?'−':'')+gbp(Math.abs(m.netWorth)),'≈ '+cedi(m.netWorth));
+  }
+  function renderHealth(m){
+    var el=document.getElementById('mh-fic-health'); if(!el) return;
+    var hs=health(m);
+    var W=86, R=32, SW=9, NUM=22, CX=W/2;
+    var C=2*Math.PI*R, gid='mhhg'+Math.floor(Math.random()*1e6);
+    var pal = hs>=75 ? ['#E8C96A','#30D158','#19C37D','#E8C96A'] : hs>=55 ? ['#E8C96A','#C9A84C','#30D158','#E8C96A'] : ['#E8C96A','#C98A2B','#E05252','#E8C96A'];
+    var v1=pal.join(';'); var v2=pal.slice(1).concat(pal.slice(0,1)).join(';');
+    var msg = hs>=75?'Strong position — keep it up.':hs>=55?'Healthy — room to grow savings.':'Watch spending this month.';
+    el.innerHTML='<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">'
+      +'<div style="position:relative;width:'+W+'px;height:'+W+'px;flex:none;">'
+        +'<svg width="'+W+'" height="'+W+'" viewBox="0 0 '+W+' '+W+'" style="transform:rotate(-90deg);overflow:visible;">'
+          +'<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="1" y2="1">'
+            +'<stop offset="0" stop-color="'+pal[0]+'"><animate attributeName="stop-color" values="'+v1+'" dur="6s" repeatCount="indefinite"/></stop>'
+            +'<stop offset="1" stop-color="'+pal[1]+'"><animate attributeName="stop-color" values="'+v2+'" dur="6s" repeatCount="indefinite"/></stop>'
+          +'</linearGradient></defs>'
+          +'<circle cx="'+CX+'" cy="'+CX+'" r="'+R+'" fill="none" stroke="rgba(201,168,76,0.13)" stroke-width="'+SW+'"/>'
+          +'<circle id="'+gid+'-arc" cx="'+CX+'" cy="'+CX+'" r="'+R+'" fill="none" stroke="url(#'+gid+')" stroke-width="'+SW+'" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+C+'" style="transition:stroke-dashoffset 1.1s cubic-bezier(.34,1.12,.4,1);filter:drop-shadow(0 0 5px rgba(201,168,76,0.4));"/>'
+        +'</svg>'
+        +'<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><b id="'+gid+'-num" style="font-size:'+NUM+'px;color:var(--text);font-family:\'Cormorant Garamond\',serif;line-height:1;">0</b><span style="font-size:9px;color:var(--text4);letter-spacing:.5px;text-transform:uppercase;">Health / 100</span></div>'
+      +'</div>'
+      +'<div style="min-width:0;"><div style="font-size:14px;color:'+(m.cash>=0?'#30D158':'#E05252')+';font-weight:700;">'+(m.cash>=0?'+':'−')+gbp(Math.abs(m.cash))+'</div>'
+        +'<div style="font-size:10.5px;color:var(--gold);font-weight:600;">≈ '+cedi(m.cash)+'</div>'
+        +'<div style="font-size:10.5px;color:var(--text4);margin-top:4px;">cash flow this month</div>'
+        +'<div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.4;">'+msg+'</div></div></div>';
+    var arc=document.getElementById(gid+'-arc'), num=document.getElementById(gid+'-num');
+    var target=C*(1-Math.max(0,Math.min(100,hs))/100);
+    if(arc){ setTimeout(function(){ arc.style.strokeDashoffset=target; }, 70); }
+    if(window._mhHealthAnim){ clearInterval(window._mhHealthAnim); window._mhHealthAnim=null; }
+    if(num){ var T0=(window.performance&&performance.now)?performance.now():Date.now(), DUR=1100;
+      window._mhHealthAnim=setInterval(function(){ var nowT=(window.performance&&performance.now)?performance.now():Date.now(); var p=Math.min(1,(nowT-T0)/DUR); var eased=1-Math.pow(1-p,3); num.textContent=Math.round(hs*eased); if(p>=1){ clearInterval(window._mhHealthAnim); window._mhHealthAnim=null; num.textContent=hs; } },28);
+    }
+  }
+  window.mhFicAddTx=function(){
+    var p=document.getElementById('mh-quick-entry')||document.getElementById('mh-form-grid');
+    if(p&&p.scrollIntoView) p.scrollIntoView({behavior:'smooth',block:'center'});
+    if(p){ p.style.transition='box-shadow .3s ease'; var prev=p.style.boxShadow; p.style.boxShadow='0 0 0 2px var(--gold), 0 0 24px rgba(201,168,76,0.45)'; setTimeout(function(){ p.style.boxShadow=prev||''; },1700); }
+    var a=document.getElementById('mh-f-amount'); if(a) setTimeout(function(){ try{a.focus();}catch(e){} },380);
+  };
+
+  function renderFlow(m){
+    var el=document.getElementById('mh-fic-flow'); if(!el) return;
+    var now=new Date(), months=[];
+    for(var i=5;i>=0;i--){ var d=new Date(now.getFullYear(),now.getMonth()-i,1); months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')); }
+    var MA=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var data=months.map(function(k){
+      var inc=m.all.filter(function(t){return t.type==='income'&&mk(t.date)===k;}).reduce(function(s,t){return s+num(t.amount);},0);
+      var ex =m.all.filter(function(t){return t.type!=='income'&&mk(t.date)===k;}).reduce(function(s,t){return s+num(t.amount);},0);
+      return {k:k,inc:inc,ex:ex};
+    });
+    var max=Math.max(1,Math.max.apply(null,data.map(function(x){return Math.max(x.inc,x.ex);})));
+    var bars=data.map(function(x){
+      var ih=Math.max(2,Math.round(x.inc/max*90)), eh=Math.max(2,Math.round(x.ex/max*90));
+      return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">'
+        +'<div style="display:flex;gap:3px;align-items:flex-end;height:96px;">'
+        +'<div class="mhfl-bar" data-h="'+ih+'" title="In '+gbp(x.inc)+'" style="width:12px;height:2px;background:#30D158;border-radius:3px 3px 0 0;transition:height .6s cubic-bezier(.34,1.3,.5,1);"></div>'
+        +'<div class="mhfl-bar" data-h="'+eh+'" title="Out '+gbp(x.ex)+'" style="width:12px;height:2px;background:#E05252;border-radius:3px 3px 0 0;transition:height .6s cubic-bezier(.34,1.3,.5,1);"></div>'
+        +'</div><div style="font-size:9.5px;color:var(--text4);">'+MA[parseInt(x.k.split('-')[1])-1]+'</div></div>';
+    }).join('');
+    el.innerHTML='<div style="display:flex;gap:6px;align-items:flex-end;">'+bars+'</div>'
+      +'<div style="display:flex;gap:14px;margin-top:10px;font-size:10.5px;color:var(--text4);"><span><span style="display:inline-block;width:9px;height:9px;background:#30D158;border-radius:2px;"></span> Money In</span><span><span style="display:inline-block;width:9px;height:9px;background:#E05252;border-radius:2px;"></span> Money Out</span></div>';
+    try{ var bs=el.querySelectorAll('.mhfl-bar'); setTimeout(function(){ for(var i=0;i<bs.length;i++){ bs[i].style.height=bs[i].getAttribute('data-h')+'px'; } }, 40); }catch(e){}
+  }
+
+  function renderCategory(m){
+    var el=document.getElementById('mh-fic-cat'); if(!el) return;
+    var by={}; m.all.forEach(function(t){ if(t.type==='income') return; var k=t.cat||t.type; by[k]=(by[k]||0)+num(t.amount); });
+    var arr=Object.keys(by).map(function(k){return [k,by[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,7);
+    if(!arr.length){ el.innerHTML='<div style="font-size:12px;color:var(--text4);font-style:italic;">No spending logged yet.</div>'; return; }
+    var max=arr[0][1]||1, COL=['#C9A84C','#5B8DD9','#30D158','#E05252','#9B6DD6','#FF9F0A','#4ECDC4'];
+    el.innerHTML=arr.map(function(c,i){ var w=Math.round(c[1]/max*100);
+      return '<div style="margin-bottom:9px;"><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;"><span style="color:var(--text2);text-transform:capitalize;">'+safeEsc(c[0])+'</span><span style="color:var(--text);font-weight:600;">'+gbp(c[1])+'</span></div><div style="height:8px;background:rgba(201,168,76,0.08);border-radius:5px;overflow:hidden;"><div style="height:100%;width:'+w+'%;background:'+COL[i%COL.length]+';border-radius:5px;"></div></div></div>';
+    }).join('');
+  }
+
+  function renderRecurring(m){
+    var el=document.getElementById('mh-fic-recurring'); if(!el) return;
+    var seen={};
+    m.all.forEach(function(t){ if(t.type==='income') return; var key=((t.desc||'').toLowerCase().slice(0,14)+'|'+t.type); if(!seen[key]) seen[key]={desc:t.desc,type:t.type,cat:t.cat,amt:num(t.amount),n:0}; seen[key].n++; });
+    var rec=Object.keys(seen).map(function(k){return seen[k];}).filter(function(x){ return x.n>1 || /subscription|rent|mortgage|insurance|netflix|spotify|icloud|council/i.test((x.desc||'')+(x.cat||'')); }).sort(function(a,b){return b.n-a.n;}).slice(0,5);
+    if(!rec.length){ el.innerHTML='<div style="font-size:12px;color:var(--text4);font-style:italic;">No recurring payments detected yet.</div>'; return; }
+    el.innerHTML=rec.map(function(r){ return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(201,168,76,0.08);"><span style="font-size:15px;">🔁</span><div style="flex:1;min-width:0;"><div style="font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+safeEsc(r.desc||'(no description)')+'</div><div style="font-size:10px;color:var(--text4);text-transform:capitalize;">'+safeEsc(r.cat||r.type)+(r.n>1?' · seen '+r.n+'×':'')+'</div></div><div style="text-align:right;white-space:nowrap;"><div style="font-size:12px;color:var(--text);font-weight:600;">~'+gbp(r.amt)+'</div><div style="font-size:9.5px;color:var(--gold);">'+cedi(r.amt)+'</div></div></div>'; }).join('');
+  }
+
+  function renderRecent(m){
+    var el=document.getElementById('mh-fic-recent'); if(!el) return;
+    var list=m.all.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');}).slice(0,6);
+    if(!list.length){ el.innerHTML='<div style="font-size:12px;color:var(--text4);font-style:italic;padding:6px 0;">No transactions yet — add one with “＋ Add Transaction”.</div>'; return; }
+    var ICON={income:'📈',expense:'🛒',personal:'🏠',debt:'💳',ghana:'🇬🇭',family:'🏘️',education:'🎓',stanbic:'🏦',misc:'🗂️','vodafone-cash':'📱'};
+    el.innerHTML=list.map(function(t){ var sign=t.type==='income'?'+':'−'; var col=t.type==='income'?'#30D158':'#E05252';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(201,168,76,0.08);"><span style="font-size:15px;">'+(ICON[t.type]||'📦')+'</span><div style="flex:1;min-width:0;"><div style="font-size:12.5px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+safeEsc(t.desc||'(no description)')+'</div><div style="font-size:10px;color:var(--text4);">'+safeEsc([t.date,t.cat].filter(Boolean).join(' · '))+'</div></div><div style="text-align:right;white-space:nowrap;"><div style="font-size:12.5px;font-weight:700;color:'+col+';">'+sign+gbp(t.amount)+'</div><div style="font-size:9.5px;color:var(--gold);">'+cedi(t.amount)+'</div></div></div>';
+    }).join('');
+  }
+
+  function cnorm(s){ return String(s||'').toLowerCase().replace(/\s+/g,' ').trim(); }
+  function contacts(all){
+    var map={};
+    function ensure(name, group){ var k=cnorm(name); if(!k) return null; if(!map[k]) map[k]={name:name, group:group||'', in:0, out:0, n:0}; return map[k]; }
+    /* bring in ALL saved contacts (directory) */
+    try{ if(typeof rcAll==='function'){ rcAll().forEach(function(c){ ensure(c.name, c.group); }); } }catch(e){}
+    var keys = Object.keys(map);
+    /* attribute every transaction to a contact */
+    all.forEach(function(t){
+      var nm=(t.recipient||t.beneficiary||'').trim();
+      var c=null;
+      if(nm){ c=ensure(nm); }
+      else {
+        var hay=cnorm((t.desc||'')+' '+(t.extra||''));
+        for(var i=0;i<keys.length;i++){ if(keys[i].length>3 && hay.indexOf(keys[i])>-1){ c=map[keys[i]]; break; } }
+      }
+      if(!c) return;
+      var a=num(t.amount);
+      if(t.type==='income') c.in+=a; else c.out+=a;
+      c.n++;
+    });
+    return Object.keys(map).map(function(k){return map[k];})
+      .sort(function(a,b){ return (b.out-a.out) || (b.in-a.in) || a.name.localeCompare(b.name); });
+  }
+  var ficContactFilter='all';
+  var ficContactView='list';
+  try{ var _vv=localStorage.getItem('royal_fic_contacts_view'); if(_vv) ficContactView=_vv; }catch(e){}
+  function updateViewButtons(){
+    var L=document.getElementById('mhcv-list'), G=document.getElementById('mhcv-gallery');
+    function on(b){ if(b){ b.style.background='var(--gold)'; b.style.color='var(--dark)'; b.style.fontWeight='700'; } }
+    function off(b){ if(b){ b.style.background='transparent'; b.style.color='var(--text3)'; b.style.fontWeight='600'; } }
+    if(ficContactView==='gallery'){ off(L); on(G); } else { on(L); off(G); }
+  }
+  window.mhFicContactView=function(v){ ficContactView=v; try{ localStorage.setItem('royal_fic_contacts_view',v); }catch(e){} try{ var m=calc(); renderContacts(m,(document.getElementById('mh-fic-contact-search')||{}).value||''); }catch(e){} };
+  function updatePills(){
+    var on={background:'var(--gold)',color:'var(--dark)',fontWeight:'700'};
+    var off={background:'transparent',color:'var(--text3)',fontWeight:'600'};
+    [['mhcf-all','all'],['mhcf-in','in'],['mhcf-out','out']].forEach(function(p){
+      var b=document.getElementById(p[0]); if(!b) return;
+      var s=(ficContactFilter===p[1])?on:off;
+      b.style.background=s.background; b.style.color=s.color; b.style.fontWeight=s.fontWeight;
+    });
+  }
+  window.mhFicContactFilter=function(f){ ficContactFilter=f; updatePills(); try{ var m=calc(); renderContacts(m,(document.getElementById('mh-fic-contact-search')||{}).value||''); }catch(e){} };
+
+  function renderContacts(m,q){
+    var el=document.getElementById('mh-fic-contacts'); if(!el) return;
+    var cs=contacts(m.all);
+    var totalIn=cs.reduce(function(s,c){return s+c.in;},0);
+    var totalOut=cs.reduce(function(s,c){return s+c.out;},0);
+    var g=document.getElementById('mh-fic-contacts-glance');
+    if(g) g.textContent='— '+cs.length+' people · '+gbp(totalIn)+' in · '+gbp(totalOut)+' out';
+    updatePills(); updateViewButtons();
+    if(ficContactFilter==='in'){ cs=cs.filter(function(c){return c.in>0;}).sort(function(a,b){return b.in-a.in;}); }
+    else if(ficContactFilter==='out'){ cs=cs.filter(function(c){return c.out>0;}).sort(function(a,b){return b.out-a.out;}); }
+    else { cs=cs.slice().sort(function(a,b){return ((b.out+b.in)-(a.out+a.in))|| a.name.localeCompare(b.name);}); }
+    if(q){ q=q.toLowerCase(); cs=cs.filter(function(c){return c.name.toLowerCase().indexOf(q)>-1 || (c.group||'').toLowerCase().indexOf(q)>-1;}); }
+    if(!cs.length){ el.style.display='block'; el.innerHTML='<div style="font-size:12px;color:var(--text4);font-style:italic;padding:8px 0;">No matching contacts.</div>'; return; }
+    function nm(c){ return c.name.replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
+    if(ficContactView==='gallery'){
+      el.style.display='grid'; el.style.gridTemplateColumns='repeat(auto-fill,minmax(150px,1fr))'; el.style.gap='10px';
+      el.innerHTML=cs.map(function(c){
+        var recv=c.in>0?'<div style="font-size:11.5px;color:#30D158;font-weight:700;">↓ '+gbp(c.in)+'</div>':'';
+        var sent=c.out>0?'<div style="font-size:11.5px;color:#E05252;font-weight:700;">↑ '+gbp(c.out)+'</div>':'';
+        var none=(c.in<=0&&c.out<=0)?'<div style="font-size:10.5px;color:var(--text4);">no activity</div>':'';
+        return '<div onclick="mhFicContact(\''+nm(c)+'\')" style="background:rgba(0,0,0,0.18);border:1px solid rgba(201,168,76,0.12);border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;">'
+          +'<div style="width:42px;height:42px;border-radius:50%;margin:0 auto 8px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;">'+safeEsc(c.name.slice(0,1).toUpperCase())+'</div>'
+          +'<div style="font-size:11.5px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+safeEsc(c.name)+'</div>'
+          +'<div style="font-size:9.5px;color:var(--text4);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+safeEsc(c.group||'')+'</div>'
+          +recv+sent+none+'</div>';
+      }).join('');
+    } else {
+      el.style.display='block'; el.style.gridTemplateColumns=''; el.style.gap='';
+      el.innerHTML=cs.map(function(c){
+        var sub=(c.group||'')+(c.n?((c.group?' · ':'')+c.n+' txn'+(c.n>1?'s':'')):'');
+        var recv=c.in>0?'<div style="font-size:12px;color:#30D158;font-weight:700;">↓ '+gbp(c.in)+'</div>':'';
+        var sent=c.out>0?'<div style="font-size:12px;color:#E05252;font-weight:700;">↑ '+gbp(c.out)+'</div>':'';
+        var none=(c.in<=0&&c.out<=0)?'<div style="font-size:11px;color:var(--text4);">no activity</div>':'';
+        return '<div onclick="mhFicContact(\''+nm(c)+'\')" style="display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px solid rgba(201,168,76,0.08);cursor:pointer;">'
+          +'<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none;">'+safeEsc(c.name.slice(0,1).toUpperCase())+'</div>'
+          +'<div style="flex:1;min-width:0;"><div style="font-size:12.5px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+safeEsc(c.name)+'</div><div style="font-size:10px;color:var(--text4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+safeEsc(sub||'')+'</div></div>'
+          +'<div style="text-align:right;white-space:nowrap;">'+recv+sent+none+'</div>'
+          +'</div>';
+      }).join('');
+    }
+  }
+  window.mhFicSearch=function(){ try{ var m=calc(); renderContacts(m,(document.getElementById('mh-fic-contact-search')||{}).value||''); }catch(e){} };
+
+  var FIC_C_KEY='royal_fic_contacts_open';
+  window.mhFicToggleContacts=function(){
+    var body=document.getElementById('mh-fic-contacts-body'), chev=document.getElementById('mh-fic-contacts-chev'); if(!body) return;
+    var open=(body.style.display!=='none'); open=!open;
+    body.style.display=open?'block':'none';
+    if(chev) chev.textContent=open?'▾':'▸';
+    try{ localStorage.setItem(FIC_C_KEY, open?'1':'0'); }catch(e){}
+  };
+  function applyContactsOpen(){
+    var open=false; try{ open=(localStorage.getItem(FIC_C_KEY)==='1'); }catch(e){}
+    var body=document.getElementById('mh-fic-contacts-body'), chev=document.getElementById('mh-fic-contacts-chev');
+    if(body) body.style.display=open?'block':'none';
+    if(chev) chev.textContent=open?'▾':'▸';
+  }
+  var FIC_R_KEY='royal_fic_recent_open';
+  window.mhFicToggleRecent=function(){
+    var body=document.getElementById('mh-fic-recent-body'), chev=document.getElementById('mh-fic-recent-chev'); if(!body) return;
+    var open=(body.style.display!=='none'); open=!open;
+    body.style.display=open?'block':'none';
+    if(chev) chev.textContent=open?'▾':'▸';
+    try{ localStorage.setItem(FIC_R_KEY, open?'1':'0'); }catch(e){}
+  };
+  function applyRecentOpen(){
+    var open=true; try{ var v=localStorage.getItem(FIC_R_KEY); if(v!==null) open=(v==='1'); }catch(e){}
+    var body=document.getElementById('mh-fic-recent-body'), chev=document.getElementById('mh-fic-recent-chev');
+    if(body) body.style.display=open?'block':'none';
+    if(chev) chev.textContent=open?'▾':'▸';
+  }
+
+  window.mhFicContact=function(name){
+    var all=mhData().filter(function(t){return (t.recipient||t.beneficiary||'')===name;}).sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+    var inS=all.filter(function(t){return t.type==='income';}).reduce(function(s,t){return s+num(t.amount);},0);
+    var outS=all.filter(function(t){return t.type!=='income';}).reduce(function(s,t){return s+num(t.amount);},0);
+    function box(lab,val,col){ return '<div style="flex:1;background:rgba(201,168,76,0.08);border-radius:10px;padding:10px;"><div style="font-size:10px;color:var(--text3);">'+lab+'</div><div style="font-size:16px;font-weight:700;color:'+col+';">'+val+'</div><div style="font-size:10px;color:#C9A84C;">≈ '+cedi(val.replace(/[^0-9.\-]/g,''))+'</div></div>'; }
+    var net=inS-outS;
+    var rows=all.map(function(t){ var sign=t.type==='income'?'+':'−';
+      return '<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.08);"><div style="min-width:0;"><div style="font-size:12.5px;color:var(--text);">'+safeEsc(t.desc||'(no description)')+'</div><div style="font-size:10.5px;color:var(--text3);">'+safeEsc([t.date,t.cat,t.type].filter(Boolean).join(' · '))+'</div></div><div style="text-align:right;white-space:nowrap;"><div style="font-size:12.5px;font-weight:700;color:var(--text);">'+sign+gbp(t.amount)+'</div><div style="font-size:10px;color:#C9A84C;">'+cedi(t.amount)+'</div></div></div>';
+    }).join('');
+    var html='<div style="display:flex;gap:10px;margin-bottom:12px;">'
+      +'<div style="flex:1;background:rgba(201,168,76,0.08);border-radius:10px;padding:10px;"><div style="font-size:10px;color:var(--text3);">Received</div><div style="font-size:16px;font-weight:700;color:#30D158;">'+gbp(inS)+'</div><div style="font-size:10px;color:#C9A84C;">≈ '+cedi(inS)+'</div></div>'
+      +'<div style="flex:1;background:rgba(201,168,76,0.08);border-radius:10px;padding:10px;"><div style="font-size:10px;color:var(--text3);">Sent</div><div style="font-size:16px;font-weight:700;color:#E05252;">'+gbp(outS)+'</div><div style="font-size:10px;color:#C9A84C;">≈ '+cedi(outS)+'</div></div>'
+      +'<div style="flex:1;background:rgba(201,168,76,0.08);border-radius:10px;padding:10px;"><div style="font-size:10px;color:var(--text3);">Net</div><div style="font-size:16px;font-weight:700;color:var(--text);">'+(net>=0?'+':'−')+gbp(net)+'</div><div style="font-size:10px;color:#C9A84C;">≈ '+cedi(net)+'</div></div>'
+      +'</div><div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Financial timeline — '+all.length+' record'+(all.length===1?'':'s')+'</div><div style="max-height:320px;overflow-y:auto;">'+rows+'</div>';
+    if(typeof debtModalOpen==='function') debtModalOpen('👤 '+name, html);
+  };
+
+  function renderInsights(m){
+    var el=document.getElementById('mh-fic-insights'); if(!el) return;
+    var out=[];
+    var ch=m.lOut>0?((m.mOut-m.lOut)/m.lOut*100):0;
+    if(m.lOut>0 && ch>8) out.push(['#E05252','⚠️','Spending is up <b>'+ch.toFixed(0)+'%</b> this month ('+gbp(m.mOut)+' vs '+gbp(m.lOut)+' last month).']);
+    else if(m.lOut>0 && ch<-8) out.push(['#30D158','✅','Spending is down <b>'+Math.abs(ch).toFixed(0)+'%</b> on last month. Well controlled.']);
+    out.push(m.cash>=0?['#30D158','💰','Positive cash flow of <b>'+gbp(m.cash)+'</b> this month — you\'re saving as you go.']:['#FF9F0A','📉','Cash flow is negative by <b>'+gbp(Math.abs(m.cash))+'</b> this month. Income isn\'t covering outgoings.']);
+    if(m.invest>0) out.push(['#30D158','📈','You\'ve invested <b>'+gbp(m.invest)+'</b> via Stanbic. Your portfolio is building.']);
+    if(m.ghana>0) out.push(['#5B8DD9','🇬🇭','<b>'+gbp(m.ghana)+'</b> committed to Ghana / Throne Fund so far.']);
+    var byCat={}; m.all.forEach(function(t){ if(t.type==='income') return; var k=t.cat||t.type; byCat[k]=(byCat[k]||0)+num(t.amount); });
+    var top=Object.keys(byCat).map(function(k){return [k,byCat[k]];}).sort(function(a,b){return b[1]-a[1];})[0];
+    if(top) out.push(['#C9A84C','🔎','Biggest outgoing area: <b>'+safeEsc(top[0])+'</b> at <b>'+gbp(top[1])+'</b>. A 10% trim saves '+gbp(top[1]*0.1)+'.']);
+    var r=m.mIncome>0?(m.cash/m.mIncome*100):0;
+    out.push([r>=20?'#30D158':'#5B8DD9','🎯','Savings rate this month: <b>'+r.toFixed(0)+'%</b>. '+(r>=20?'On track — excellent.':'Aiming for 20% builds wealth faster.')]);
+    if(!m.all.length) out=[['#5B8DD9','👋','No transactions yet. Log income and spending in Quick Entry below and your insights will appear here.']];
+    el.innerHTML=out.map(function(i){ return '<div style="display:flex;gap:10px;padding:10px 12px;border:1px solid rgba(201,168,76,0.12);border-left:3px solid '+i[0]+';border-radius:10px;margin-bottom:8px;background:var(--dark4);"><span style="font-size:16px;flex:none;">'+i[1]+'</span><div style="font-size:12px;color:var(--text2);line-height:1.5;">'+i[2]+'</div></div>'; }).join('');
+  }
+
+  /* ===== Tax & Bookkeeping (UK 2026/27 rates — a guide, not formal tax advice) ===== */
+  var BOOKS=[
+    {k:'self-employed',l:'🧰 Self-Employed',tax:'self'},
+    {k:'pamikyx',l:'🏢 Pamikyx Ltd',tax:'corp'},
+    {k:'employee',l:'👔 Employee (Abicare) expenses',tax:'employee'}
+  ];
+  function thisTaxYear(){ var n=new Date(); var y=n.getFullYear(); return (n.getMonth()>2 || (n.getMonth()===2 && n.getDate()>=6)) ? y : y-1; } // UK year starts 6 Apr
+  function inTaxYear(dateStr,startY){ if(!dateStr) return false; var d=new Date(dateStr); var s=new Date(startY,3,6), e=new Date(startY+1,3,5,23,59,59); return d>=s && d<=e; }
+  function incomeTax(taxable){ var t=0,x=Math.max(0,taxable); var basic=37700,higher=74870; var b=Math.min(x,basic); t+=b*0.20; x-=b; if(x>0){var h=Math.min(x,higher); t+=h*0.40; x-=h;} if(x>0) t+=x*0.45; return t; }
+  function estSelfTax(profit){ var pa=12570; var it=incomeTax(Math.max(0,profit-pa)); var nic=0; if(profit>pa) nic+=(Math.min(profit,50270)-pa)*0.06; if(profit>50270) nic+=(profit-50270)*0.02; return {it:it,nic:nic,total:it+nic}; }
+  function estCorpTax(p){ if(p<=0) return 0; if(p<=50000) return p*0.19; if(p>=250000) return p*0.25; return p*0.25 - (3/200)*(250000-p); }
+
+  /* ---- Stage 2: tax suggestions, CSV + printable year-end report ---- */
+  function mhTaxSuggestions(all){
+    var out=[]; var biz=all.filter(function(t){return t.stream==='self-employed'||t.stream==='pamikyx'||t.stream==='employee';});
+    if(!biz.length){ return [{ic:'👋',tx:'Tag transactions with a business Book (Self-Employed / Pamikyx Ltd / Employee) and suggestions will appear here.'}]; }
+    var seen={}; biz.forEach(function(t){ var k=(t.amount)+'|'+((t.desc||'').toLowerCase())+'|'+t.date; seen[k]=(seen[k]||0)+1; });
+    var dups=Object.keys(seen).filter(function(k){return seen[k]>1;}).length;
+    if(dups) out.push({ic:'⚠️',tx:'<b>'+dups+'</b> possible duplicate business transaction'+(dups>1?'s':'')+' (same amount, name and date) — worth checking.'});
+    var noRef=biz.filter(function(t){return t.type!=='income' && (parseFloat(t.amount)||0)>100 && !(t.ref||t.extra);}).length;
+    if(noRef) out.push({ic:'🧾',tx:'<b>'+noRef+'</b> business expense'+(noRef>1?'s':'')+' over £100 with no reference/receipt logged.'});
+    var equip=biz.filter(function(t){return t.type!=='income' && /equip|laptop|ipad|computer|monitor|phone|camera|printer/i.test((t.desc||'')+(t.cat||'')) && (parseFloat(t.amount)||0)>=500;}).length;
+    if(equip) out.push({ic:'💻',tx:'<b>'+equip+'</b> large equipment purchase'+(equip>1?'s':'')+' — may qualify for capital allowances.'});
+    var rk={}; biz.forEach(function(t){ if(t.type==='income')return; var k=(t.desc||'').toLowerCase().slice(0,12); if(k)rk[k]=(rk[k]||0)+1; });
+    var rec=Object.keys(rk).filter(function(k){return rk[k]>1;}).length;
+    if(rec) out.push({ic:'🔁',tx:'<b>'+rec+'</b> recurring business cost'+(rec>1?'s':'')+' detected (e.g. subscriptions).'});
+    out.push({ic:'✅',tx:'Keep tagging each payment to its Book so year-end is one click.'});
+    return out;
+  }
+  function mhCSVDownload(name,rows){
+    var csv=rows.map(function(r){ return r.map(function(c){ return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+    var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=name; a.click();
+  }
+  window.mhTaxExportCSV=function(){
+    var all=mhData(); var head=['Date','Book','Type','Description','Category','Amount GBP','Rate','Amount GHS','Location','Reference','Notes','Contact'];
+    var rows=[head]; all.forEach(function(t){ var rate=(t.rate||mhRate()); var amt=parseFloat(t.amount)||0; rows.push([t.date,t.stream||'personal',t.type,t.desc,t.cat,amt.toFixed(2),rate,(amt*rate).toFixed(2),t.loc||'',t.ref||'',t.notes||t.extra||'',t.recipient||t.beneficiary||'']); });
+    mhCSVDownload('royal-money-hub-ledger.csv',rows);
+  };
+  window.mhTaxExportPL=function(){
+    var pr=mhPeriodRange(); var startY=thisTaxYear(); var all=mhData().filter(function(t){return mhInPeriod(t.date,pr);});
+    var rows=[['Book','Income GBP','Allowable Expenses GBP','Profit GBP','Estimated Tax GBP','Tax Year']];
+    BOOKS.forEach(function(b){ var inc=0,exp=0; all.forEach(function(t){ if(t.stream!==b.k)return; var a=num(t.amount); if(t.type==='income')inc+=a; else exp+=a; }); var profit=inc-exp; var tax=b.tax==='self'?estSelfTax(Math.max(0,profit)).total:b.tax==='corp'?estCorpTax(Math.max(0,profit)):0; rows.push([b.l.replace(/[^\x20-\x7E]/g,'').trim(),inc.toFixed(2),exp.toFixed(2),profit.toFixed(2),tax.toFixed(2),startY+'/'+String(startY+1).slice(2)]); });
+    mhCSVDownload('royal-tax-pl-'+startY+'.csv',rows);
+  };
+  window.mhTaxPrint=function(){
+    function eh(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+    var pr=mhPeriodRange(); var startY=thisTaxYear(); var all=mhData().filter(function(t){return mhInPeriod(t.date,pr);});
+    var H='<h1>Royal Money Hub — Financial Report</h1><p>HRH Prince Kwame Nkrabea · '+pr.label+'</p>';
+    BOOKS.forEach(function(b){ var items=all.filter(function(t){return t.stream===b.k;}); if(!items.length) return; var inc=0,exp=0,byCat={}; items.forEach(function(t){ var a=num(t.amount); if(t.type==='income')inc+=a; else {exp+=a; var c=t.cat||'other'; byCat[c]=(byCat[c]||0)+a;} }); var profit=inc-exp; var tax=b.tax==='self'?estSelfTax(Math.max(0,profit)).total:b.tax==='corp'?estCorpTax(Math.max(0,profit)):0;
+      H+='<h2>'+eh(b.l)+'</h2><table><tr><td>Income</td><td>'+gbp(inc)+'</td></tr><tr><td>Allowable expenses</td><td>'+gbp(exp)+'</td></tr><tr><td><b>Profit</b></td><td><b>'+gbp(profit)+'</b></td></tr>'+(b.tax!=='employee'?'<tr><td>Estimated tax (guide)</td><td>'+gbp(tax)+'</td></tr>':'')+'</table>';
+      var cats=Object.keys(byCat).sort(function(a,c){return byCat[c]-byCat[a];}); if(cats.length){ H+='<h3>Expenses by category</h3><table><tr><th>Category</th><th>Amount</th></tr>'+cats.map(function(c){return '<tr><td>'+eh(c)+'</td><td>'+gbp(byCat[c])+'</td></tr>';}).join('')+'</table>'; }
+    });
+    var byP={}; MH_PURPOSES.forEach(function(p){byP[p.k]=0;}); all.forEach(function(t){ if(t.type==='income')return; var k=mhPurpose(t); if(byP[k]==null)byP[k]=0; byP[k]+=num(t.amount); });
+    H+='<h2>Spending by Purpose</h2><table><tr><th>Purpose</th><th>Amount</th><th>Cedi</th></tr>'+MH_PURPOSES.map(function(p){return '<tr><td>'+eh(p.l)+'</td><td>'+gbp(byP[p.k]||0)+'</td><td>'+cedi(byP[p.k]||0)+'</td></tr>';}).join('')+'</table>';
+    var reg=all.filter(function(t){return (t.ref||t.extra) && (t.stream==='self-employed'||t.stream==='pamikyx'||t.stream==='employee');});
+    if(reg.length){ H+='<h2>Receipt / Reference Register</h2><table><tr><th>Date</th><th>Book</th><th>Description</th><th>Reference</th><th>Amount</th></tr>'+reg.map(function(t){return '<tr><td>'+eh(t.date)+'</td><td>'+eh(t.stream)+'</td><td>'+eh(t.desc)+'</td><td>'+eh(t.ref||t.extra)+'</td><td>'+gbp(t.amount)+'</td></tr>';}).join('')+'</table>'; }
+    H+='<p style="margin-top:18px;font-size:12px;color:#666;">Estimates use UK 2026/27 rates as a guide for you and your accountant — not formal tax advice. Confirm before filing with HMRC.</p>';
+    var w=window.open('','_blank'); if(!w){ alert('Please allow pop-ups to generate the report.'); return; }
+    w.document.write('<html><head><title>Royal Money Hub — Tax Summary</title><style>body{font-family:-apple-system,Segoe UI,Arial,sans-serif;padding:32px;color:#111;line-height:1.5;}h1{font-size:22px;margin:0 0 4px;}h2{font-size:16px;margin:20px 0 6px;border-bottom:1px solid #ddd;padding-bottom:4px;}h3{font-size:13px;margin:12px 0 4px;color:#555;}table{width:100%;border-collapse:collapse;margin:6px 0;font-size:12.5px;}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #eee;}th{color:#888;font-size:11px;text-transform:uppercase;}</style></head><body>'+H+'<scr'+'ipt>window.print();</scr'+'ipt></body></html>'); w.document.close();
+  };
+
+  function renderTax(){
+    var el=document.getElementById('mh-fic-tax'); if(!el) return;
+    var startY=thisTaxYear();
+    var all=mhData().filter(function(t){ return inTaxYear(t.date,startY); });
+    var tot={};
+    BOOKS.forEach(function(b){ tot[b.k]={inc:0,exp:0}; });
+    all.forEach(function(t){ var bk=tot[t.stream]; if(!bk) return; var a=num(t.amount); if(t.type==='income') bk.inc+=a; else bk.exp+=a; });
+    var totalTax=0;
+    var cards=BOOKS.map(function(b){
+      var d=tot[b.k]; var profit=d.inc-d.exp;
+      var taxLine='';
+      if(b.tax==='self'){ var s=estSelfTax(Math.max(0,profit)); totalTax+=s.total; taxLine='Est. Income Tax '+gbp(s.it)+' + Class 4 NIC '+gbp(s.nic)+' = <b>'+gbp(s.total)+'</b>'; }
+      else if(b.tax==='corp'){ var ct=estCorpTax(Math.max(0,profit)); totalTax+=ct; taxLine='Est. Corporation Tax = <b>'+gbp(ct)+'</b>'; }
+      else { taxLine='Allowable employment expenses logged: <b>'+gbp(d.exp)+'</b>'; }
+      return '<div style="background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.14);border-radius:12px;padding:12px 14px;margin-bottom:10px;">'
+        +'<div style="font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:6px;">'+b.l+'</div>'
+        +'<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px;">'
+        +'<span style="color:var(--text3);">Income <b style="color:#30D158;">'+gbp(d.inc)+'</b></span>'
+        +'<span style="color:var(--text3);">Allowable expenses <b style="color:#E05252;">'+gbp(d.exp)+'</b></span>'
+        +'<span style="color:var(--text3);">'+(b.tax==='employee'?'':'Profit <b style="color:var(--text);">'+(profit>=0?'':'−')+gbp(Math.abs(profit))+'</b>')+'</span>'
+        +'</div>'
+        +'<div style="font-size:11.5px;color:var(--gold);margin-top:7px;">'+taxLine+'</div></div>';
+    }).join('');
+    var g=document.getElementById('mh-fic-tax-glance'); if(g) g.textContent='— '+startY+'/'+String(startY+1).slice(2)+' · est. tax '+gbp(totalTax);
+    var sugg=mhTaxSuggestions(all);
+    var suggHtml='<div style="margin-top:8px;border-top:1px solid rgba(201,168,76,0.12);padding-top:10px;"><div style="font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:5px;">💡 Tax suggestions</div>'
+      +sugg.map(function(s){return '<div style="display:flex;gap:8px;padding:5px 0;font-size:11.5px;color:var(--text2);line-height:1.5;"><span style="flex:none;">'+s.ic+'</span><span>'+s.tx+'</span></div>';}).join('')+'</div>';
+    var btns='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">'
+      +'<button onclick="mhTaxPrint()" style="background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--dark);border:none;border-radius:9px;padding:8px 13px;font-size:11.5px;font-weight:700;cursor:pointer;">🖨️ Year-End Report (PDF)</button>'
+      +'<button onclick="mhTaxExportPL()" style="background:var(--dark3);border:1px solid rgba(201,168,76,0.25);color:var(--gold);border-radius:9px;padding:8px 13px;font-size:11.5px;font-weight:700;cursor:pointer;">⬇ Per-book P&amp;L (CSV)</button>'
+      +'<button onclick="mhTaxExportCSV()" style="background:var(--dark3);border:1px solid rgba(201,168,76,0.25);color:var(--gold);border-radius:9px;padding:8px 13px;font-size:11.5px;font-weight:700;cursor:pointer;">⬇ Full ledger (CSV)</button>'
+      +'</div>';
+    el.innerHTML=
+      '<div style="font-size:11px;color:var(--text4);margin-bottom:10px;">Tax year 6 Apr '+startY+' → 5 Apr '+(startY+1)+'. Tag each transaction with its Book in Quick Entry to populate these figures.</div>'
+      +cards
+      +suggHtml
+      +btns
+      +'<div style="font-size:11px;color:var(--text3);border-top:1px solid rgba(201,168,76,0.12);padding-top:9px;margin-top:12px;">📅 Self-Assessment filing &amp; payment: <b>31 Jan '+(startY+2)+'</b> · Corporation Tax: 9 months after company year-end.</div>'
+      +'<div style="font-size:10.5px;color:var(--text4);margin-top:6px;font-style:italic;">These are estimates to guide you and your accountant using UK 2026/27 rates — not formal tax advice. Confirm before filing with HMRC.</div>';
+  }
+  var FIC_T_KEY='royal_fic_tax_open';
+  window.mhFicToggleTax=function(){ var b=document.getElementById('mh-fic-tax-body'),c=document.getElementById('mh-fic-tax-chev'); if(!b)return; var open=(b.style.display!=='none'); open=!open; b.style.display=open?'block':'none'; if(c)c.textContent=open?'▾':'▸'; try{localStorage.setItem(FIC_T_KEY,open?'1':'0');}catch(e){} };
+  function applyTaxOpen(){ var open=true; try{ var v=localStorage.getItem(FIC_T_KEY); if(v!==null) open=(v==='1'); }catch(e){} var b=document.getElementById('mh-fic-tax-body'),c=document.getElementById('mh-fic-tax-chev'); if(b)b.style.display=open?'block':'none'; if(c)c.textContent=open?'▾':'▸'; }
+  window.mhJumpTax=function(){ try{ localStorage.setItem(FIC_T_KEY,'1'); }catch(e){} try{ renderTax(); }catch(e){} applyTaxOpen(); var b=document.getElementById('mh-fic-tax-body'); if(b&&b.scrollIntoView) b.scrollIntoView({behavior:'smooth',block:'center'}); if(b){ b.style.transition='box-shadow .3s'; var p=b.style.boxShadow; b.style.boxShadow='0 0 0 2px var(--gold),0 0 22px rgba(201,168,76,0.4)'; setTimeout(function(){ b.style.boxShadow=p||''; },1700); } };
+
+  /* ---- Report period + Purpose (added) ---- */
+  var mhReportPeriod='year';
+  try{ var _rp=localStorage.getItem('royal_report_period'); if(_rp) mhReportPeriod=_rp; }catch(e){}
+  var MH_PERIODS=[['week','This Week'],['month','This Month'],['quarter','3 Months'],['half','6 Months'],['nine','9 Months'],['year','Full Year']];
+  function mhPeriodRange(){
+    var now=new Date(), s, e=now;
+    function fmt(d){ return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+    var p=mhReportPeriod;
+    if(p==='week'){ s=new Date(now); var dow=(s.getDay()+6)%7; s.setDate(s.getDate()-dow); s.setHours(0,0,0,0); }
+    else if(p==='month'){ s=new Date(now.getFullYear(),now.getMonth(),1); }
+    else if(p==='quarter'){ s=new Date(now.getFullYear(),now.getMonth()-2,1); }
+    else if(p==='half'){ s=new Date(now.getFullYear(),now.getMonth()-5,1); }
+    else if(p==='nine'){ s=new Date(now.getFullYear(),now.getMonth()-8,1); }
+    else { var ty=thisTaxYear(); s=new Date(ty,3,6); return {start:s,end:now,label:'Tax year 6 Apr '+ty+' \u2192 '+fmt(now),key:'year'}; }
+    return {start:s,end:e,label:fmt(s)+' \u2192 '+fmt(e),key:p};
+  }
+  function mhInPeriod(dateStr,pr){ if(!dateStr) return false; var d=new Date(dateStr); return d>=pr.start && d<=pr.end; }
+  window.mhSetReportPeriod=function(p){ mhReportPeriod=p; try{localStorage.setItem('royal_report_period',p);}catch(e){} try{ renderPeriod(); renderPurpose(); renderTax(); }catch(e){} };
+  function renderPeriod(){
+    var el=document.getElementById('mh-fic-period'); if(!el) return;
+    el.innerHTML='<div style="font-size:10px;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Report period</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">'
+      +MH_PERIODS.map(function(p){ var on=(p[0]===mhReportPeriod); return '<button onclick="mhSetReportPeriod(\''+p[0]+'\')" style="font-size:11px;padding:5px 11px;border-radius:8px;border:1px solid rgba(201,168,76,0.25);cursor:pointer;background:'+(on?'var(--gold)':'transparent')+';color:'+(on?'var(--dark)':'var(--text3)')+';font-weight:'+(on?'700':'600')+';">'+p[1]+'</button>'; }).join('')+'</div>';
+  }
+  var MH_PURPOSES=[
+    {k:'chieftaincy',l:'\ud83d\udc51 Chieftaincy Affairs',col:'#C9A84C'},
+    {k:'family',l:'\ud83c\udfd8\ufe0f Family Support',col:'#4ECDC4'},
+    {k:'residence',l:'\ud83c\udfd7\ufe0f Royal Residence Development',col:'#5B8DD9'},
+    {k:'personal',l:'\ud83c\udfe0 Personal (UK & Education)',col:'#9B6DD6'}
+  ];
+  function mhPurpose(t){
+    if(t.purpose) return t.purpose;
+    var s=((t.desc||'')+' '+(t.extra||'')+' '+(t.cat||'')).toLowerCase(); var cat=t.cat||'';
+    if(cat==='throne-build'||cat==='ceremony'||/throne|coronation|chief|stool|certiorari|court|legal|lawyer|tribunal/.test(s)) return 'chieftaincy';
+    if(cat==='home-construction'||cat==='land'||/construction|cement|build|residence|plot|\bland\b/.test(s)) return 'residence';
+    if(t.type==='family'||/family|school fee|school fees|upkeep|feeding/.test(s)) return 'family';
+    return 'personal';
+  }
+  function renderPurpose(){
+    var el=document.getElementById('mh-fic-purpose'); if(!el) return;
+    var pr=mhPeriodRange();
+    var all=mhData().filter(function(t){ return mhInPeriod(t.date,pr); });
+    var inc=all.filter(function(t){return t.type==='income';}).reduce(function(s,t){return s+num(t.amount);},0);
+    var out=all.filter(function(t){return t.type!=='income';}).reduce(function(s,t){return s+num(t.amount);},0);
+    var byP={}; MH_PURPOSES.forEach(function(p){byP[p.k]=0;});
+    all.forEach(function(t){ if(t.type==='income') return; var p=mhPurpose(t); if(byP[p]==null)byP[p]=0; byP[p]+=num(t.amount); });
+    var max=Math.max(1,Math.max.apply(null,MH_PURPOSES.map(function(p){return byP[p.k]||0;})));
+    var bars=MH_PURPOSES.map(function(p){ var v=byP[p.k]||0; var w=Math.round(v/max*100); return '<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;gap:8px;"><span style="color:var(--text2);">'+p.l+'</span><span style="color:var(--text);font-weight:600;white-space:nowrap;">'+gbp(v)+' <span style="color:var(--gold);font-weight:500;">\u2248 '+cedi(v)+'</span></span></div><div style="height:8px;background:rgba(201,168,76,0.08);border-radius:5px;overflow:hidden;"><div style="height:100%;width:'+w+'%;background:'+p.col+';border-radius:5px;"></div></div></div>'; }).join('');
+    el.innerHTML='<div style="background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.14);border-radius:12px;padding:12px 14px;margin-bottom:12px;">'
+      +'<div style="font-size:11px;color:var(--text4);margin-bottom:8px;">'+pr.label+' \u00b7 In <b style="color:#30D158;">'+gbp(inc)+'</b> \u00b7 Out <b style="color:#E05252;">'+gbp(out)+'</b> \u00b7 Net <b>'+(inc-out>=0?'+':'\u2212')+gbp(Math.abs(inc-out))+'</b></div>'
+      +'<div style="font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:8px;">Spending by Purpose</div>'+bars+'</div>';
+  }
+  /* ---- Goals Progress (budget vs spent, from the Goals system) ---- */
+  function renderGoalsProgress(){
+    var el=document.getElementById('mh-fic-goals'); if(!el) return;
+    var gs=(typeof goals!=='undefined' && goals)?goals:[];
+    var g2=document.getElementById('mh-fic-goals-glance');
+    if(!gs.length){ if(g2)g2.textContent=''; el.innerHTML='<div style="font-size:12px;color:var(--text4);font-style:italic;padding:6px 0;">No goals yet. Add them in the Goals tab.</div>'; return; }
+    var tb=0,ts=0;
+    var rows=gs.map(function(g){
+      var t=(typeof DB!=='undefined'&&DB.totals)?DB.totals(g.uid):{expense:0,investment:0,income:0,saving:0};
+      var spent=(t.expense||0)+(t.investment||0), income=(t.income||0)+(t.saving||0), budget=g.budget||0, rem=budget-spent+income;
+      tb+=budget; ts+=spent;
+      var pct=budget>0?Math.min(100,Math.round(spent/budget*100)):0;
+      return '<div style="padding:9px 0;border-bottom:1px solid rgba(201,168,76,0.08);"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;margin-bottom:4px;"><span style="color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+safeEsc(g.t||g.title||'Goal')+'</span><span style="color:var(--text3);white-space:nowrap;">'+gbp(spent)+' / '+gbp(budget)+'</span></div><div style="height:7px;background:rgba(201,168,76,0.08);border-radius:5px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+(pct>=100?'#E05252':'var(--gold)')+';border-radius:5px;"></div></div><div style="font-size:10px;color:var(--text4);margin-top:3px;">'+pct+'% used · remaining '+gbp(rem)+'</div></div>';
+    }).join('');
+    if(g2) g2.textContent='— '+gs.length+' goals · '+gbp(ts)+' / '+gbp(tb);
+    el.innerHTML=rows+'<div style="margin-top:10px;"><button onclick="(window.navTo?navTo:go)(\'goals\')" style="background:var(--dark3);border:1px solid rgba(201,168,76,0.25);color:var(--gold);border-radius:9px;padding:8px 13px;font-size:11.5px;font-weight:700;cursor:pointer;">Manage in Goals →</button></div>';
+  }
+  var FIC_G_KEY='royal_fic_goals_open';
+  window.mhFicToggleGoals=function(){ var b=document.getElementById('mh-fic-goals-body'),c=document.getElementById('mh-fic-goals-chev'); if(!b)return; var open=(b.style.display!=='none'); open=!open; b.style.display=open?'block':'none'; if(c)c.textContent=open?'▾':'▸'; try{localStorage.setItem(FIC_G_KEY,open?'1':'0');}catch(e){} };
+  function applyGoalsOpen(){ var open=false; try{ open=(localStorage.getItem(FIC_G_KEY)==='1'); }catch(e){} var b=document.getElementById('mh-fic-goals-body'),c=document.getElementById('mh-fic-goals-chev'); if(b)b.style.display=open?'block':'none'; if(c)c.textContent=open?'▾':'▸'; }
+
+  function renderFIC(){ try{ var m=calc(); renderOverview(m); renderHealth(m); renderFlow(m); renderCategory(m); renderRecurring(m); renderRecent(m); renderContacts(m,(document.getElementById('mh-fic-contact-search')||{}).value||''); applyContactsOpen(); applyRecentOpen(); renderInsights(m); renderTax(); applyTaxOpen(); renderPeriod(); renderPurpose(); renderGoalsProgress(); applyGoalsOpen(); }catch(e){} }
+  window.mhRenderFIC=renderFIC;
+
+  var orig=window.buildMoneyHub;
+  if(typeof orig==='function' && !orig._ficWrapped){
+    window.buildMoneyHub=function(){ var r=orig.apply(this,arguments); try{ renderFIC(); }catch(e){} return r; };
+    window.buildMoneyHub._ficWrapped=true;
+  }
+  function ficBoot(){ if(document.getElementById('mh-fic')) renderFIC(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', ficBoot); else ficBoot();
+})();
+</script>
+<!-- Money Hub Day/Dark theme toggle (scoped to Money Hub) -->
+<script>
+(function(){
+  var KEY='royal_mh_theme';
+  function cur(){ try{ return localStorage.getItem(KEY)||'dark'; }catch(e){ return 'dark'; } }
+  function apply(){
+    var s=document.documentElement;
+    var light=(cur()==='light');
+    s.classList.toggle('app-light', light);
+    var b=document.getElementById('mh-theme-btn');
+    if(b) b.textContent = light ? '\u2600\ufe0f Day' : '\ud83c\udf19 Dark';
+  }
+  window.mhToggleTheme=function(){ try{ localStorage.setItem(KEY, cur()==='light'?'dark':'light'); }catch(e){} apply(); };
+  var o=window.buildMoneyHub;
+  if(typeof o==='function' && !o._themeWrapped){ window.buildMoneyHub=function(){ var r=o.apply(this,arguments); try{ apply(); }catch(e){} return r; }; window.buildMoneyHub._themeWrapped=true; }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', apply); else apply();
+})();
+</script>
+<style id="mh-hide-mobile-fabs">#cc-fab,#cc-add-fab,#rrfh-handle,#voice-fab{display:none!important;}#rr-refresh-fab{display:flex!important;}</style>
+<!-- MONEY HUB AI DESCRIPTION auto-fill (Purpose + Category + Location -> Description) -->
+<script>
+(function(){
+  function optText(s){ return (s && s.selectedIndex>=0 && s.options[s.selectedIndex]) ? s.options[s.selectedIndex].text : ''; }
+  function clean(s){ return String(s||'').replace(/^[^A-Za-z0-9]+/,'').trim(); }
+  function gen(){
+    var desc=document.getElementById('mh-f-desc'); if(!desc) return;
+    if(desc.value && desc.value!==desc._mhAuto) return; /* respect text the user typed */
+    var pur=document.getElementById('mh-f-purpose'), cat=document.getElementById('mh-f-cat'), loc=document.getElementById('mh-f-location');
+    var pl=pur&&pur.value?clean(optText(pur)):''; if(/auto-sort/i.test(pl)) pl='';
+    var cl=cat?clean(optText(cat)):''; if(/choose|select|—/.test(cl)) cl='';
+    var ll=loc&&loc.value?clean(optText(loc)):''; if(/select|—/.test(ll)) ll='';
+    var core=[pl,cl].filter(Boolean).join(' — ');
+    if(ll) core = core ? (core+' ('+ll+')') : ll;
+    if(core){ desc.value=core; desc._mhAuto=core; }
+  }
+  window.mhGenDesc=gen;
+  function reCat(){ var c=document.getElementById('mh-f-cat'); if(c){ c.dataset.ddDone=''; } if(window.rrScanDropdowns){ try{ window.rrScanDropdowns(document); }catch(e){} } }
+  function init(){ var grid=document.getElementById('mh-form-grid'); if(grid && !grid._mhDescHook){ grid._mhDescHook=true; grid.addEventListener('change',function(ev){ var id=ev.target&&ev.target.id; if(id==='mh-f-cat'||id==='mh-f-purpose'||id==='mh-f-location') gen(); }); } }
+  var b=window.buildMoneyHub; if(typeof b==='function' && !b._mhDescWrapped){ window.buildMoneyHub=function(){ var r=b.apply(this,arguments); try{ init(); reCat(); }catch(e){} return r; }; window.buildMoneyHub._mhDescWrapped=true; }
+  var st=window.mhSetType; if(typeof st==='function' && !st._mhDescWrapped){ window.mhSetType=function(){ var r=st.apply(this,arguments); try{ reCat(); gen(); }catch(e){} return r; }; window.mhSetType._mhDescWrapped=true; }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ init(); reCat(); }); else { init(); reCat(); }
+})();
+</script>
+<!-- REPORT TABLE COLLAPSE -->
+<script>window.repToggleTable=function(){var t=document.getElementById('rep-table'),c=document.getElementById('rep-table-chev');if(!t)return;var open=(t.style.display!=='none');open=!open;t.style.display=open?'':'none';if(c)c.textContent=open?'\u25be':'\u25b8';};</script>
 </body>
 </html>
