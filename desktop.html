@@ -2226,8 +2226,13 @@ html.app-light .mh-kpi,html.app-light .mh-panel{box-shadow:0 1px 2px rgba(0,0,0,
       <button class="ftab" onclick="filterDebts('loan',this)">🏦 Loans</button>
       <button class="ftab" onclick="filterDebts('bills',this)">🏠 Bills &amp; Rent</button>
       <button class="ftab" onclick="filterDebts('other',this)">Other</button>
+      <button class="ftab" onclick="filterDebts('catalogue',this)">🛒 Catalogue</button>
+      <button class="ftab" onclick="filterDebts('subscriptions',this)">🔁 Subscriptions</button>
+      <button class="ftab" onclick="filterDebts('applecare',this)">🍎 Apple Care+</button>
+      <button class="ftab" onclick="filterDebts('insurance',this)">🛡️ Insurance</button>
     </div>
     <div id="debts-list"></div>
+    <div id="debt-perf" style="margin-top:24px;"></div>
 
     <!-- ── CREDIT CARD TRACKER ───────────────────────────────── -->
     <div id="cc-tracker-section" style="display:none;margin-top:28px;">
@@ -5744,6 +5749,10 @@ var DEBT_CATS=[
   {id:'mobile',  label:"📱 Mobile / Subscriptions", color:'#64D2FF'},
   {id:'vehicle', label:"🚗 Vehicle Finance",        color:'#64D2FF'},
   {id:'bnpl',    label:"🛍️ Buy Now Pay Later",      color:'#FF6B6B'},
+  {id:'catalogue', label:"🛒 Catalogue",            color:'#FF6B6B'},
+  {id:'subscriptions', label:"🔁 Subscriptions",    color:'#64D2FF'},
+  {id:'applecare', label:"🍎 Apple Care+",          color:'#64D2FF'},
+  {id:'insurance', label:"🛡️ Insurance",            color:'#BF5AF2'},
   {id:'other',   label:"📦 Other",                  color:'#70685A'}
 ];
 
@@ -5753,7 +5762,11 @@ var DEBT_FILTER_MAP={
   'credit':['credit','biz'],
   'loan':['loan','ploan','private'],
   'bills':['bills','utils','council','mobile'],
-  'other':['legal','vehicle','bnpl','other']
+  'other':['legal','vehicle','bnpl','other'],
+  'catalogue':['catalogue'],
+  'subscriptions':['subscriptions'],
+  'applecare':['applecare'],
+  'insurance':['insurance']
 };
 
 var DEBT_STATUS={
@@ -5772,6 +5785,40 @@ function buildDebts(){
   buildDebtSummary(debts);
   buildDebtEditBar();
   buildDebtsList(debts);
+  try{ buildDebtPerformance(debts); }catch(e){}
+}
+function buildDebtPerformance(debts){
+  var el=document.getElementById('debt-perf'); if(!el) return;
+  debts=debts||sGet(LS_DEBTS,[]);
+  var pays=[];
+  debts.forEach(function(d){ var h=sGet('royal_debt_'+d.id+'_hist',[]); (h||[]).forEach(function(p){ if(p&&p.date) pays.push({date:p.date, amt:parseFloat(p.amount||p.amt||p.value||0)||0}); }); });
+  var now=new Date(), months=[];
+  for(var i=5;i>=0;i--){ var dt=new Date(now.getFullYear(),now.getMonth()-i,1); months.push(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')); }
+  var MA=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var data=months.map(function(m){ return {m:m, total:pays.filter(function(p){return (p.date||'').slice(0,7)===m;}).reduce(function(s,p){return s+p.amt;},0)}; });
+  var max=Math.max(1,Math.max.apply(null,data.map(function(x){return x.total;})));
+  var bars=data.map(function(x){ var hgt=Math.max(2,Math.round(x.total/max*90)); return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div title="'+fmtC(x.total)+'" style="width:60%;height:'+hgt+'px;background:linear-gradient(180deg,#30D158,#1f8a43);border-radius:4px 4px 0 0;"></div><div style="font-size:9.5px;color:var(--text3);">'+MA[parseInt(x.m.split('-')[1])-1]+'</div></div>'; }).join('');
+  var cm=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var paidThis=pays.filter(function(p){return (p.date||'').slice(0,7)===cm;}).reduce(function(s,p){return s+p.amt;},0);
+  var active=debts.filter(function(d){return d.status!=='paid-off';});
+  var monthlyDue=active.reduce(function(s,d){return s+(parseFloat(d.monthly)||0);},0);
+  var pct=monthlyDue>0?Math.min(100,Math.round(paidThis/monthlyDue*100)):0;
+  var today=new Date(); today.setHours(0,0,0,0); var in30=new Date(today); in30.setDate(in30.getDate()+30);
+  var up=active.map(function(d){ var nd=d.nextPayment||d.paymentDate; return nd?{cred:d.creditor,date:nd,amt:parseFloat(d.monthly)||0}:null; }).filter(function(x){ if(!x)return false; var dt=new Date(x.date); return dt>=today && dt<=in30; }).sort(function(a,b){return a.date.localeCompare(b.date);});
+  var upHtml = up.length ? up.map(function(u){ return '<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--sep);font-size:12.5px;"><span style="color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(u.cred)+'</span><span style="color:var(--text3);white-space:nowrap;">'+u.date+' · '+fmtC(u.amt)+'</span></div>'; }).join('') : '<div style="font-size:12px;color:var(--text3);font-style:italic;">No payments due in the next 30 days — add a Next Payment Date to your debts to see them here.</div>';
+  el.innerHTML=
+    '<div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim);margin-bottom:10px;">📊 Payment Performance</div>'
+    +'<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;">'
+      +'<div style="background:var(--card);border:1px solid var(--sep);border-radius:var(--r2);padding:16px;">'
+        +'<div style="font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:10px;">Payments — last 6 months</div>'
+        +'<div style="display:flex;gap:6px;align-items:flex-end;height:104px;">'+bars+'</div>'
+        +'<div style="margin-top:12px;font-size:12px;color:var(--text3);">This month paid <b style="color:#30D158;">'+fmtC(paidThis)+'</b> of <b>'+fmtC(monthlyDue)+'</b> monthly commitments ('+pct+'%)</div>'
+        +'<div class="pbar" style="height:8px;margin-top:6px;"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,#30D15888,#30D158);"></div></div>'
+      +'</div>'
+      +'<div style="background:var(--card);border:1px solid var(--sep);border-radius:var(--r2);padding:16px;">'
+        +'<div style="font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:10px;">📅 Due in next 30 days</div>'+upHtml
+      +'</div>'
+    +'</div>';
 }
 
 function buildDebtSummary(debts){
@@ -6028,12 +6075,18 @@ function saveDebtPayment(id){
   sSet(LS_DEBTS,debts);debtModalClose();buildDebts();updateDebtDashWidget();
 }
 
+function ndToggleInsurance(){
+  var cat=(document.getElementById('nd-cat')||{}).value||'';
+  var cov=(document.getElementById('nd-cover')||{}).value||'';
+  var ins = cat==='insurance' || /insurance|income protection|life/i.test(cov);
+  var box=document.getElementById('nd-ins-fields'); if(box) box.style.display=ins?'block':'none';
+}
 function openAddDebt(){
   var catOpts=DEBT_CATS.map(function(x){return'<option value="'+x.id+'">'+x.label+'</option>';}).join('');
   debtModalOpen('＋ Add New Debt',
     '<div style="display:flex;flex-direction:column;gap:12px;">'
-    +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Category</label><select id="nd-cat" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;">'+catOpts+'</select></div>'
-    +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Creditor / Lender Name</label><input type="text" id="nd-cred" placeholder="e.g. Barclays, HMRC, Landlord..." style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"></div>'
+    +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Category</label><select id="nd-cat" onchange="ndToggleInsurance()" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;">'+catOpts+'</select></div>'
+    +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Creditor / Lender Name</label><select id="nd-cred" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"><option value="">— Select —</option><option>AO</option><option>Studio</option><option>Grattan</option><option>Next</option><option>Three Network</option><option>OneCom</option><option>Apple</option><option>JD Williams</option><option>Crazy Clearance</option><option>Shepherds Friend</option><option>Vitality Insurance</option><option>PDCS</option><option>Moorcroft</option></select></div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
     +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Agency</label><input type="text" id="nd-agency" placeholder="Debt collector" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"></div>'
     +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Account / Ref No.</label><input type="text" id="nd-acc" placeholder="Reference" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"></div>'
@@ -6050,6 +6103,18 @@ function openAddDebt(){
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
     +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Date of Payment</label><input type="date" id="nd-paydate" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"></div>'
     +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Time of Payment</label><input type="time" id="nd-paytime" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"></div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
+    +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Cover / Type</label><select id="nd-cover" onchange="ndToggleInsurance()" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"><option value="">—</option><option>Income Protection</option><option>Life Insurance</option><option>Health / Medical Insurance</option><option>Home Insurance</option><option>Car / Vehicle Insurance</option><option>Mobile Phone</option><option>Internet / Broadband</option><option>Apple Care+</option><option>Catalogue</option><option>Subscription</option><option>Other</option></select></div>'
+    +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Next Payment Date</label><input type="date" id="nd-next" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"></div>'
+    +'</div>'
+    +'<div id="nd-ins-fields" style="display:none;border:1px solid rgba(191,90,242,0.35);border-radius:8px;padding:11px 13px;background:rgba(191,90,242,0.07);">'
+    +'<div style="font-size:12px;font-weight:700;color:#BF5AF2;margin-bottom:9px;">🛡️ Insurance Details</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
+    +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Sum Assured / Cover Value (£)</label><input type="number" id="nd-ins-value" placeholder="0.00" step="0.01" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"></div>'
+    +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Payout Amount (£)</label><input type="number" id="nd-ins-payout" placeholder="0.00" step="0.01" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"></div>'
+    +'</div>'
+    +'<div style="margin-top:10px;"><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Beneficiaries</label><input type="text" id="nd-ins-benef" placeholder="e.g. Princess Atrah, Prince Agyeman, Prince-Micheal..." style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"></div>'
     +'</div>'
     +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Payment Plan Details</label><input type="text" id="nd-plan" placeholder="e.g. £100/month Direct Debit — 29th of each month" style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;"></div>'
     +'<div><label style="font-size:13px;color:#aaa;display:block;margin-bottom:4px;">Notes</label><textarea id="nd-notes" placeholder="Payment terms, contact info, etc." style="width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;min-height:80px;resize:vertical;font-family:inherit;"></textarea></div>'
@@ -6077,6 +6142,11 @@ function saveNewDebt(){
     paymentDate:document.getElementById('nd-paydate').value,
     paymentTime:document.getElementById('nd-paytime').value,
     paymentPlan:document.getElementById('nd-plan').value.trim(),
+    cover:(document.getElementById('nd-cover')||{}).value||'',
+    nextPayment:(document.getElementById('nd-next')||{}).value||'',
+    insValue:parseFloat((document.getElementById('nd-ins-value')||{}).value)||0,
+    insPayout:parseFloat((document.getElementById('nd-ins-payout')||{}).value)||0,
+    insBeneficiaries:(document.getElementById('nd-ins-benef')||{}).value||'',
     status:'active',
     notes:document.getElementById('nd-notes').value.trim()
   });
