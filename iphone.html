@@ -2315,6 +2315,13 @@ html.app-light .mh-kpi,html.app-light .mh-panel{box-shadow:0 1px 2px rgba(0,0,0,
         </div>
       </div>
 
+      <!-- Live Charts (resurfaced, live data) -->
+      <div style="margin-bottom:16px;">
+        <style>#mh-fic-livecharts svg{width:100%;height:auto;display:block}#mh-fic-livecharts .fd-goalbar{height:7px;background:rgba(201,168,76,.1);border-radius:5px;overflow:hidden;margin-top:4px}#mh-fic-livecharts .fd-goalbar i{display:block;height:100%;background:var(--gold);border-radius:5px}</style>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:14px;">📈</span><span style="font-size:12.5px;font-weight:700;color:var(--text);">Live Charts</span><span id="mh-fic-lc-note" style="font-size:10.5px;color:var(--text4);margin-left:auto;"></span></div>
+        <div id="mh-fic-livecharts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;"></div>
+      </div>
+
       <!-- AI Insights -->
       <div style="margin-bottom:16px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:14px;">💡</span><span style="font-size:12.5px;font-weight:700;color:var(--text);">AI Insights</span></div>
@@ -18340,7 +18347,25 @@ window.rrUniversalSearch=function(raw, saidHtml){
   window.mhFicToggleGoals=function(){ var b=document.getElementById('mh-fic-goals-body'),c=document.getElementById('mh-fic-goals-chev'); if(!b)return; var open=(b.style.display!=='none'); open=!open; b.style.display=open?'block':'none'; if(c)c.textContent=open?'▾':'▸'; try{localStorage.setItem(FIC_G_KEY,open?'1':'0');}catch(e){} };
   function applyGoalsOpen(){ var open=false; try{ open=(localStorage.getItem(FIC_G_KEY)==='1'); }catch(e){} var b=document.getElementById('mh-fic-goals-body'),c=document.getElementById('mh-fic-goals-chev'); if(b)b.style.display=open?'block':'none'; if(c)c.textContent=open?'▾':'▸'; }
 
-  function renderFIC(){ try{ var m=calc(); renderOverview(m); renderHealth(m); renderFlow(m); renderCategory(m); renderRecurring(m); renderRecent(m); renderContacts(m,(document.getElementById('mh-fic-contact-search')||{}).value||''); applyContactsOpen(); applyRecentOpen(); renderInsights(m); renderTax(); applyTaxOpen(); renderPeriod(); renderPurpose(); renderGoalsProgress(); applyGoalsOpen(); }catch(e){} }
+  function lcWindow(){ var p=mhReportPeriod; return (p==='quarter')?3:(p==='nine')?9:(p==='year')?12:6; }
+  function renderLiveCharts(){
+    var host=document.getElementById('mh-fic-livecharts'); if(!host) return;
+    if(typeof collect!=='function'||typeof chartBars!=='function'||typeof lastMonths!=='function'){ host.innerHTML='<div style="font-size:12px;color:var(--text4);padding:6px;">Charts are loading\u2026</div>'; return; }
+    var n=lcWindow(), months=lastMonths(n), rows=collect()||[];
+    var keyset={}; months.forEach(function(k){keyset[k]=1;});
+    var winRows=rows.filter(function(r){ return keyset[(r.date||'').substring(0,7)]; });
+    function card(t,svg){ return '<div style="background:var(--dark4);border:1px solid rgba(201,168,76,0.12);border-radius:14px;padding:14px 16px;min-width:0;"><div style="font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text4);margin-bottom:8px;">'+t+'</div>'+svg+'</div>'; }
+    var h='';
+    try{ h+=card('Income vs Expenses ('+n+' months)', chartBars(months,rows)); }catch(e){}
+    try{ h+=card('Monthly Cash Flow', chartFlow(months,rows)); }catch(e){}
+    try{ h+=card('Spending by Category', chartPie(winRows)); }catch(e){}
+    try{ h+=card('Savings Progress', chartLine(months,rows,'sav')); }catch(e){}
+    try{ h+=card('Balance Trend', chartLine(months,rows,'bal')); }catch(e){}
+    try{ h+=card('Goal Tracking', (typeof goalsHtml==='function'?goalsHtml():'')); }catch(e){}
+    host.innerHTML=h;
+    var note=document.getElementById('mh-fic-lc-note'); if(note){ try{ note.textContent='Amounts in \u00a3 \u00b7 live rate \u00a31 \u2248 \u20b5'+(rate()).toFixed(2); }catch(e){} }
+  }
+  function renderFIC(){ try{ var m=calc(); renderOverview(m); renderHealth(m); renderFlow(m); renderCategory(m); renderRecurring(m); renderRecent(m); renderContacts(m,(document.getElementById('mh-fic-contact-search')||{}).value||''); applyContactsOpen(); applyRecentOpen(); renderInsights(m); renderTax(); applyTaxOpen(); renderPeriod(); renderPurpose(); renderGoalsProgress(); applyGoalsOpen(); try{renderLiveCharts();}catch(e){} }catch(e){} }
   window.mhRenderFIC=renderFIC;
 
   var orig=window.buildMoneyHub;
