@@ -13426,6 +13426,7 @@ function mount(){
   try{render();}catch(e){}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
+try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow;window.chartPie=chartPie;window.chartLine=chartLine;window.goalsHtml=goalsHtml;window.lastMonths=lastMonths;}catch(e){}
 })();
 </script>
 
