@@ -18423,5 +18423,516 @@ window.rrUniversalSearch=function(raw, saidHtml){
 </script>
 <!-- REPORT TABLE COLLAPSE -->
 <script>window.repToggleTable=function(){var t=document.getElementById('rep-table'),c=document.getElementById('rep-table-chev');if(!t)return;var open=(t.style.display!=='none');open=!open;t.style.display=open?'':'none';if(c)c.textContent=open?'\u25be':'\u25b8';};</script>
+<!-- ════════════════════════════════════════════
+     ROYAL iCALENDER — AI Command Centre  [C]
+     Upgrades the existing "Royal Daily" tab.
+     NON-DESTRUCTIVE: hides the old #rd-root
+     checklist (its data is left untouched) and
+     renders the command centre into #rical-root.
+     Reads existing debts / diary / goals read-only.
+     Stores its own data in rical_data_v1.
+════════════════════════════════════════════ -->
+<style id="rical-css">
+#rical-root{max-width:1180px;margin:0 auto;padding:6px 4px 60px;}
+#rical-root *{box-sizing:border-box;}
+#rical-root .ric-pillbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+#rical-root .ric-pillbar .rpill{white-space:nowrap;border:1.5px solid rgba(201,168,76,0.28);background:rgba(201,168,76,0.06);color:var(--text2,#C4BAA8);border-radius:999px;padding:8px 15px;font-size:13px;font-weight:700;cursor:pointer;}
+#rical-root .ric-pillbar .rpill.on{background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));color:#1A1206;border-color:transparent;}
+#rical-root .ric-hero{background:linear-gradient(135deg,rgba(201,168,76,0.16),rgba(201,168,76,0.03));border:1px solid var(--sep,rgba(201,168,76,0.12));border-radius:18px;padding:22px 24px;margin-bottom:18px;position:relative;overflow:hidden;}
+#rical-root .ric-hero:before{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,0.18),transparent 70%);}
+#rical-root .ric-greet{font-size:12px;color:var(--gold-light,#E8C96A);letter-spacing:.6px;text-transform:uppercase;font-weight:800;}
+#rical-root .ric-date{font-size:28px;font-weight:800;color:var(--text,#F0EBE0);margin:3px 0 0;line-height:1.1;}
+#rical-root .ric-clock{font-size:15px;color:var(--text2,#C4BAA8);margin-top:4px;font-variant-numeric:tabular-nums;}
+#rical-root .ric-sum{margin-top:14px;font-size:14px;line-height:1.55;color:var(--text,#F0EBE0);background:rgba(0,0,0,0.18);border:1px solid var(--sep,rgba(201,168,76,0.12));border-radius:12px;padding:13px 15px;}
+#rical-root .ric-sum b{color:var(--gold-light,#E8C96A);}
+#rical-root .ric-nlbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+#rical-root .ric-nlbar input{flex:1;min-width:240px;background:var(--dark4,#222235);border:1px solid var(--sep,rgba(201,168,76,0.12));border-radius:12px;padding:13px 15px;color:var(--text,#F0EBE0);font-size:14px;}
+#rical-root .ric-nlbar input:focus{outline:none;border-color:var(--gold,#C9A84C);}
+#rical-root .ric-btn{background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));color:#1A1206;border:none;border-radius:12px;padding:0 18px;font-weight:800;font-size:14px;cursor:pointer;white-space:nowrap;min-height:46px;}
+#rical-root .ric-btn.ghost{background:var(--dark4,#222235);color:var(--text,#F0EBE0);border:1px solid var(--sep,rgba(201,168,76,0.12));}
+#rical-root .ric-btn.sm{padding:7px 13px;font-size:12px;border-radius:9px;min-height:0;}
+#rical-root .ric-hint{font-size:11.5px;color:var(--text3,#7A7268);margin:0 0 16px 2px;}
+#rical-root .ric-subnav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+#rical-root .ric-subnav button{background:var(--dark3,#1A1A28);border:1px solid var(--sep,rgba(201,168,76,0.12));color:var(--text2,#C4BAA8);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;}
+#rical-root .ric-subnav button.on{background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));color:#1A1206;border-color:transparent;}
+#rical-root .ric-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;}
+@media(max-width:880px){#rical-root .ric-grid{grid-template-columns:1fr;}}
+#rical-root .ric-card{background:var(--dark3,#1A1A28);border:1px solid var(--sep,rgba(201,168,76,0.12));border-radius:16px;padding:18px;margin-bottom:16px;}
+#rical-root .ric-card h3{margin:0 0 12px;font-size:13px;color:var(--gold-light,#E8C96A);letter-spacing:.4px;text-transform:uppercase;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+#rical-root .ric-item{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--sep,rgba(201,168,76,0.10));}
+#rical-root .ric-item:last-child{border-bottom:none;}
+#rical-root .ric-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex:0 0 auto;}
+#rical-root .ric-time{font-size:12px;color:var(--text3,#7A7268);font-variant-numeric:tabular-nums;min-width:58px;}
+#rical-root .ric-ttl{font-size:14px;color:var(--text,#F0EBE0);font-weight:600;}
+#rical-root .ric-sub{font-size:12px;color:var(--text3,#7A7268);margin-top:1px;}
+#rical-root .ric-empty{color:var(--text3,#7A7268);font-size:13px;padding:10px 0;font-style:italic;}
+#rical-root .ric-pill{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
+#rical-root .ric-scorewrap{display:flex;align-items:center;gap:16px;}
+#rical-root .ric-scorenum{font-size:38px;font-weight:800;color:var(--gold-light,#E8C96A);line-height:1;}
+#rical-root .ric-bar{height:8px;background:var(--dark4,#222235);border-radius:99px;overflow:hidden;margin-top:8px;}
+#rical-root .ric-bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--gold,#C9A84C),var(--gold-light,#E8C96A));}
+#rical-root .ric-calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+#rical-root .ric-calhead b{font-size:16px;color:var(--text,#F0EBE0);}
+#rical-root .ric-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+#rical-root .ric-cal .dow{font-size:11px;color:var(--text3,#7A7268);text-align:center;font-weight:700;padding-bottom:4px;}
+#rical-root .ric-day{min-height:62px;background:var(--dark4,#222235);border:1px solid var(--sep,rgba(201,168,76,0.10));border-radius:9px;padding:5px 6px;cursor:pointer;position:relative;}
+#rical-root .ric-day:hover{border-color:var(--gold,#C9A84C);}
+#rical-root .ric-day.other{opacity:.35;}
+#rical-root .ric-day.today{border-color:var(--gold,#C9A84C);background:rgba(201,168,76,0.12);}
+#rical-root .ric-day .dn{font-size:12px;color:var(--text2,#C4BAA8);font-weight:700;}
+#rical-root .ric-day.today .dn{color:var(--gold-light,#E8C96A);}
+#rical-root .ric-dots{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap;}
+#rical-root .ric-dots i{width:6px;height:6px;border-radius:50%;display:block;}
+#rical-root .ric-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
+#rical-root .ric-form .full{grid-column:1/-1;}
+#rical-root .ric-form label{font-size:11px;color:var(--text3,#7A7268);display:block;margin-bottom:3px;font-weight:700;}
+#rical-root .ric-form input,#rical-root .ric-form select,#rical-root .ric-form textarea{width:100%;background:var(--dark4,#222235);border:1px solid var(--sep,rgba(201,168,76,0.12));border-radius:9px;padding:9px 11px;color:var(--text,#F0EBE0);font-size:13px;font-family:inherit;}
+#rical-root .ric-form input:focus,#rical-root .ric-form select:focus,#rical-root .ric-form textarea:focus{outline:none;border-color:var(--gold,#C9A84C);}
+#rical-root .ric-row{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--sep,rgba(201,168,76,0.10));}
+#rical-root .ric-row:last-child{border-bottom:none;}
+#rical-root .ric-check{width:21px;height:21px;border-radius:6px;border:1.5px solid var(--gold,#C9A84C);cursor:pointer;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--gold-light,#E8C96A);}
+#rical-root .ric-check.on{background:var(--gold,#C9A84C);color:#1A1206;}
+#rical-root .ric-x{color:var(--text3,#7A7268);cursor:pointer;font-size:15px;padding:2px 6px;}
+#rical-root .ric-x:hover{color:#E05252;}
+.ric-toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#1A1A28;border:1px solid #C9A84C;color:#F0EBE0;padding:12px 20px;border-radius:12px;font-size:14px;z-index:99999;box-shadow:0 8px 30px rgba(0,0,0,.5);opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;}
+.ric-toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+</style>
+
+<script id="rical-js">
+(function(){
+  "use strict";
+  function el(id){return document.getElementById(id);}
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function uid(){return 'ric'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);}
+  function money(n){var x=parseFloat(String(n).replace(/[^0-9.\-]/g,''))||0;return '£'+x.toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:2});}
+
+  var DAYL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var MONS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  var CATS={
+    royal:{label:'Royal',color:'#C9A84C'}, business:{label:'Business',color:'#9B6DD6'},
+    study:{label:'Study',color:'#5B8DD9'}, health:{label:'Health',color:'#4CAF7D'},
+    family:{label:'Family',color:'#E8C96A'}, travel:{label:'Travel',color:'#5BB8C4'},
+    payment:{label:'Payment',color:'#E05252'}, personal:{label:'Personal',color:'#A0A0B0'}
+  };
+  function catColor(c){return (CATS[c]||CATS.personal).color;}
+  function catLabel(c){return (CATS[c]||CATS.personal).label;}
+
+  function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function todayIso(){return iso(new Date());}
+  function parseIso(s){var p=String(s||'').split('-');return new Date(+p[0],(+p[1]||1)-1,+p[2]||1);}
+  function prettyDate(s){var d=parseIso(s);return DAYL[d.getDay()]+', '+d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear();}
+  function shortDate(s){var d=parseIso(s);return d.getDate()+' '+MONS[d.getMonth()];}
+  function pretty12(t){if(!t)return '';var p=t.split(':');var h=+p[0],m=p[1]||'00';var ap=h<12?'am':'pm';var h12=h%12;if(h12===0)h12=12;return h12+(m!=='00'?':'+m:'')+ap;}
+
+  var KEY='rical_data_v1';
+  function db(){var d=load(KEY,null);if(!d||typeof d!=='object')d={appts:[],tasks:[]};if(!d.appts)d.appts=[];if(!d.tasks)d.tasks=[];return d;}
+  function commit(d){save(KEY,d);}
+
+  function hostDebtsDue(fromIso,toIso){
+    var out=[];var debts=load('royal_debts_v1',[])||[];
+    debts.forEach(function(d){
+      if(d.status && /paid|paused|dispute/i.test(d.status)) return;
+      var nd=d.nextPayment||d.paymentDate||d.dueDate;if(!nd)return;nd=String(nd).slice(0,10);
+      if(nd>=fromIso&&nd<=toIso)out.push({date:nd,title:(d.creditor||'Payment')+' — payment due',sub:money(d.monthly||0),cat:'payment'});
+    });
+    return out;
+  }
+  function hostDiary(forIso){
+    var out=[];var es=load('royal_diary_v1',[])||[];
+    es.forEach(function(e){if(e.date===forIso)out.push({time:e.time||'',title:e.title||'Diary note',sub:(e.text||'').slice(0,60),cat:'personal',diary:true});});
+    return out;
+  }
+  function hostGoalsDue(fromIso,toIso){
+    var out=[];var gs=load('royal_goals_v2',[])||[];
+    gs.forEach(function(g){var dt=g.d||g.date||g.deadline||g.target;if(!dt)return;dt=String(dt).slice(0,10);if(dt>=fromIso&&dt<=toIso)out.push({date:dt,title:(g.t||g.title||'Goal')+' — target',cat:'royal'});});
+    return out;
+  }
+
+  function matchesDay(a,dIso){
+    if(!a.date)return false;
+    if(!a.rec||a.rec==='none')return a.date===dIso;
+    if(dIso<a.date)return false;
+    var s=parseIso(a.date),t=parseIso(dIso);
+    if(a.rec==='daily')return true;
+    if(a.rec==='weekly')return s.getDay()===t.getDay();
+    if(a.rec==='monthly')return s.getDate()===t.getDate();
+    return a.date===dIso;
+  }
+  function dayItems(dIso){
+    var d=db();var items=[];
+    d.appts.forEach(function(a){ if(matchesDay(a,dIso)) items.push({id:a.id,time:a.time||'',title:a.title,sub:[a.loc,a.link?'link':''].filter(Boolean).join(' · '),cat:a.cat,done:a.done,appt:true}); });
+    hostDebtsDue(dIso,dIso).forEach(function(p){items.push({time:'',title:p.title,sub:p.sub,cat:'payment'});});
+    hostGoalsDue(dIso,dIso).forEach(function(g){items.push({time:'',title:g.title,cat:'royal'});});
+    hostDiary(dIso).forEach(function(e){items.push({time:e.time,title:e.title,sub:e.sub,cat:'personal',diary:true});});
+    items.sort(function(a,b){return (a.time||'99:99').localeCompare(b.time||'99:99');});
+    return items;
+  }
+
+  /* ════ NATURAL LANGUAGE ════ */
+  function nlGo(){
+    var inp=el('ric-nl');if(!inp)return;var raw=inp.value.trim();if(!raw)return;
+    var low=raw.toLowerCase();
+    if(/^(what|when|show|which|list|how|move|reschedule|do i|is there|whats|what's)\b/.test(low)||/focus|overdue|due|this week|next week|today'?s|my day|my week/.test(low)){
+      answer(raw);inp.value='';return;
+    }
+    var p=parseAdd(raw);
+    var d=db();d.appts.push(p);commit(d);
+    inp.value='';toast('Added: '+p.title+' — '+shortDate(p.date)+(p.time?' '+pretty12(p.time):''));
+    state.view='dash';render();
+  }
+  function parseAdd(raw){
+    var t=raw, low=raw.toLowerCase();
+    var date=todayIso(), time='', dur=30, cat='personal', rec='none';
+    var dm=low.match(/for\s+(\d+(?:\.\d+)?)\s*(hour|hr|h|min|minute)s?/);
+    if(dm){var q=parseFloat(dm[1]);dur=/h/.test(dm[2])?Math.round(q*60):Math.round(q);t=t.replace(new RegExp(dm[0],'i'),'');}
+    if(/every day|daily/.test(low)){rec='daily';t=t.replace(/every day|daily/i,'');}
+    else if(/every week|weekly/.test(low)){rec='weekly';t=t.replace(/every week|weekly/i,'');}
+    else if(/every month|monthly/.test(low)){rec='monthly';t=t.replace(/every month|monthly/i,'');}
+    var tm=low.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/);
+    var tm24=low.match(/\bat\s+(\d{1,2}):(\d{2})\b/)||low.match(/\b(\d{1,2}):(\d{2})\b/);
+    if(tm){var h=+tm[1]%12;if(tm[3]==='pm')h+=12;time=String(h).padStart(2,'0')+':'+(tm[2]||'00');t=t.replace(new RegExp(tm[0],'i'),'');}
+    else if(/\bnoon\b/.test(low)){time='12:00';t=t.replace(/noon/i,'');}
+    else if(/\bmidnight\b/.test(low)){time='00:00';t=t.replace(/midnight/i,'');}
+    else if(tm24){time=String(+tm24[1]).padStart(2,'0')+':'+tm24[2];t=t.replace(tm24[0],'');}
+    else{var atb=low.match(/\bat\s+(\d{1,2})\b/);if(atb){time=String(+atb[1]).padStart(2,'0')+':00';t=t.replace(atb[0],'');}}
+    var base=new Date();
+    if(/tomorrow|tmrw/.test(low)){base.setDate(base.getDate()+1);date=iso(base);t=t.replace(/tomorrow|tmrw/i,'');}
+    else if(/today|tonight/.test(low)){date=iso(base);t=t.replace(/today|tonight/i,'');}
+    else{
+      var found=-1;
+      for(var i=0;i<DAYL.length;i++){if(new RegExp('\\b'+DAYL[i].toLowerCase()+'\\b').test(low)){found=i;t=t.replace(new RegExp(DAYL[i],'i'),'');break;}}
+      if(found>=0){var add=(found-base.getDay()+7)%7;if(add===0)add=7;base.setDate(base.getDate()+add);date=iso(base);t=t.replace(/next/i,'');}
+      else{
+        var dmn=low.match(/\b(\d{1,2})(?:st|nd|rd|th)?\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/);
+        if(dmn){var mi=MONS.findIndex(function(m){return m.toLowerCase()===dmn[2];});var yr=base.getFullYear();var cand=new Date(yr,mi,+dmn[1]);if(cand<new Date(todayIso()))cand=new Date(yr+1,mi,+dmn[1]);date=iso(cand);t=t.replace(dmn[0],'');}
+      }
+    }
+    if(/study|revision|exam|assignment|course|read/.test(low))cat='study';
+    else if(/meeting|client|business|call|invoice|contract|cqc|pamikyx/.test(low))cat='business';
+    else if(/gym|run|doctor|gp|health|dentist|hospital|workout/.test(low))cat='health';
+    else if(/flight|travel|trip|ghana|airport|train/.test(low))cat='travel';
+    else if(/family|children|son|daughter|prince|princess|wife/.test(low))cat='family';
+    else if(/prayer|pray|coronation|chief|stool|queen mother|legacy/.test(low))cat='royal';
+    t=t.replace(/\b(on|at|for|with|the|a)\b\s*$/i,'').replace(/\s{2,}/g,' ').replace(/^[\s,.-]+|[\s,.-]+$/g,'').trim();
+    if(!t)t='Appointment';
+    t=t.charAt(0).toUpperCase()+t.slice(1);
+    return {id:uid(),date:date,time:time,dur:dur,title:t,cat:cat,loc:'',link:'',notes:'',remind:true,done:false,rec:rec};
+  }
+  function answer(raw){
+    var low=raw.toLowerCase(),html='',title='Royal iCalender';var t=todayIso();
+    if(/overdue/.test(low)){
+      title='Overdue tasks';
+      var od=db().tasks.filter(function(x){return !x.done&&x.date&&x.date<t;});
+      html=od.length?od.map(function(x){return '• '+esc(x.title)+' <span style="color:var(--text3)">('+shortDate(x.date)+')</span>';}).join('<br>'):'Nothing overdue — you are on top of things.';
+    } else if(/payment|credit card|debt|due/.test(low)&&!/today/.test(low)){
+      title='Next payments (30 days)';
+      var to=iso(new Date(Date.now()+30*86400000));
+      var ps=hostDebtsDue(t,to).sort(function(a,b){return a.date.localeCompare(b.date);});
+      html=ps.length?ps.map(function(p){return '• '+esc(p.title)+' — <b>'+esc(p.sub)+'</b> <span style="color:var(--text3)">('+shortDate(p.date)+')</span>';}).join('<br>'):'No payments recorded in the next 30 days.';
+    } else if(/this week|next week|my week/.test(low)){
+      title='This week';html=weekHtml();
+    } else if(/focus/.test(low)){
+      title='Your focus today';html=focusHtml();
+    } else { title="Today's plan"; html=focusHtml(); }
+    showAnswer(title,html);
+  }
+  function focusHtml(){
+    var t=todayIso();var bits=[];
+    var hi=db().tasks.filter(function(x){return !x.done&&x.pri==='high';});
+    if(hi.length)bits.push('<b>Top priorities:</b><br>'+hi.map(function(x){return '• '+esc(x.title);}).join('<br>'));
+    var items=dayItems(t).filter(function(i){return !i.diary;});
+    bits.push('<b>Today’s schedule:</b><br>'+(items.length?items.map(function(i){return '• '+(i.time?pretty12(i.time)+' — ':'')+esc(i.title);}).join('<br>'):'<span style="color:var(--text3)">Clear — a good day to push a big goal forward.</span>'));
+    return bits.join('<br><br>');
+  }
+  function weekHtml(){
+    var out=[];for(var k=0;k<7;k++){var dI=iso(new Date(Date.now()+k*86400000));var its=dayItems(dI).filter(function(i){return !i.diary;});if(its.length)out.push('<b>'+(k===0?'Today':shortDate(dI))+'</b><br>'+its.map(function(i){return '• '+(i.time?pretty12(i.time)+' ':'')+esc(i.title);}).join('<br>'));}
+    return out.length?out.join('<br><br>'):'No appointments this week yet.';
+  }
+  function showAnswer(title,html){
+    var box=el('ric-answer');if(!box)return;
+    box.innerHTML='<div class="ric-card" style="border-color:var(--gold)"><h3>'+esc(title)+'<span class="ric-x" onclick="ricCloseAnswer()">✕</span></h3><div style="font-size:13.5px;line-height:1.7;color:var(--text)">'+html+'</div></div>';
+    try{box.scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){}
+  }
+  window.ricCloseAnswer=function(){var b=el('ric-answer');if(b)b.innerHTML='';};
+
+  /* ════ STATE / VIEWS ════ */
+  var state={view:'dash',calY:new Date().getFullYear(),calM:new Date().getMonth(),sel:todayIso()};
+  var clockTimer=null;
+
+  function summaryText(){
+    var t=todayIso();var items=dayItems(t);
+    var appts=items.filter(function(i){return i.appt;}).length;
+    var pays=items.filter(function(i){return i.cat==='payment';});
+    var tasks=db().tasks.filter(function(x){return !x.done&&(!x.date||x.date<=t);}).length;
+    var h=new Date().getHours();var part=h<12?'This morning':h<17?'This afternoon':'This evening';
+    var s=part+', Your Highness — you have <b>'+appts+'</b> appointment'+(appts===1?'':'s')+' and <b>'+tasks+'</b> open task'+(tasks===1?'':'s')+'.';
+    if(pays.length)s+=' <b style="color:#E05252">'+pays.length+' payment'+(pays.length===1?'':'s')+' due today</b> ('+pays.map(function(p){return esc(p.sub);}).join(', ')+').';
+    var nowHM=String(new Date().getHours()).padStart(2,'0')+':'+String(new Date().getMinutes()).padStart(2,'0');
+    var next=items.filter(function(i){return i.time&&i.time>=nowHM;})[0];
+    if(next)s+=' Next up: <b>'+esc(next.title)+'</b> at '+pretty12(next.time)+'.';
+    else if(appts===0&&tasks===0)s+=' The day is open — a calm day to move a big goal forward. Wu Wei.';
+    return s;
+  }
+  function scoreData(){
+    var t=todayIso();var d=db();
+    var appts=d.appts.filter(function(a){return matchesDay(a,t);});
+    var tasks=d.tasks.filter(function(x){return x.date===t||(!x.date&&!x.done);});
+    var total=appts.length+tasks.length;
+    var done=appts.filter(function(a){return a.done;}).length+tasks.filter(function(x){return x.done;}).length;
+    return {pct:total?Math.round(done/total*100):0,done:done,total:total};
+  }
+
+  /* ════ MOUNT / RENDER ════ */
+  function ensureScreen(){
+    var sc=document.getElementById('s-icalender');
+    if(!sc){
+      var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+      sc=document.createElement('div');sc.id='s-icalender';sc.className='screen';
+      sc.innerHTML='<div id="rical-root"></div>';
+      main.appendChild(sc);
+    }
+    return sc;
+  }
+  function mount(){ensureScreen();return document.getElementById('rical-root');}
+  window.ricNav=function(tab){if(typeof window.go==='function'){window.go(tab);}else if(typeof window.royalTab==='function'){window.royalTab(tab,null);}};
+  function pillBar(){
+    return '<div class="ric-pillbar">'+
+      '<button class="rpill on">📅 Royal iCalender</button>'+
+      '<button class="rpill" onclick="window.ricNav(\'royaldaily\')">📋 Royal Daily</button>'+
+      '<button class="rpill" onclick="window.ricNav(\'diary\')">📔 Royal Diary</button>'+
+    '</div>';
+  }
+  function render(){
+    var root=mount();if(!root)return;
+    var now=new Date();
+    var greet=now.getHours()<12?'Good morning':now.getHours()<17?'Good afternoon':'Good evening';
+    var html=''+
+      pillBar()+
+      '<div class="ric-hero">'+
+        '<div class="ric-greet">'+greet+', Your Highness 👑 · Royal iCalender</div>'+
+        '<div class="ric-date">'+DAYL[now.getDay()]+', '+now.getDate()+' '+MON[now.getMonth()]+'</div>'+
+        '<div class="ric-clock" id="ric-clock"></div>'+
+        '<div class="ric-sum" id="ric-sum">'+summaryText()+'</div>'+
+      '</div>'+
+      '<div class="ric-nlbar">'+
+        '<input id="ric-nl" placeholder="Type naturally… e.g. “Meeting with Ghana team tomorrow 3pm” or “What should I focus on today?”" onkeydown="if(event.key===\'Enter\')ricNL()">'+
+        '<button class="ric-btn" onclick="ricNL()">Add / Ask</button>'+
+      '</div>'+
+      '<div class="ric-hint">Try: “Study for 2 hours friday 7pm” · “Call client monday at 10” · “Show this week” · “When is my next payment?”</div>'+
+      '<div id="ric-answer"></div>'+
+      '<div class="ric-subnav">'+sub('dash','🏠 Dashboard')+sub('cal','📅 Calendar')+sub('appts','📋 Appointments')+sub('tasks','✅ Tasks')+'</div>'+
+      '<div id="ric-view"></div>';
+    root.innerHTML=html;
+    renderView();
+    startClock();
+  }
+  function sub(v,label){return '<button class="'+(state.view===v?'on':'')+'" onclick="ricView(\''+v+'\')">'+label+'</button>';}
+  function renderView(){
+    var v=el('ric-view');if(!v)return;
+    if(state.view==='dash')v.innerHTML=viewDash();
+    else if(state.view==='cal')v.innerHTML=viewCal();
+    else if(state.view==='appts')v.innerHTML=viewAppts();
+    else if(state.view==='tasks')v.innerHTML=viewTasks();
+  }
+
+  function viewDash(){
+    var t=todayIso();var today=dayItems(t);var sc=scoreData();
+    var up=[];for(var k=1;k<=7;k++){var dI=iso(new Date(Date.now()+k*86400000));dayItems(dI).filter(function(i){return !i.diary;}).forEach(function(i){up.push({d:dI,i:i});});}
+    var hi=db().tasks.filter(function(x){return !x.done;}).slice(0,6);
+    return '<div class="ric-grid"><div>'+
+      card("Today’s schedule", today.length?today.map(function(i){return rowItem(i);}).join(''):empty('No appointments today. Add one above.'))+
+      card("Tasks due", hi.length?hi.map(function(x){return taskRow(x);}).join(''):empty('No open tasks.'))+
+    '</div><div>'+
+      '<div class="ric-card"><h3>Productivity today</h3><div class="ric-scorewrap"><div class="ric-scorenum">'+sc.pct+'%</div><div style="flex:1"><div style="font-size:12px;color:var(--text2)">'+sc.done+' of '+sc.total+' done</div><div class="ric-bar"><i style="width:'+sc.pct+'%"></i></div></div></div></div>'+
+      card("Coming up (7 days)", up.length?up.slice(0,8).map(function(u){return rowItem(u.i,u.d);}).join(''):empty('Nothing scheduled in the week ahead.'))+
+      card("Money &amp; deadlines", moneyHtml())+
+    '</div></div>';
+  }
+  function moneyHtml(){
+    var to=iso(new Date(Date.now()+30*86400000));var t=todayIso();
+    var ps=hostDebtsDue(t,to).sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,6);
+    if(!ps.length)return empty('No payments due in the next 30 days, or none recorded in Debt Management yet.');
+    return ps.map(function(p){return '<div class="ric-item"><div class="ric-dot" style="background:'+catColor('payment')+'"></div><div class="ric-time">'+shortDate(p.date)+'</div><div style="flex:1"><div class="ric-ttl">'+esc(p.title)+'</div><div class="ric-sub">'+esc(p.sub)+'</div></div></div>';}).join('');
+  }
+  function card(title,body){return '<div class="ric-card"><h3>'+title+'</h3>'+body+'</div>';}
+  function empty(m){return '<div class="ric-empty">'+m+'</div>';}
+  function rowItem(i,dateLabel){
+    var dotc=catColor(i.cat);
+    var time=dateLabel?shortDate(dateLabel)+(i.time?' '+pretty12(i.time):''):(i.time?pretty12(i.time):'•');
+    var pill='<span class="ric-pill" style="background:'+dotc+'22;color:'+dotc+'">'+catLabel(i.cat)+'</span>';
+    var chk=i.appt?'<div class="ric-check '+(i.done?'on':'')+'" onclick="ricToggleAppt(\''+i.id+'\')">'+(i.done?'✓':'')+'</div>':'<div class="ric-dot" style="background:'+dotc+'"></div>';
+    return '<div class="ric-item">'+chk+'<div class="ric-time">'+time+'</div><div style="flex:1"><div class="ric-ttl" style="'+(i.done?'text-decoration:line-through;opacity:.55':'')+'">'+esc(i.title)+pill+'</div>'+(i.sub?'<div class="ric-sub">'+esc(i.sub)+'</div>':'')+'</div></div>';
+  }
+
+  function viewCal(){
+    var y=state.calY,m=state.calM;
+    var first=new Date(y,m,1);var start=(first.getDay()+6)%7;
+    var dim=new Date(y,m+1,0).getDate();
+    var cells='';['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(d){cells+='<div class="dow">'+d+'</div>';});
+    var prevDim=new Date(y,m,0).getDate();
+    for(var i=0;i<start;i++){cells+=dayCell(y,m-1,prevDim-start+1+i,true);}
+    for(var d=1;d<=dim;d++){cells+=dayCell(y,m,d,false);}
+    var rem=(start+dim)%7;if(rem)for(var n=1;n<=7-rem;n++){cells+=dayCell(y,m+1,n,true);}
+    var selItems=dayItems(state.sel);
+    return '<div class="ric-grid"><div><div class="ric-card">'+
+      '<div class="ric-calhead"><button class="ric-btn ghost sm" onclick="ricCalMove(-1)">‹</button><b>'+MON[m]+' '+y+'</b><button class="ric-btn ghost sm" onclick="ricCalMove(1)">›</button></div>'+
+      '<div class="ric-cal">'+cells+'</div>'+
+      '<div style="margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text3)"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+catColor('royal')+'"></i> Appointment</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+catColor('payment')+'"></i> Payment</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+catColor('personal')+'"></i> Diary</span></div>'+
+    '</div></div><div>'+
+      '<div class="ric-card"><h3>'+prettyDate(state.sel)+'<button class="ric-btn sm" onclick="ricQuickAdd()">+ Add</button></h3>'+
+      (selItems.length?selItems.map(function(i){return rowItem(i);}).join(''):empty('Nothing on this day. Tap +Add.'))+'</div>'+
+    '</div></div>';
+  }
+  function dayCell(y,m,d,other){
+    var dt=new Date(y,m,d);var dI=iso(dt);var items=dayItems(dI);
+    var dots='';var seen={};
+    items.slice(0,5).forEach(function(it){var c=catColor(it.cat);if(seen[c])return;seen[c]=1;dots+='<i style="background:'+c+'"></i>';});
+    var cls='ric-day'+(other?' other':'')+(dI===todayIso()?' today':'');
+    var selStyle=dI===state.sel?'box-shadow:0 0 0 2px var(--gold) inset;':'';
+    return '<div class="'+cls+'" style="'+selStyle+'" onclick="ricPick(\''+dI+'\')"><div class="dn">'+d+'</div><div class="ric-dots">'+dots+'</div></div>';
+  }
+
+  function viewAppts(){
+    var d=db();var t=todayIso();
+    var future=d.appts.filter(function(a){return (a.rec&&a.rec!=='none')||a.date>=t;}).sort(function(a,b){return (a.date+a.time).localeCompare(b.date+b.time);});
+    var past=d.appts.filter(function(a){return (!a.rec||a.rec==='none')&&a.date<t;}).sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,12);
+    return '<div class="ric-grid"><div>'+
+      '<div class="ric-card"><h3>Upcoming &amp; recurring</h3>'+(future.length?future.map(apptRow).join(''):empty('No upcoming appointments.'))+'</div>'+
+      (past.length?'<div class="ric-card"><h3>Recent (history)</h3>'+past.map(apptRow).join('')+'</div>':'')+
+    '</div><div>'+
+      '<div class="ric-card" id="ric-formcard"><h3 id="ric-ft">New appointment</h3>'+apptForm()+'</div>'+
+    '</div></div>';
+  }
+  function apptRow(a){
+    var c=catColor(a.cat);
+    var when=shortDate(a.date)+(a.time?' · '+pretty12(a.time):'')+(a.rec&&a.rec!=='none'?' · '+a.rec:'');
+    return '<div class="ric-row"><div style="display:flex;gap:10px;align-items:flex-start;flex:1">'+
+      '<div class="ric-check '+(a.done?'on':'')+'" onclick="ricToggleAppt(\''+a.id+'\')">'+(a.done?'✓':'')+'</div>'+
+      '<div><div class="ric-ttl">'+esc(a.title)+'<span class="ric-pill" style="background:'+c+'22;color:'+c+'">'+catLabel(a.cat)+'</span></div>'+
+      '<div class="ric-sub">'+when+(a.loc?' · '+esc(a.loc):'')+'</div>'+(a.notes?'<div class="ric-sub">'+esc(a.notes)+'</div>':'')+'</div></div>'+
+      '<div style="display:flex;gap:4px"><span class="ric-x" onclick="ricEditAppt(\''+a.id+'\')" title="Edit">✎</span><span class="ric-x" onclick="ricDelAppt(\''+a.id+'\')" title="Delete">✕</span></div></div>';
+  }
+  function apptForm(editId){
+    var a=editId?db().appts.filter(function(x){return x.id===editId;})[0]:null;
+    a=a||{id:'',date:state.sel||todayIso(),time:'',dur:30,title:'',cat:'personal',loc:'',link:'',notes:'',rec:'none'};
+    var catOpts=Object.keys(CATS).map(function(k){return '<option value="'+k+'"'+(a.cat===k?' selected':'')+'>'+CATS[k].label+'</option>';}).join('');
+    var recOpts=[['none','Does not repeat'],['daily','Every day'],['weekly','Every week'],['monthly','Every month']].map(function(r){return '<option value="'+r[0]+'"'+(a.rec===r[0]?' selected':'')+'>'+r[1]+'</option>';}).join('');
+    return '<div class="ric-form">'+
+      '<div class="full"><label>Title</label><input id="ric-f-title" value="'+esc(a.title)+'" placeholder="e.g. Meeting with social worker"></div>'+
+      '<div><label>Date</label><input id="ric-f-date" type="date" value="'+esc(a.date)+'"></div>'+
+      '<div><label>Time</label><input id="ric-f-time" type="time" value="'+esc(a.time)+'"></div>'+
+      '<div><label>Category</label><select id="ric-f-cat">'+catOpts+'</select></div>'+
+      '<div><label>Repeat</label><select id="ric-f-rec">'+recOpts+'</select></div>'+
+      '<div><label>Duration (mins)</label><input id="ric-f-dur" type="number" value="'+(a.dur||30)+'"></div>'+
+      '<div><label>Location</label><input id="ric-f-loc" value="'+esc(a.loc)+'" placeholder="Office / address"></div>'+
+      '<div class="full"><label>Video / meeting link</label><input id="ric-f-link" value="'+esc(a.link)+'" placeholder="https://… (optional)"></div>'+
+      '<div class="full"><label>Notes / preparation</label><textarea id="ric-f-notes" rows="2" placeholder="What to prepare…">'+esc(a.notes)+'</textarea></div>'+
+      '<div class="full" style="display:flex;gap:8px"><button class="ric-btn" onclick="ricSaveAppt(\''+(a.id||'')+'\')">'+(editId?'Save changes':'Add appointment')+'</button>'+(editId?'<button class="ric-btn ghost" onclick="ricView(\'appts\')">Cancel</button>':'')+'</div>'+
+    '</div>';
+  }
+
+  function viewTasks(){
+    var d=db();
+    var open=d.tasks.filter(function(x){return !x.done;}).sort(function(a,b){var o={high:0,med:1,low:2};return (o[a.pri]||1)-(o[b.pri]||1);});
+    var done=d.tasks.filter(function(x){return x.done;}).slice(-12).reverse();
+    return '<div class="ric-grid"><div>'+
+      '<div class="ric-card"><h3>Open tasks</h3>'+(open.length?open.map(taskRow).join(''):empty('No open tasks. Add one →'))+'</div>'+
+      (done.length?'<div class="ric-card"><h3>Done</h3>'+done.map(taskRow).join('')+'</div>':'')+
+    '</div><div><div class="ric-card"><h3>New task</h3>'+
+      '<div class="ric-form">'+
+        '<div class="full"><label>Task</label><input id="ric-t-title" placeholder="e.g. Submit Level 4 assignment"></div>'+
+        '<div><label>Due date (optional)</label><input id="ric-t-date" type="date"></div>'+
+        '<div><label>Priority</label><select id="ric-t-pri"><option value="high">High</option><option value="med" selected>Medium</option><option value="low">Low</option></select></div>'+
+        '<div class="full"><button class="ric-btn" onclick="ricAddTask()">Add task</button></div>'+
+      '</div></div></div></div>';
+  }
+  function taskRow(x){
+    var pc={high:'#E05252',med:'#C9A84C',low:'#7A7268'}[x.pri]||'#C9A84C';
+    return '<div class="ric-row"><div style="display:flex;gap:10px;align-items:center;flex:1">'+
+      '<div class="ric-check '+(x.done?'on':'')+'" onclick="ricToggleTask(\''+x.id+'\')">'+(x.done?'✓':'')+'</div>'+
+      '<div><div class="ric-ttl" style="'+(x.done?'text-decoration:line-through;opacity:.55':'')+'">'+esc(x.title)+'<span class="ric-pill" style="background:'+pc+'22;color:'+pc+'">'+x.pri+'</span></div>'+(x.date?'<div class="ric-sub">'+shortDate(x.date)+'</div>':'')+'</div></div>'+
+      '<span class="ric-x" onclick="ricDelTask(\''+x.id+'\')">✕</span></div>';
+  }
+
+  function startClock(){
+    if(clockTimer)clearInterval(clockTimer);
+    function tick(){var c=el('ric-clock');if(!c){clearInterval(clockTimer);clockTimer=null;return;}var n=new Date();c.textContent=n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+    tick();clockTimer=setInterval(tick,1000);
+  }
+  function refreshSummary(){var s=el('ric-sum');if(s)s.innerHTML=summaryText();}
+  function toast(m){var t=document.createElement('div');t.className='ric-toast';t.textContent=m;document.body.appendChild(t);requestAnimationFrame(function(){t.classList.add('show');});setTimeout(function(){t.classList.remove('show');setTimeout(function(){t.remove();},300);},2600);}
+
+  /* ════ PUBLIC HANDLERS ════ */
+  window.ricNL=nlGo;
+  window.ricView=function(v){state.view=v;renderView();var btns=document.querySelectorAll('#rical-root .ric-subnav button');var idx={dash:0,cal:1,appts:2,tasks:3}[v];btns.forEach(function(b,i){b.classList.toggle('on',i===idx);});};
+  window.ricCalMove=function(dir){state.calM+=dir;if(state.calM<0){state.calM=11;state.calY--;}if(state.calM>11){state.calM=0;state.calY++;}renderView();};
+  window.ricPick=function(dI){state.sel=dI;renderView();};
+  window.ricQuickAdd=function(){state.view='appts';renderView();var btns=document.querySelectorAll('#rical-root .ric-subnav button');btns.forEach(function(b,i){b.classList.toggle('on',i===2);});setTimeout(function(){var t=el('ric-f-date');if(t)t.value=state.sel;var ti=el('ric-f-title');if(ti)ti.focus();},30);};
+  window.ricSaveAppt=function(id){
+    var d=db();var rec={
+      id:id||uid(),
+      title:(el('ric-f-title').value||'Appointment').trim(),
+      date:el('ric-f-date').value||todayIso(),
+      time:el('ric-f-time').value||'',
+      cat:el('ric-f-cat').value, rec:el('ric-f-rec').value,
+      dur:parseInt(el('ric-f-dur').value,10)||30,
+      loc:el('ric-f-loc').value.trim(), link:el('ric-f-link').value.trim(),
+      notes:el('ric-f-notes').value.trim(), remind:true, done:false
+    };
+    if(id){d.appts=d.appts.map(function(a){return a.id===id?Object.assign(a,rec):a;});}else{d.appts.push(rec);}
+    commit(d);toast(id?'Appointment updated':'Appointment added');state.view='appts';renderView();refreshSummary();
+  };
+  window.ricEditAppt=function(id){state.view='appts';renderView();setTimeout(function(){var card=el('ric-formcard');if(card){var h=card.querySelector('h3');if(h)h.textContent='Edit appointment';var f=card.querySelector('.ric-form');if(f)f.outerHTML=apptForm(id);}},20);};
+  window.ricDelAppt=function(id){var d=db();d.appts=d.appts.filter(function(a){return a.id!==id;});commit(d);toast('Appointment deleted');renderView();refreshSummary();};
+  window.ricToggleAppt=function(id){var d=db();d.appts=d.appts.map(function(a){return a.id===id?Object.assign(a,{done:!a.done}):a;});commit(d);renderView();refreshSummary();};
+  window.ricAddTask=function(){var t=el('ric-t-title');if(!t||!t.value.trim())return;var d=db();d.tasks.push({id:uid(),title:t.value.trim(),date:el('ric-t-date').value||'',pri:el('ric-t-pri').value,done:false});commit(d);toast('Task added');renderView();refreshSummary();};
+  window.ricToggleTask=function(id){var d=db();d.tasks=d.tasks.map(function(x){return x.id===id?Object.assign(x,{done:!x.done}):x;});commit(d);renderView();refreshSummary();};
+  window.ricDelTask=function(id){var d=db();d.tasks=d.tasks.filter(function(x){return x.id!==id;});commit(d);toast('Task removed');renderView();refreshSummary();};
+  window.RICAL={render:render};
+
+  /* ════ BOOTSTRAP: add a 3rd "Royal iCalender" button to the Legacy Daily hub ════
+     NON-DESTRUCTIVE: the old Royal Daily checklist + Royal Diary are left fully intact.
+     We add our own screen (s-icalender) and inject a third pill into the hub bar. */
+  function injectPill(){
+    var bars=document.querySelectorAll('.rrdl-holder .rrnav-bar');
+    for(var i=0;i<bars.length;i++){
+      var bar=bars[i];
+      if(bar.querySelector('[data-tab="icalender"]'))continue;
+      var b=document.createElement('button');
+      b.className='rrnav-pill';
+      b.setAttribute('data-tab','icalender');
+      b.setAttribute('onclick',"window.ricNav('icalender')");
+      b.innerHTML='📅 Royal iCalender';
+      bar.insertBefore(b, bar.firstChild);
+    }
+  }
+  function activeIsIcal(){var s=document.getElementById('s-icalender');return !!(s&&s.classList.contains('active'));}
+  function markHubActive(){var h=document.getElementById('nb-dailylife');if(h)h.classList.add('active');}
+  function hook(fn){
+    var o=window[fn];
+    if(typeof o!=='function'||o._rical)return;
+    var w=function(n){var r=o.apply(this,arguments);if(n==='icalender'){setTimeout(function(){render();markHubActive();},0);}return r;};
+    w._rical=true;try{window[fn]=w;}catch(e){}
+  }
+  function boot(){
+    ensureScreen();
+    hook('go');hook('royalTab');
+    injectPill();
+    if(activeIsIcal())render();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  // keep-alive: re-hook (their code may redefine go), keep the pill present, ensure content when active
+  setInterval(function(){
+    hook('go');hook('royalTab');ensureScreen();injectPill();
+    if(activeIsIcal()){var root=document.getElementById('rical-root');if(!root||!root.innerHTML)render();markHubActive();}
+  },1500);
+})();
+</script>
+<!-- ════════════ END ROYAL iCALENDER ════════════ -->
+
 </body>
 </html>
