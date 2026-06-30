@@ -2231,7 +2231,7 @@ html.app-light .mh-kpi,html.app-light .mh-panel{box-shadow:0 1px 2px rgba(0,0,0,
 
       <!-- Live Charts (resurfaced, live data) -->
       <div style="margin-bottom:16px;">
-        <style>#mh-fic-livecharts svg{width:100%;height:auto;display:block}#mh-fic-livecharts .fd-goalbar{height:7px;background:rgba(201,168,76,.1);border-radius:5px;overflow:hidden;margin-top:4px}#mh-fic-livecharts .fd-goalbar i{display:block;height:100%;background:var(--gold);border-radius:5px}</style>
+        <style>#mh-fic-livecharts{grid-template-columns:repeat(3,minmax(0,1fr))!important;}@media(max-width:1000px){#mh-fic-livecharts{grid-template-columns:repeat(2,minmax(0,1fr))!important;}}@media(max-width:620px){#mh-fic-livecharts{grid-template-columns:1fr!important;}}#mh-fic-livecharts svg{width:100%;height:auto;display:block}#mh-fic-livecharts .fd-goalbar{height:7px;background:rgba(201,168,76,.1);border-radius:5px;overflow:hidden;margin-top:4px}#mh-fic-livecharts .fd-goalbar i{display:block;height:100%;background:var(--gold);border-radius:5px}</style>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:14px;">📈</span><span style="font-size:12.5px;font-weight:700;color:var(--text);">Live Charts</span><span id="mh-fic-lc-note" style="font-size:10.5px;color:var(--text4);margin-left:auto;"></span></div>
         <div id="mh-fic-livecharts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;"></div>
       </div>
