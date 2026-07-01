@@ -18636,8 +18636,7 @@ window.rrUniversalSearch=function(raw, saidHtml){
     var out=[];var d=load('royal_legal_v1',null);var cs=(d&&d.cases)||[];
     cs.forEach(function(c){
       if(String(c.nextDate||'').slice(0,10)!==forIso)return;
-      var nm=c.title||c.name||'Court case';var n=nm.toLowerCase();
-      if(/certiorari|destool|dadieso|nzole|bonza/.test(n))return; /* the two flagship cases already shown as seeded court dates — avoid double-listing */
+      var nm=c.title||c.name||'Court case';
       out.push({time:'09:00',title:'⚖️ '+nm+' — hearing',sub:[c.court,c.suitNo].filter(Boolean).join(' · '),cat:'royal'});
     });
     return out;
@@ -19087,47 +19086,28 @@ window.rrUniversalSearch=function(raw, saidHtml){
     var w=function(n){var r=o.apply(this,arguments);if(n==='icalender'){setTimeout(function(){render();markHubActive();},0);}return r;};
     w._rical=true;try{window[fn]=w;}catch(e){}
   }
-  function seedCourt(){
+  /* one-time cleanup: remove the earlier hard-coded court appointments so hearings come
+     only from your private Legal register (nothing identifying stays in the code) */
+  function cleanupSeed(){
     try{
-      if(localStorage.getItem('rical_seed_court_v1'))return;
-      var d=db();var have={};d.appts.forEach(function(a){have[a.id]=1;});
-      var seeds=[
-        {id:'ric_seed_certiorari_20260727',date:'2026-07-27',time:'09:00',dur:120,title:'Court — Certiorari & Prohibition hearing',cat:'royal',loc:'High Court of Justice, Sefwi Wiawso',link:'',notes:'Suit WN/SW/HC/E10/03/2026 — judicial review vs Western North Regional House of Chiefs. Adjourned from 29 June (Respondent\'s new lawyer asked for 2 weeks). Your lawyer: Michael Attakorah Baah, Esq.',remind:true,done:false,rec:'none'},
-        {id:'ric_seed_land_20260717',date:'2026-07-17',time:'09:00',dur:120,title:'Court — Dadieso Land Dispute (confirm: 17 or 31 Jul)',cat:'royal',loc:'District Court, Enchi',link:'',notes:'Suit WNR/EN/DC/A1/60/2026. Adjourned at Plaintiff\'s request; confirm whether the court set 17 or 31 July, then adjust this date. Defence filed & ready. Lawyer: Michael Attakorah Baah, Esq.',remind:true,done:false,rec:'none'}
-      ];
-      var added=0;seeds.forEach(function(s){if(!have[s.id]){d.appts.push(s);added++;}});
-      if(added)commit(d);
-      localStorage.setItem('rical_seed_court_v1','1');
-    }catch(e){}
-  }
-  /* one-time: bring the two flagship cases in the Legal register up to their adjourned dates */
-  function migrateLegalDates(){
-    try{
-      if(localStorage.getItem('rical_legal_datefix_v2'))return;
-      var d=load('royal_legal_v1',null);
-      if(!d||!d.cases)return; /* register not present yet — retry on a later load */
-      var changed=false;
-      d.cases.forEach(function(c){
-        var n=(c.title||c.name||'').toLowerCase();
-        if(/certiorari|destool/.test(n)){ if(c.nextDate!=='2026-07-27'){c.nextDate='2026-07-27';c.status='Adjourned';changed=true;} }
-        else if(/dadieso|nzole|bonza|land/.test(n)){ if(c.nextDate!=='2026-07-17'){c.nextDate='2026-07-17';c.status='Adjourned';changed=true;} }
-      });
-      if(changed){localStorage.setItem('royal_legal_v1',JSON.stringify(d));if(typeof window.buildChief==='function'){try{window.buildChief();}catch(e){}}}
-      localStorage.setItem('rical_legal_datefix_v2','1');
+      if(localStorage.getItem('rical_seedclean_v1'))return;
+      var d=db();var before=d.appts.length;
+      d.appts=d.appts.filter(function(a){return String(a.id||'').indexOf('ric_seed_')!==0;});
+      if(d.appts.length!==before)commit(d);
+      localStorage.setItem('rical_seedclean_v1','1');
     }catch(e){}
   }
   function boot(){
     ensureScreen();
     hook('go');hook('royalTab');
     injectPill();
-    seedCourt();
-    migrateLegalDates();
+    cleanupSeed();
     if(activeIsIcal())render();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   // keep-alive: re-hook (their code may redefine go), keep the pill present, ensure content when active
   setInterval(function(){
-    hook('go');hook('royalTab');ensureScreen();injectPill();migrateLegalDates();
+    hook('go');hook('royalTab');ensureScreen();injectPill();
     if(activeIsIcal()){var root=document.getElementById('rical-root');if(!root||!root.innerHTML)render();markHubActive();}
   },1500);
 })();
