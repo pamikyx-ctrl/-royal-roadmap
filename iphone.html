@@ -19222,6 +19222,10 @@ window.rrUniversalSearch=function(raw, saidHtml){
   }
   /* keep the page's header KPIs in step with the real Legal register + case costs */
   function heroDate(s){var p=String(s).slice(0,10).split('-');if(p.length!==3)return s;return (+p[2])+' '+MONS[+p[1]-1]+' '+p[0];}
+  /* keyword scan: is this Money Hub entry related to Chieftaincy Affairs & Coronation? */
+  var CHIEF_KW=/chief|chieftain|coronation|coronat|\bstool\b|destool|enstool|enthron|throne|palace|queen ?mother|kingmaker|regalia|kente|durbar|libation|omanhene|paramount|house of chiefs|traditional council|tribunal|hearing|adjourn|litigation|lawyer|solicitor|counsel|barrister|\bcourt\b|\blegal\b|ceremon/i;
+  function txnText(t){return [t.cat,t.category,t.purpose,t.description,t.desc,t.notes,t.note,t.payee,t.person,t.merchant,t.source,t.sourceAccountLabel,t.reference,t.title,t.name,t.label].filter(Boolean).join(' ');}
+  function isChiefTxn(t){ if(t.cat==='ceremony'||t.chief||t.purpose==='Chieftaincy')return true; return CHIEF_KW.test(txnText(t)); }
   function patchHero(){
     var hero=document.getElementById('ch-hero');if(!hero)return;
     var cs=getCases();if(!cs.length)return;
@@ -19229,13 +19233,13 @@ window.rrUniversalSearch=function(raw, saidHtml){
     var today=new Date().toISOString().slice(0,10);
     var nx=open.filter(function(c){return c.nextDate&&String(c.nextDate).slice(0,10)>=today;}).sort(function(a,b){return String(a.nextDate).localeCompare(String(b.nextDate));})[0];
     /* Total spend = case costs + chieftaincy/ceremony spending from the Money Hub */
-    var tot=0;cs.forEach(function(c){(c.costs||[]).forEach(function(x){tot+=(+x.amount||0);});});
-    var mh=load('royal_moneyhub_v1',[]);if(Array.isArray(mh)){mh.forEach(function(t){if(!t||t.type==='income')return;var isChief=(t.cat==='ceremony')||t.chief||/chief|ceremon/i.test(String(t.purpose||t.category||''));if(isChief)tot+=parseFloat(t.amount)||0;});}
+    var tot=0,mhN=0;cs.forEach(function(c){(c.costs||[]).forEach(function(x){tot+=(+x.amount||0);});});
+    var mh=load('royal_moneyhub_v1',[]);if(Array.isArray(mh)){mh.forEach(function(t){if(!t||t.type==='income')return;if(isChiefTxn(t)){tot+=parseFloat(t.amount)||0;mhN++;}});}
     hero.querySelectorAll('.cc-hero-cell').forEach(function(cell){
       var l=((cell.querySelector('.l')||{}).textContent||'').toLowerCase();var v=cell.querySelector('.v');if(!v)return;
       if(l.indexOf('active legal')>-1)v.textContent=open.length;
       else if(l.indexOf('next court')>-1){v.textContent=nx?heroDate(nx.nextDate):'—';v.style.fontSize='15px';}
-      else if(l.indexOf('total spend')>-1&&tot>0)v.textContent='£'+tot.toLocaleString();
+      else if(l.indexOf('total spend')>-1&&tot>0){v.textContent='£'+tot.toLocaleString();v.title='AI keyword match: '+mhN+' chieftaincy/coronation money entr'+(mhN===1?'y':'ies')+' found, plus recorded case costs.';}
     });
   }
   /* auto-resize & compress any uploaded image so it fits on-device storage */
