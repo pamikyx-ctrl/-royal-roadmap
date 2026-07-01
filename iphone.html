@@ -18572,9 +18572,9 @@ window.rrUniversalSearch=function(raw, saidHtml){
     var out=[];var d=load('royal_legal_v1',null);var cs=(d&&d.cases)||[];
     cs.forEach(function(c){
       if(String(c.nextDate||'').slice(0,10)!==forIso)return;
-      var n=(c.name||'').toLowerCase();
+      var nm=c.title||c.name||'Court case';var n=nm.toLowerCase();
       if(/certiorari|destool|dadieso|nzole|bonza/.test(n))return; /* the two flagship cases already shown as seeded court dates — avoid double-listing */
-      out.push({time:'09:00',title:'⚖️ '+(c.name||'Court case')+' — hearing',sub:[c.court,c.suitNo].filter(Boolean).join(' · '),cat:'royal'});
+      out.push({time:'09:00',title:'⚖️ '+nm+' — hearing',sub:[c.court,c.suitNo].filter(Boolean).join(' · '),cat:'royal'});
     });
     return out;
   }
@@ -19039,17 +19039,17 @@ window.rrUniversalSearch=function(raw, saidHtml){
   /* one-time: bring the two flagship cases in the Legal register up to their adjourned dates */
   function migrateLegalDates(){
     try{
-      if(localStorage.getItem('rical_legal_datefix_v1'))return;
+      if(localStorage.getItem('rical_legal_datefix_v2'))return;
       var d=load('royal_legal_v1',null);
       if(!d||!d.cases)return; /* register not present yet — retry on a later load */
       var changed=false;
       d.cases.forEach(function(c){
-        var n=(c.name||'').toLowerCase();
+        var n=(c.title||c.name||'').toLowerCase();
         if(/certiorari|destool/.test(n)){ if(c.nextDate!=='2026-07-27'){c.nextDate='2026-07-27';c.status='Adjourned';changed=true;} }
-        else if(/dadieso|nzole|bonza/.test(n)){ if(c.nextDate!=='2026-07-17'){c.nextDate='2026-07-17';c.status='Adjourned';changed=true;} }
+        else if(/dadieso|nzole|bonza|land/.test(n)){ if(c.nextDate!=='2026-07-17'){c.nextDate='2026-07-17';c.status='Adjourned';changed=true;} }
       });
       if(changed){localStorage.setItem('royal_legal_v1',JSON.stringify(d));if(typeof window.buildChief==='function'){try{window.buildChief();}catch(e){}}}
-      localStorage.setItem('rical_legal_datefix_v1','1');
+      localStorage.setItem('rical_legal_datefix_v2','1');
     }catch(e){}
   }
   function boot(){
