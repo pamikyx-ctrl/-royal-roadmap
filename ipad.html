@@ -19292,7 +19292,9 @@ window.rrUniversalSearch=function(raw, saidHtml){
     var open=cs.filter(function(c){return !/won|lost|settled|closed/i.test(c.status||'');});
     var today=new Date().toISOString().slice(0,10);
     var nx=open.filter(function(c){return c.nextDate&&String(c.nextDate).slice(0,10)>=today;}).sort(function(a,b){return String(a.nextDate).localeCompare(String(b.nextDate));})[0];
+    /* Total spend = case costs + chieftaincy/ceremony spending from the Money Hub */
     var tot=0;cs.forEach(function(c){(c.costs||[]).forEach(function(x){tot+=(+x.amount||0);});});
+    var mh=load('royal_moneyhub_v1',[]);if(Array.isArray(mh)){mh.forEach(function(t){if(!t||t.type==='income')return;var isChief=(t.cat==='ceremony')||t.chief||/chief|ceremon/i.test(String(t.purpose||t.category||''));if(isChief)tot+=parseFloat(t.amount)||0;});}
     hero.querySelectorAll('.cc-hero-cell').forEach(function(cell){
       var l=((cell.querySelector('.l')||{}).textContent||'').toLowerCase();var v=cell.querySelector('.v');if(!v)return;
       if(l.indexOf('active legal')>-1)v.textContent=open.length;
