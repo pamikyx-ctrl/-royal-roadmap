@@ -19393,5 +19393,57 @@ window.rrUniversalSearch=function(raw, saidHtml){
 </script>
 <!-- ════════════ END CASE DOCUMENTS ════════════ -->
 
+<!-- ════════════════════════════════════════════
+     LIVE FINANCIAL SNAPSHOT — keyword safety-net  [C]
+     On the Royal Life Plan & Forecast page (s-fin),
+     re-reads the Money Hub after the native render and
+     folds any UN-typed / mis-typed entry into Income
+     or Outgoings by keyword, so the snapshot captures
+     every money entry. Matches native exactly for
+     properly-typed entries (superset — never lower).
+     Self-contained, namespaced rfin.
+════════════════════════════════════════════ -->
+<script id="rfin-js">
+(function(){
+  "use strict";
+  function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+  var INCOME_KW=/salary|wage|payslip|payroll|invoice|dividend|refund|deposit|received|\bincome\b|\bcredit(ed)?\b|pension|benefit|earnings|payout|reimburs/i;
+  function txt(t){return [t.cat,t.category,t.purpose,t.description,t.desc,t.notes,t.note,t.payee,t.person,t.merchant,t.source,t.sourceAccountLabel,t.reference,t.title,t.name,t.label].filter(Boolean).join(' ');}
+  function money(n){return '£'+Math.round(n).toLocaleString('en-GB');}
+  var KNOWN_OTHER=['ghana','family','education','savings','investment','transfer'];
+  function compute(){
+    var mh=load('royal_moneyhub_v1',[]);if(!Array.isArray(mh))return null;
+    var cm=new Date().toISOString().slice(0,7);var inc=0,out=0,extra=0;
+    mh.forEach(function(t){
+      if(!t||String(t.date||'').slice(0,7)!==cm)return;
+      var amt=parseFloat(t.amount)||0;var ty=String(t.type||'').toLowerCase();
+      if(ty==='income'){inc+=amt;return;}
+      if(ty==='expense'||ty==='personal'||ty==='debt'){out+=amt;return;}
+      if(KNOWN_OTHER.indexOf(ty)>=0)return; /* handled elsewhere (all-time / throne fund) — match native */
+      /* un-typed or unknown → classify by keyword */
+      if(INCOME_KW.test(txt(t)))inc+=amt;else out+=amt;extra++;
+    });
+    return {inc:inc,out:out,net:inc-out,extra:extra};
+  }
+  function patch(){
+    var strip=document.getElementById('lfp-kpi-strip');if(!strip)return;
+    var c=compute();if(!c)return;
+    strip.querySelectorAll('.lfp-kpi').forEach(function(k){
+      var lbl=((k.querySelector('.lfp-kpi-lbl')||{}).textContent||'').toLowerCase();
+      var v=k.querySelector('.lfp-kpi-val');if(!v)return;
+      if(lbl.indexOf('income this month')>-1){v.textContent=money(c.inc);if(c.extra)v.title=c.extra+' entr'+(c.extra===1?'y':'ies')+' matched by keyword (no type set).';}
+      else if(lbl.indexOf('outgoings this month')>-1){v.textContent=money(c.out);}
+      else if(lbl.indexOf('net')>-1){v.textContent=money(Math.abs(c.net));var le=k.querySelector('.lfp-kpi-lbl');if(le)le.textContent='Net '+(c.net>=0?'Surplus':'Deficit');v.style.color=(c.net>=0?'var(--green)':'var(--red)');}
+    });
+  }
+  function active(){var s=document.getElementById('s-fin');return !!(s&&s.classList.contains('active'));}
+  function hook(fn){var o=window[fn];if(typeof o!=='function'||o._rfin)return;var w=function(n){var r=o.apply(this,arguments);if(n==='fin')setTimeout(patch,80);return r;};w._rfin=true;try{window[fn]=w;}catch(e){}}
+  function boot(){hook('go');hook('royalTab');if(active())patch();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  setInterval(function(){hook('go');hook('royalTab');if(active())patch();},1200);
+})();
+</script>
+<!-- ════════════ END RFIN ════════════ -->
+
 </body>
 </html>
