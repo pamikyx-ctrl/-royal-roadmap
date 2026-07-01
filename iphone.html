@@ -19220,9 +19220,42 @@ window.rrUniversalSearch=function(raw, saidHtml){
     var cs=getCases();var docs=getDocs();
     return cs.map(function(c,i){return (c.title||c.name||'')+'|'+c.stage+'|'+c.nextDate+'|'+c.status+'|'+((docs[ckey(c,i)]||[]).length);}).join('~');
   }
+  /* keep the page's header KPIs in step with the real Legal register + case costs */
+  function heroDate(s){var p=String(s).slice(0,10).split('-');if(p.length!==3)return s;return (+p[2])+' '+MONS[+p[1]-1]+' '+p[0];}
+  function patchHero(){
+    var hero=document.getElementById('ch-hero');if(!hero)return;
+    var cs=getCases();if(!cs.length)return;
+    var open=cs.filter(function(c){return !/won|lost|settled|closed/i.test(c.status||'');});
+    var today=new Date().toISOString().slice(0,10);
+    var nx=open.filter(function(c){return c.nextDate&&String(c.nextDate).slice(0,10)>=today;}).sort(function(a,b){return String(a.nextDate).localeCompare(String(b.nextDate));})[0];
+    var tot=0;cs.forEach(function(c){(c.costs||[]).forEach(function(x){tot+=(+x.amount||0);});});
+    hero.querySelectorAll('.cc-hero-cell').forEach(function(cell){
+      var l=((cell.querySelector('.l')||{}).textContent||'').toLowerCase();var v=cell.querySelector('.v');if(!v)return;
+      if(l.indexOf('active legal')>-1)v.textContent=open.length;
+      else if(l.indexOf('next court')>-1){v.textContent=nx?heroDate(nx.nextDate):'—';v.style.fontSize='15px';}
+      else if(l.indexOf('total spend')>-1&&tot>0)v.textContent='£'+tot.toLocaleString();
+    });
+  }
+  /* auto-resize & compress any uploaded image so it fits on-device storage */
+  function compressImage(file,cb){
+    var r=new FileReader();
+    r.onload=function(){
+      var img=new Image();
+      img.onload=function(){
+        var max=1600,w=img.width,h=img.height;
+        if(w>max||h>max){if(w>=h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
+        try{var cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
+          cb({name:String(file.name||'image').replace(/\.[^.]+$/,'')+'.jpg',type:'image/jpeg',data:cv.toDataURL('image/jpeg',0.7)});
+        }catch(e){cb(null);}
+      };
+      img.onerror=function(){cb(null);};img.src=r.result;
+    };
+    r.onerror=function(){cb(null);};r.readAsDataURL(file);
+  }
   function ensure(){
     var sc=document.getElementById('s-chief');
     if(!sc||!sc.classList.contains('active'))return;
+    patchHero();
     var p=document.getElementById('rdocs-panel');
     if(!p){p=document.createElement('div');p.id='rdocs-panel';sc.appendChild(p);}
     else if(p.parentNode!==sc){sc.appendChild(p);}
@@ -19270,11 +19303,15 @@ window.rrUniversalSearch=function(raw, saidHtml){
       refresh();
     }
     if(file){
-      if(file.size>2*1024*1024 && !confirm('This file is large ('+Math.round(file.size/1048576*10)/10+' MB) and may not fit in on-device storage. Add anyway?'))return;
-      var r=new FileReader();
-      r.onload=function(){store({name:file.name,type:file.type,data:r.result});};
-      r.onerror=function(){alert('Could not read the file.');};
-      r.readAsDataURL(file);
+      if(/^image\//.test(file.type)){
+        compressImage(file,function(fo){ if(!fo){alert('Could not process the image.');return;} store(fo); });
+      } else {
+        if(file.size>3*1024*1024 && !confirm('This file is large ('+Math.round(file.size/1048576*10)/10+' MB). Large PDFs cannot be shrunk in the app and may not fit in on-device storage — add anyway?'))return;
+        var r=new FileReader();
+        r.onload=function(){store({name:file.name,type:file.type,data:r.result});};
+        r.onerror=function(){alert('Could not read the file.');};
+        r.readAsDataURL(file);
+      }
     } else { store(null); }
   };
 
