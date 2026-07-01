@@ -18950,6 +18950,21 @@ window.rrUniversalSearch=function(raw, saidHtml){
 #rical-root .ric-scorenum{font-size:38px;font-weight:800;color:var(--gold-light,#E8C96A);line-height:1;}
 #rical-root .ric-bar{height:8px;background:var(--dark4,#222235);border-radius:99px;overflow:hidden;margin-top:8px;}
 #rical-root .ric-bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--gold,#C9A84C),var(--gold-light,#E8C96A));}
+#rical-root .ric-cdcard{background:linear-gradient(150deg,rgba(201,168,76,0.18),rgba(201,168,76,0.03));border:1px solid rgba(201,168,76,0.38);border-radius:16px;padding:18px;margin-bottom:16px;}
+#rical-root .ric-cdcard h3{margin:0 0 12px;font-size:13px;color:var(--gold-light,#E8C96A);letter-spacing:.4px;text-transform:uppercase;font-weight:800;}
+#rical-root .ric-cdnext{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+#rical-root .ric-cdt{font-size:25px;font-weight:800;color:var(--gold-light,#E8C96A);font-variant-numeric:tabular-nums;letter-spacing:.3px;}
+#rical-root .ric-cdt b{color:var(--text,#F0EBE0);}
+#rical-root .ric-cdt .lv{color:var(--red,#E05252);}
+#rical-root .ric-cdmeta{flex:1;min-width:180px;}
+#rical-root .ric-cdtitle{font-size:15px;font-weight:800;color:var(--text,#F0EBE0);}
+#rical-root .ric-cdsub{font-size:12px;color:var(--text3,#8A8172);margin-top:2px;}
+#rical-root .ric-cdlist{margin-top:12px;border-top:1px solid var(--sep);padding-top:10px;display:flex;flex-direction:column;gap:8px;}
+#rical-root .ric-cdrow{display:flex;gap:10px;align-items:baseline;}
+#rical-root .ric-cdmini{font-size:13px;font-weight:800;color:var(--gold-light,#E8C96A);font-variant-numeric:tabular-nums;min-width:110px;}
+#rical-root .ric-cdrt{font-size:13px;color:var(--text2,#C4BAA8);}
+#rical-root .ric-arcyear{font-size:13px;font-weight:800;color:var(--gold-light,#E8C96A);letter-spacing:.5px;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--sep);}
+#rical-root .ric-arc{background:var(--dark4,#222235);border:1px solid var(--sep);border-radius:12px;padding:12px 14px;margin-bottom:9px;}
 #rical-root .ric-calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 #rical-root .ric-calhead b{font-size:16px;color:var(--text,#F0EBE0);}
 #rical-root .ric-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
@@ -19005,6 +19020,7 @@ window.rrUniversalSearch=function(raw, saidHtml){
   function parseIso(s){var p=String(s||'').split('-');return new Date(+p[0],(+p[1]||1)-1,+p[2]||1);}
   function prettyDate(s){var d=parseIso(s);return DAYL[d.getDay()]+', '+d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear();}
   function shortDate(s){var d=parseIso(s);return d.getDate()+' '+MONS[d.getMonth()];}
+  function shortDateY(s){var d=parseIso(s);return d.getDate()+' '+MONS[d.getMonth()]+' '+d.getFullYear();}
   function pretty12(t){if(!t)return '';var p=t.split(':');var h=+p[0],m=p[1]||'00';var ap=h<12?'am':'pm';var h12=h%12;if(h12===0)h12=12;return h12+(m!=='00'?':'+m:'')+ap;}
 
   var KEY='rical_data_v1';
@@ -19030,6 +19046,28 @@ window.rrUniversalSearch=function(raw, saidHtml){
     gs.forEach(function(g){var dt=g.d||g.date||g.deadline||g.target;if(!dt)return;dt=String(dt).slice(0,10);if(dt>=fromIso&&dt<=toIso)out.push({date:dt,title:(g.t||g.title||'Goal')+' — target',cat:'royal'});});
     return out;
   }
+  /* AUTO-CONNECT: Legal register (royal_legal_v1) — court hearing dates */
+  function hostLegal(forIso){
+    var out=[];var d=load('royal_legal_v1',null);var cs=(d&&d.cases)||[];
+    cs.forEach(function(c){
+      if(String(c.nextDate||'').slice(0,10)!==forIso)return;
+      var n=(c.name||'').toLowerCase();
+      if(/certiorari|destool|dadieso|nzole|bonza/.test(n))return; /* the two flagship cases already shown as seeded court dates — avoid double-listing */
+      out.push({time:'09:00',title:'⚖️ '+(c.name||'Court case')+' — hearing',sub:[c.court,c.suitNo].filter(Boolean).join(' · '),cat:'royal'});
+    });
+    return out;
+  }
+  /* AUTO-CONNECT: Chieftaincy & coronation dated items (royal_chief_v1) */
+  function hostChief(forIso){
+    var out=[];var d=load('royal_chief_v1',null);if(!d)return out;
+    ['legal','coronation'].forEach(function(kind){
+      (d[kind]||[]).forEach(function(r){
+        if(String(r.date||'').slice(0,10)!==forIso)return;
+        out.push({time:'',title:(kind==='coronation'?'👑 ':'⚖️ ')+(r.title||kind),sub:r.notes?String(r.notes).slice(0,60):'',cat:'royal'});
+      });
+    });
+    return out;
+  }
 
   function matchesDay(a,dIso){
     if(!a.date)return false;
@@ -19046,6 +19084,8 @@ window.rrUniversalSearch=function(raw, saidHtml){
     d.appts.forEach(function(a){ if(matchesDay(a,dIso)) items.push({id:a.id,time:a.time||'',title:a.title,sub:[a.loc,a.link?'link':''].filter(Boolean).join(' · '),cat:a.cat,done:a.done,appt:true}); });
     hostDebtsDue(dIso,dIso).forEach(function(p){items.push({time:'',title:p.title,sub:p.sub,cat:'payment'});});
     hostGoalsDue(dIso,dIso).forEach(function(g){items.push({time:'',title:g.title,cat:'royal'});});
+    hostLegal(dIso).forEach(function(l){items.push({time:l.time,title:l.title,sub:l.sub,cat:l.cat});});
+    hostChief(dIso).forEach(function(h){items.push({time:h.time,title:h.title,sub:h.sub,cat:h.cat});});
     hostDiary(dIso).forEach(function(e){items.push({time:e.time,title:e.title,sub:e.sub,cat:'personal',diary:true});});
     items.sort(function(a,b){return (a.time||'99:99').localeCompare(b.time||'99:99');});
     return items;
@@ -19203,7 +19243,7 @@ window.rrUniversalSearch=function(raw, saidHtml){
       '</div>'+
       '<div class="ric-hint">Try: “Study for 2 hours friday 7pm” · “Call client monday at 10” · “Show this week” · “When is my next payment?”</div>'+
       '<div id="ric-answer"></div>'+
-      '<div class="ric-subnav">'+sub('dash','🏠 Dashboard')+sub('cal','📅 Calendar')+sub('appts','📋 Appointments')+sub('tasks','✅ Tasks')+'</div>'+
+      '<div class="ric-subnav">'+sub('dash','🏠 Dashboard')+sub('cal','📅 Calendar')+sub('appts','📋 Appointments')+sub('tasks','✅ Tasks')+sub('archive','🗄 Archive')+'</div>'+
       '<div id="ric-view"></div>';
     root.innerHTML=html;
     renderView();
@@ -19216,18 +19256,62 @@ window.rrUniversalSearch=function(raw, saidHtml){
     else if(state.view==='cal')v.innerHTML=viewCal();
     else if(state.view==='appts')v.innerHTML=viewAppts();
     else if(state.view==='tasks')v.innerHTML=viewTasks();
+    else if(state.view==='archive')v.innerHTML=viewArchive();
+    tickCountdowns();
+  }
+
+  /* ---------- LIVE COUNTDOWN ---------- */
+  /* unified upcoming: scans every connected source (appts, court, chief, debts, goals) day by day */
+  function upcomingAll(maxDays,limit){
+    var out=[];var nowHM=String(new Date().getHours()).padStart(2,'0')+':'+String(new Date().getMinutes()).padStart(2,'0');
+    for(var k=0;k<=maxDays;k++){
+      var dI=iso(new Date(Date.now()+k*86400000));
+      dayItems(dI).forEach(function(i){
+        if(i.diary||i.done)return;
+        if(k===0 && i.time && i.time<nowHM)return;
+        out.push({d:dI,i:i});
+      });
+    }
+    return out.slice(0,limit||6);
+  }
+  function cdTargetDI(d,i){return d+'T'+(i.time||'09:00');}
+  function fmtCountdown(target,big){
+    var now=new Date();var tgt=new Date(String(target).replace(' ','T'));
+    var ms=tgt-now;
+    if(isNaN(ms))return big?'—':'—';
+    if(ms<=0)return big?'<span class="lv">Now / in session</span>':'now';
+    var s=Math.floor(ms/1000);var days=Math.floor(s/86400);s-=days*86400;var hrs=Math.floor(s/3600);s-=hrs*3600;var mins=Math.floor(s/60);var secs=s-mins*60;
+    if(big)return '<b>'+days+'</b>d <b>'+String(hrs).padStart(2,'0')+'</b>h <b>'+String(mins).padStart(2,'0')+'</b>m <b>'+String(secs).padStart(2,'0')+'</b>s';
+    return days+'d '+String(hrs).padStart(2,'0')+'h '+String(mins).padStart(2,'0')+'m '+String(secs).padStart(2,'0')+'s';
+  }
+  function tickCountdowns(){
+    var root=document.getElementById('rical-root');if(!root)return;
+    root.querySelectorAll('.ric-cdt[data-target]').forEach(function(e){e.innerHTML=fmtCountdown(e.getAttribute('data-target'),true);});
+    root.querySelectorAll('.ric-cdmini[data-target]').forEach(function(e){e.textContent=fmtCountdown(e.getAttribute('data-target'),false);});
+  }
+  function countdownCard(){
+    var up=upcomingAll(120,5);
+    if(!up.length)return '';
+    var n=up[0];var rest=up.slice(1);
+    var h='<div class="ric-cdcard"><h3>⏳ Live countdown</h3>'+
+      '<div class="ric-cdnext"><div class="ric-cdt" data-target="'+cdTargetDI(n.d,n.i)+'"></div>'+
+      '<div class="ric-cdmeta"><div class="ric-cdtitle">'+esc(n.i.title)+'</div><div class="ric-cdsub">'+prettyDate(n.d)+(n.i.time?' · '+pretty12(n.i.time):'')+(n.i.sub?' · '+esc(n.i.sub):'')+'</div></div></div>';
+    if(rest.length){
+      h+='<div class="ric-cdlist">'+rest.map(function(u){return '<div class="ric-cdrow"><span class="ric-cdmini" data-target="'+cdTargetDI(u.d,u.i)+'"></span><span class="ric-cdrt">'+esc(u.i.title)+' <span style="color:var(--text3)">· '+shortDateY(u.d)+'</span></span></div>';}).join('')+'</div>';
+    }
+    return h+'</div>';
   }
 
   function viewDash(){
     var t=todayIso();var today=dayItems(t);var sc=scoreData();
-    var up=[];for(var k=1;k<=7;k++){var dI=iso(new Date(Date.now()+k*86400000));dayItems(dI).filter(function(i){return !i.diary;}).forEach(function(i){up.push({d:dI,i:i});});}
+    var up=upcomingAll(45,60).filter(function(u){return u.d>todayIso();});
     var hi=db().tasks.filter(function(x){return !x.done;}).slice(0,6);
-    return '<div class="ric-grid"><div>'+
+    return countdownCard()+'<div class="ric-grid"><div>'+
       card("Today’s schedule", today.length?today.map(function(i){return rowItem(i);}).join(''):empty('No appointments today. Add one above.'))+
       card("Tasks due", hi.length?hi.map(function(x){return taskRow(x);}).join(''):empty('No open tasks.'))+
     '</div><div>'+
       '<div class="ric-card"><h3>Productivity today</h3><div class="ric-scorewrap"><div class="ric-scorenum">'+sc.pct+'%</div><div style="flex:1"><div style="font-size:12px;color:var(--text2)">'+sc.done+' of '+sc.total+' done</div><div class="ric-bar"><i style="width:'+sc.pct+'%"></i></div></div></div></div>'+
-      card("Coming up (7 days)", up.length?up.slice(0,8).map(function(u){return rowItem(u.i,u.d);}).join(''):empty('Nothing scheduled in the week ahead.'))+
+      card("Coming up (next 6 weeks)", up.length?up.slice(0,12).map(function(u){return rowItem(u.i,u.d);}).join(''):empty('Nothing scheduled in the next six weeks.'))+
       card("Money &amp; deadlines", moneyHtml())+
     '</div></div>';
   }
@@ -19337,9 +19421,30 @@ window.rrUniversalSearch=function(raw, saidHtml){
       '<span class="ric-x" onclick="ricDelTask(\''+x.id+'\')">✕</span></div>';
   }
 
+  /* ---------- ARCHIVE (passed records) ---------- */
+  function viewArchive(){
+    var t=todayIso();var d=db();
+    var past=d.appts.filter(function(a){return (!a.rec||a.rec==='none') && (a.date<t || a.done);}).sort(function(a,b){return (b.date+(b.time||'')).localeCompare(a.date+(a.time||''));});
+    var groups={};past.forEach(function(a){var y=a.date.slice(0,4);(groups[y]=groups[y]||[]).push(a);});
+    var years=Object.keys(groups).sort().reverse();
+    var body=years.length?years.map(function(y){return '<div class="ric-arcyear">'+y+'</div>'+groups[y].map(archiveRow).join('');}).join(''):empty('No passed records yet. When a hearing or appointment date passes — or you tick one done — it is stored here automatically, with its full details.');
+    var doneT=d.tasks.filter(function(x){return x.done;});
+    var tasksHtml=doneT.length?'<div class="ric-card"><h3>Completed tasks</h3>'+doneT.slice().reverse().map(taskRow).join('')+'</div>':'';
+    return '<div class="ric-card"><h3>🗄 Archive — passed records</h3><div class="ric-sub" style="margin-bottom:8px">A permanent record of every hearing, appointment and event that has passed — kept in full, grouped by year. Nothing here counts down or clutters your day view.</div>'+body+'</div>'+tasksHtml;
+  }
+  function archiveRow(a){
+    var c=catColor(a.cat);
+    return '<div class="ric-arc"><div class="ric-ttl">'+esc(a.title)+'<span class="ric-pill" style="background:'+c+'22;color:'+c+'">'+catLabel(a.cat)+'</span></div>'+
+      '<div class="ric-sub">🗓 '+prettyDate(a.date)+(a.time?' · '+pretty12(a.time):'')+'</div>'+
+      (a.loc?'<div class="ric-sub">📍 '+esc(a.loc)+'</div>':'')+
+      (a.link?'<div class="ric-sub">🔗 '+esc(a.link)+'</div>':'')+
+      (a.notes?'<div class="ric-sub" style="margin-top:6px;color:var(--text2);white-space:pre-wrap">'+esc(a.notes)+'</div>':'')+
+    '</div>';
+  }
+
   function startClock(){
     if(clockTimer)clearInterval(clockTimer);
-    function tick(){var c=el('ric-clock');if(!c){clearInterval(clockTimer);clockTimer=null;return;}var n=new Date();c.textContent=n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+    function tick(){var c=el('ric-clock');if(!c){clearInterval(clockTimer);clockTimer=null;return;}var n=new Date();c.textContent=n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});tickCountdowns();}
     tick();clockTimer=setInterval(tick,1000);
   }
   function refreshSummary(){var s=el('ric-sum');if(s)s.innerHTML=summaryText();}
@@ -19347,7 +19452,7 @@ window.rrUniversalSearch=function(raw, saidHtml){
 
   /* ════ PUBLIC HANDLERS ════ */
   window.ricNL=nlGo;
-  window.ricView=function(v){state.view=v;renderView();var btns=document.querySelectorAll('#rical-root .ric-subnav button');var idx={dash:0,cal:1,appts:2,tasks:3}[v];btns.forEach(function(b,i){b.classList.toggle('on',i===idx);});};
+  window.ricView=function(v){state.view=v;renderView();var btns=document.querySelectorAll('#rical-root .ric-subnav button');var idx={dash:0,cal:1,appts:2,tasks:3,archive:4}[v];btns.forEach(function(b,i){b.classList.toggle('on',i===idx);});};
   window.ricCalMove=function(dir){state.calM+=dir;if(state.calM<0){state.calM=11;state.calY--;}if(state.calM>11){state.calM=0;state.calY++;}renderView();};
   window.ricPick=function(dI){state.sel=dI;renderView();};
   window.ricQuickAdd=function(){state.view='appts';renderView();var btns=document.querySelectorAll('#rical-root .ric-subnav button');btns.forEach(function(b,i){b.classList.toggle('on',i===2);});setTimeout(function(){var t=el('ric-f-date');if(t)t.value=state.sel;var ti=el('ric-f-title');if(ti)ti.focus();},30);};
@@ -19397,16 +19502,47 @@ window.rrUniversalSearch=function(raw, saidHtml){
     var w=function(n){var r=o.apply(this,arguments);if(n==='icalender'){setTimeout(function(){render();markHubActive();},0);}return r;};
     w._rical=true;try{window[fn]=w;}catch(e){}
   }
+  function seedCourt(){
+    try{
+      if(localStorage.getItem('rical_seed_court_v1'))return;
+      var d=db();var have={};d.appts.forEach(function(a){have[a.id]=1;});
+      var seeds=[
+        {id:'ric_seed_certiorari_20260727',date:'2026-07-27',time:'09:00',dur:120,title:'Court — Certiorari & Prohibition hearing',cat:'royal',loc:'High Court of Justice, Sefwi Wiawso',link:'',notes:'Suit WN/SW/HC/E10/03/2026 — judicial review vs Western North Regional House of Chiefs. Adjourned from 29 June (Respondent\'s new lawyer asked for 2 weeks). Your lawyer: Michael Attakorah Baah, Esq.',remind:true,done:false,rec:'none'},
+        {id:'ric_seed_land_20260717',date:'2026-07-17',time:'09:00',dur:120,title:'Court — Dadieso Land Dispute (confirm: 17 or 31 Jul)',cat:'royal',loc:'District Court, Enchi',link:'',notes:'Suit WNR/EN/DC/A1/60/2026. Adjourned at Plaintiff\'s request; confirm whether the court set 17 or 31 July, then adjust this date. Defence filed & ready. Lawyer: Michael Attakorah Baah, Esq.',remind:true,done:false,rec:'none'}
+      ];
+      var added=0;seeds.forEach(function(s){if(!have[s.id]){d.appts.push(s);added++;}});
+      if(added)commit(d);
+      localStorage.setItem('rical_seed_court_v1','1');
+    }catch(e){}
+  }
+  /* one-time: bring the two flagship cases in the Legal register up to their adjourned dates */
+  function migrateLegalDates(){
+    try{
+      if(localStorage.getItem('rical_legal_datefix_v1'))return;
+      var d=load('royal_legal_v1',null);
+      if(!d||!d.cases)return; /* register not present yet — retry on a later load */
+      var changed=false;
+      d.cases.forEach(function(c){
+        var n=(c.name||'').toLowerCase();
+        if(/certiorari|destool/.test(n)){ if(c.nextDate!=='2026-07-27'){c.nextDate='2026-07-27';c.status='Adjourned';changed=true;} }
+        else if(/dadieso|nzole|bonza/.test(n)){ if(c.nextDate!=='2026-07-17'){c.nextDate='2026-07-17';c.status='Adjourned';changed=true;} }
+      });
+      if(changed){localStorage.setItem('royal_legal_v1',JSON.stringify(d));if(typeof window.buildChief==='function'){try{window.buildChief();}catch(e){}}}
+      localStorage.setItem('rical_legal_datefix_v1','1');
+    }catch(e){}
+  }
   function boot(){
     ensureScreen();
     hook('go');hook('royalTab');
     injectPill();
+    seedCourt();
+    migrateLegalDates();
     if(activeIsIcal())render();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   // keep-alive: re-hook (their code may redefine go), keep the pill present, ensure content when active
   setInterval(function(){
-    hook('go');hook('royalTab');ensureScreen();injectPill();
+    hook('go');hook('royalTab');ensureScreen();injectPill();migrateLegalDates();
     if(activeIsIcal()){var root=document.getElementById('rical-root');if(!root||!root.innerHTML)render();markHubActive();}
   },1500);
 })();
