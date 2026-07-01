@@ -19549,5 +19549,241 @@ window.rrUniversalSearch=function(raw, saidHtml){
 </script>
 <!-- ════════════ END ROYAL iCALENDER ════════════ -->
 
+<!-- ════════════════════════════════════════════
+     CASE DOCUMENTS — reference panel on the
+     Chieftaincy Affairs & Coronation page.  [C]
+     Read-only list of court papers on file. No
+     files are published — names only, for quick
+     reference. Self-contained + namespaced rdocs.
+════════════════════════════════════════════ -->
+<style id="rdocs-css">
+#rdocs-panel{max-width:1180px;margin:18px auto 0;}
+#rdocs-panel .rd2-card{background:var(--dark3,#1A1A28);border:1px solid rgba(201,168,76,0.30);border-radius:16px;padding:18px;margin-bottom:16px;}
+#rdocs-panel h3{margin:0 0 12px;font-size:14px;color:var(--gold-light,#E8C96A);letter-spacing:.4px;text-transform:uppercase;font-weight:800;display:flex;align-items:center;gap:8px;}
+#rdocs-panel .rd2-mon{background:linear-gradient(150deg,rgba(201,168,76,0.14),rgba(201,168,76,0.03));border:1px solid rgba(201,168,76,0.30);border-radius:14px;padding:15px;margin-bottom:12px;}
+#rdocs-panel .rd2-mon:last-child{margin-bottom:0;}
+#rdocs-panel .rd2-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+#rdocs-panel .rd2-ct{font-size:15px;font-weight:800;color:var(--text,#F0EBE0);}
+#rdocs-panel .rd2-suit{font-size:11.5px;color:var(--text3,#8A8172);margin-top:2px;}
+#rdocs-panel .rd2-rt{display:flex;align-items:center;gap:8px;}
+#rdocs-panel .rd2-badge{font-size:10.5px;font-weight:800;padding:3px 10px;border-radius:999px;white-space:nowrap;background:rgba(229,169,60,0.16);color:#E5A93C;}
+#rdocs-panel .rd2-editbtn{font-size:11px;font-weight:800;padding:4px 10px;border-radius:8px;border:1px solid rgba(201,168,76,0.4);background:rgba(201,168,76,0.08);color:var(--gold-light,#E8C96A);cursor:pointer;}
+#rdocs-panel .rd2-next{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 4px;padding:10px 12px;background:rgba(0,0,0,0.18);border:1px solid var(--sep,rgba(201,168,76,0.12));border-radius:10px;}
+#rdocs-panel .rd2-cd{font-size:20px;font-weight:800;color:var(--gold-light,#E8C96A);font-variant-numeric:tabular-nums;}
+#rdocs-panel .rd2-cd b{color:var(--text,#F0EBE0);}
+#rdocs-panel .rd2-cd .lv{color:#E05252;}
+#rdocs-panel .rd2-nlbl{font-size:11px;color:var(--text3,#8A8172);text-transform:uppercase;letter-spacing:.5px;font-weight:700;}
+#rdocs-panel .rd2-nd{font-size:12.5px;color:var(--text2,#C4BAA8);}
+#rdocs-panel .rd2-stages{display:flex;gap:0;align-items:flex-start;overflow-x:auto;padding:8px 0 2px;margin-top:6px;scrollbar-width:none;}
+#rdocs-panel .rd2-stages::-webkit-scrollbar{display:none;}
+#rdocs-panel .rd2-stage{flex:1;min-width:82px;text-align:center;position:relative;}
+#rdocs-panel .rd2-stage:not(:last-child):after{content:'';position:absolute;top:11px;left:50%;width:100%;height:3px;background:var(--dark4,#222235);z-index:0;}
+#rdocs-panel .rd2-stage.done:not(:last-child):after{background:linear-gradient(90deg,var(--gold,#C9A84C),var(--gold-light,#E8C96A));}
+#rdocs-panel .rd2-node{position:relative;z-index:1;width:24px;height:24px;border-radius:50%;background:var(--dark4,#222235);border:2px solid var(--dark4,#222235);margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3,#8A8172);}
+#rdocs-panel .rd2-stage.done .rd2-node{background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));border-color:var(--gold,#C9A84C);color:#1A1206;}
+#rdocs-panel .rd2-stage.now .rd2-node{background:var(--dark3,#1A1A28);border-color:var(--gold-light,#E8C96A);color:var(--gold-light,#E8C96A);box-shadow:0 0 0 4px rgba(201,168,76,0.18);}
+#rdocs-panel .rd2-slbl{font-size:9.5px;color:var(--text3,#8A8172);margin-top:6px;line-height:1.2;font-weight:600;}
+#rdocs-panel .rd2-stage.now .rd2-slbl{color:var(--gold-light,#E8C96A);font-weight:800;}
+#rdocs-panel .rd2-form{margin-top:12px;padding:12px;background:var(--dark4,#222235);border:1px solid var(--sep,rgba(201,168,76,0.12));border-radius:10px;display:none;}
+#rdocs-panel .rd2-form.open{display:block;}
+#rdocs-panel .rd2-fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+#rdocs-panel .rd2-fg .full{grid-column:1/-1;}
+@media(max-width:640px){#rdocs-panel .rd2-fg{grid-template-columns:1fr;}}
+#rdocs-panel .rd2-form label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3,#8A8172);display:block;margin-bottom:3px;}
+#rdocs-panel .rd2-form input,#rdocs-panel .rd2-form select{width:100%;box-sizing:border-box;background:var(--dark3,#1A1A28);border:1px solid var(--sep,rgba(201,168,76,0.12));border-radius:8px;padding:9px 11px;color:var(--text,#F0EBE0);font-size:13px;}
+#rdocs-panel .rd2-btn{background:linear-gradient(135deg,var(--gold,#C9A84C),var(--gold-dim,#7A5F1A));color:#1A1206;border:none;border-radius:8px;padding:9px 16px;font-weight:800;font-size:13px;cursor:pointer;}
+#rdocs-panel .rd2-btn.ghost{background:transparent;color:var(--text2,#C4BAA8);border:1px solid var(--sep,rgba(201,168,76,0.12));}
+#rdocs-panel .rd2-note{font-size:12px;color:var(--text3,#8A8172);margin-bottom:12px;}
+#rdocs-panel .rd2-case{border-top:1px solid rgba(201,168,76,0.14);padding-top:12px;margin-top:12px;}
+#rdocs-panel .rd2-case:first-of-type{border-top:none;padding-top:0;margin-top:0;}
+#rdocs-panel .rd2-cdh{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+#rdocs-panel .rd2-doc{display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+#rdocs-panel .rd2-doc:last-child{border-bottom:none;}
+#rdocs-panel .rd2-ic{flex:0 0 auto;font-size:14px;margin-top:1px;}
+#rdocs-panel .rd2-dt{font-size:13px;color:var(--text,#F0EBE0);font-weight:600;}
+#rdocs-panel .rd2-ds{font-size:11.5px;color:var(--text3,#8A8172);margin-top:1px;}
+#rdocs-panel .rd2-dlink{font-size:11.5px;color:var(--gold-light,#E8C96A);text-decoration:none;font-weight:700;margin-right:10px;}
+#rdocs-panel .rd2-del{color:var(--text3,#8A8172);cursor:pointer;font-size:14px;}
+#rdocs-panel .rd2-del:hover{color:#E05252;}
+#rdocs-panel .rd2-add{margin-top:8px;font-size:12px;font-weight:800;padding:7px 12px;border-radius:8px;border:1px dashed rgba(201,168,76,0.45);background:transparent;color:var(--gold-light,#E8C96A);cursor:pointer;}
+#rdocs-panel .rd2-empty{font-size:13px;color:var(--text3,#8A8172);font-style:italic;padding:6px 0;}
+</style>
+<script id="rdocs-js">
+(function(){
+  "use strict";
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+  function uid(){return 'cd'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);}
+  var MONS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var DAYL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var STAGES=['Filed','Served','Defence filed','Injunction / interlocutory','Pre-trial / directions','Trial / hearing','Awaiting judgement','Judgement delivered'];
+  var SHORT={'Filed':'Filed','Served':'Served','Defence filed':'Defence','Injunction / interlocutory':'Injunction','Pre-trial / directions':'Pre-trial','Trial / hearing':'Trial','Awaiting judgement':'Judgement','Judgement delivered':'Delivered'};
+  var STATUSES=['Active — awaiting hearing','Filed','Adjourned','In progress','Awaiting judgment','Won','Lost','Settled','Closed','On hold'];
+  function prettyDate(s){if(!s)return '';var p=String(s).slice(0,10).split('-');if(p.length!==3)return s;var d=new Date(+p[0],+p[1]-1,+p[2]);if(isNaN(d))return s;return DAYL[d.getDay()]+', '+(+p[2])+' '+MONS[+p[1]-1]+' '+p[0];}
+
+  /* No hardcoded case/document names in the code — the documents list is built entirely
+     from your own private device data, so the public page carries nothing identifying. */
+  function refFor(name){return [];}
+  function ckey(c,i){return c.id||('#'+i);}
+
+  function getCases(){var d=load('royal_legal_v1',null);return (d&&d.cases)||[];}
+  function updateCase(i,fields){var d=load('royal_legal_v1',null);if(!d||!d.cases||!d.cases[i])return false;for(var k in fields)d.cases[i][k]=fields[k];var ok=save('royal_legal_v1',d);if(ok&&typeof window.buildChief==='function'){try{window.buildChief();}catch(e){}}return ok;}
+  function getDocs(){return load('royal_casedocs_v1',{})||{};}
+
+  function stagesHtml(stage){
+    var idx=STAGES.indexOf(stage);if(idx<0)idx=0;
+    var h='<div class="rd2-stages">';
+    STAGES.forEach(function(s,i){
+      var cls=i<idx?'done':(i===idx?'done now':'');
+      var node=i<idx?'✓':(i===idx?'◉':'');
+      h+='<div class="rd2-stage '+cls+'"><div class="rd2-node">'+node+'</div><div class="rd2-slbl">'+esc(SHORT[s]||s)+'</div></div>';
+    });
+    return h+'</div>';
+  }
+  function editForm(c,i){
+    var stageOpts=STAGES.map(function(s){return '<option'+(s===c.stage?' selected':'')+'>'+esc(s)+'</option>';}).join('');
+    var statusOpts=STATUSES.map(function(s){return '<option'+(s===c.status?' selected':'')+'>'+esc(s)+'</option>';}).join('');
+    return '<div class="rd2-form" id="rd2-ed-'+i+'"><div class="rd2-fg">'+
+      '<div><label>Stage</label><select id="rd2-stage-'+i+'">'+stageOpts+'</select></div>'+
+      '<div><label>Status</label><select id="rd2-status-'+i+'">'+statusOpts+'</select></div>'+
+      '<div><label>Next hearing date</label><input type="date" id="rd2-date-'+i+'" value="'+esc(String(c.nextDate||'').slice(0,10))+'"></div>'+
+      '<div class="full" style="display:flex;gap:8px;margin-top:2px"><button class="rd2-btn" onclick="rdocsSaveCase('+i+')">Save changes</button><button class="rd2-btn ghost" onclick="rdocsToggle(\'rd2-ed-'+i+'\')">Cancel</button></div>'+
+    '</div></div>';
+  }
+  function summaryText(c){
+    var name=c.title||c.name||'This case';var bits=[];
+    var l1=name+'.';if(c.court)l1+=' '+c.court+'.';if(c.suitNo)l1+=' Suit '+c.suitNo+'.';bits.push(l1);
+    bits.push('Current stage: '+(c.stage||'not set')+'. Status: '+(c.status||'not set')+'.');
+    if(c.nextDate){var t=new Date(String(c.nextDate).slice(0,10)+'T00:00:00');var days=Math.ceil((t-new Date())/864e5);var when=prettyDate(c.nextDate)+(days<0?' (passed)':(days===0?' (today)':' (in '+days+' day'+(days===1?'':'s')+')'));bits.push('Next hearing: '+when+'.');}
+    var parties=[];if(c.plaintiff)parties.push('Plaintiff: '+c.plaintiff);if(c.defendants)parties.push('Defendant(s): '+c.defendants);if(parties.length)bits.push(parties.join(' · ')+'.');
+    if(c.land)bits.push('Land / subject: '+c.land+'.');
+    if(c.claims)bits.push('Claims: '+c.claims+'.');
+    if(c.summary)bits.push(c.summary+(/[.!?]$/.test(c.summary)?'':'.'));
+    if(c.action||c.followUp)bits.push('Next action: '+(c.action||c.followUp)+(c.actionDue?(' (due '+prettyDate(c.actionDue)+')'):'')+'.');
+    var costs=c.costs||[];var ct=0;costs.forEach(function(x){ct+=(+x.amount||0);});if(ct)bits.push('Costs to date: £'+ct.toLocaleString()+'.');
+    if(c.outcome)bits.push('Outcome: '+c.outcome+'.');
+    return bits.map(esc).join(' ');
+  }
+  function monitorHtml(){
+    var cs=getCases();
+    var h='<div class="rd2-card"><h3>⚖️ Case Progress Monitor</h3>';
+    if(!cs.length){return h+'<div class="rd2-empty">No cases in the Legal register yet. Add one with “＋ Add Legal Matter” and it will appear here with its own stage tracker and countdown.</div></div>';}
+    cs.forEach(function(c,i){
+      var name=c.title||c.name||'Court case';
+      var meta=[c.court,c.suitNo].filter(Boolean).join(' · ');
+      h+='<div class="rd2-mon"><div class="rd2-top"><div><div class="rd2-ct">'+esc(name)+'</div>'+(meta?'<div class="rd2-suit">'+esc(meta)+'</div>':'')+'</div><div class="rd2-rt">'+(c.status?'<span class="rd2-badge">'+esc(c.status)+'</span>':'')+'<button class="rd2-editbtn" onclick="rdocsToggle(\'rd2-sum-'+i+'\')">📄 Summary</button><button class="rd2-editbtn" onclick="rdocsToggle(\'rd2-ed-'+i+'\')">✎ Edit</button></div></div>';
+      if(c.nextDate){h+='<div class="rd2-next"><div><div class="rd2-nlbl">Next hearing</div><div class="rd2-nd">'+esc(prettyDate(c.nextDate))+'</div></div><div class="rd2-cd" data-cd="'+esc(String(c.nextDate).slice(0,10))+'T09:00"></div></div>';}
+      h+=stagesHtml(c.stage);
+      h+='<div class="rd2-form" id="rd2-sum-'+i+'"><div style="font-size:13px;line-height:1.65;color:var(--text2,#C4BAA8)">'+summaryText(c)+'</div></div>';
+      h+=editForm(c,i);
+      h+='</div>';
+    });
+    return h+'</div>';
+  }
+
+  function docsHtml(){
+    var cs=getCases();var docs=getDocs();
+    var h='<div class="rd2-card"><h3>📎 Documents on file</h3><div class="rd2-note">Court papers are kept in the <b>Court Cases &amp; Legal</b> folder. You can also add your own documents or attachments below — they are saved privately on this device only.</div>';
+    if(!cs.length){return h+'<div class="rd2-empty">Add a case first — documents attach to a case.</div></div>';}
+    cs.forEach(function(c,i){
+      var name=c.title||c.name||'Court case';var key=ckey(c,i);
+      h+='<div class="rd2-case"><div class="rd2-ct">'+esc(name)+'</div><div class="rd2-suit">'+esc([c.court,c.suitNo].filter(Boolean).join(' · '))+'</div>';
+      refFor(name).forEach(function(d){h+='<div class="rd2-doc"><span class="rd2-ic">'+d.ic+'</span><div><div class="rd2-dt">'+esc(d.t)+'</div>'+(d.s?'<div class="rd2-ds">'+esc(d.s)+'</div>':'')+'</div></div>';});
+      (docs[key]||[]).forEach(function(dd){
+        var link=dd.file&&dd.file.data?('<button class="rd2-dlink" style="background:none;border:none;cursor:pointer;padding:0;font:inherit" onclick="rdocsOpen(\''+esc(key)+'\',\''+dd.id+'\')">Open ↗</button>'):'';
+        h+='<div class="rd2-doc"><span class="rd2-ic">📎</span><div style="flex:1"><div class="rd2-dt">'+esc(dd.name)+'</div>'+(dd.note?'<div class="rd2-ds">'+esc(dd.note)+'</div>':'')+(dd.file?'<div class="rd2-ds">'+esc(dd.file.name)+'</div>':'')+'</div>'+link+'<span class="rd2-del" title="Remove" onclick="rdocsDelDoc(\''+esc(key)+'\',\''+dd.id+'\')">✕</span></div>';
+      });
+      h+='<button class="rd2-add" onclick="rdocsToggle(\'rd2-af-'+i+'\')">＋ Add document / attachment</button>';
+      h+='<div class="rd2-form" id="rd2-af-'+i+'"><div class="rd2-fg">'+
+        '<div class="full"><label>Description</label><input id="rd2-desc-'+i+'" placeholder="e.g. Judge\'s ruling, receipt, letter…"></div>'+
+        '<div class="full"><label>Attach a file (optional — kept on this device)</label><input type="file" id="rd2-file-'+i+'"></div>'+
+        '<div class="full" style="display:flex;gap:8px;margin-top:2px"><button class="rd2-btn" onclick="rdocsSaveDoc('+i+')">Add</button><button class="rd2-btn ghost" onclick="rdocsToggle(\'rd2-af-'+i+'\')">Cancel</button></div>'+
+      '</div></div>';
+      h+='</div>';
+    });
+    return h+'</div>';
+  }
+
+  function tickCd(){
+    var now=new Date();
+    document.querySelectorAll('#rdocs-panel .rd2-cd[data-cd]').forEach(function(e){
+      var t=new Date(e.getAttribute('data-cd').replace(' ','T'));var ms=t-now;
+      if(isNaN(ms)){e.textContent='—';return;}
+      if(ms<=0){e.innerHTML='<span class="lv">Now / in session</span>';return;}
+      var s=Math.floor(ms/1000);var d=Math.floor(s/86400);s-=d*86400;var hh=Math.floor(s/3600);s-=hh*3600;var mm=Math.floor(s/60);var ss=s-mm*60;
+      e.innerHTML='<b>'+d+'</b>d <b>'+String(hh).padStart(2,'0')+'</b>h <b>'+String(mm).padStart(2,'0')+'</b>m <b>'+String(ss).padStart(2,'0')+'</b>s';
+    });
+  }
+  function sig(){
+    var cs=getCases();var docs=getDocs();
+    return cs.map(function(c,i){return (c.title||c.name||'')+'|'+c.stage+'|'+c.nextDate+'|'+c.status+'|'+((docs[ckey(c,i)]||[]).length);}).join('~');
+  }
+  function ensure(){
+    var sc=document.getElementById('s-chief');
+    if(!sc||!sc.classList.contains('active'))return;
+    var p=document.getElementById('rdocs-panel');
+    if(!p){p=document.createElement('div');p.id='rdocs-panel';sc.appendChild(p);}
+    else if(p.parentNode!==sc){sc.appendChild(p);}
+    var s=sig();
+    if(p.getAttribute('data-sig')!==s){p.innerHTML=monitorHtml()+docsHtml();p.setAttribute('data-sig',s);}
+    tickCd();
+  }
+  function refresh(){var p=document.getElementById('rdocs-panel');if(p)p.removeAttribute('data-sig');ensure();}
+
+  window.rdocsToggle=function(id){var e=document.getElementById(id);if(e)e.classList.toggle('open');};
+  window.rdocsOpen=function(key,id){
+    try{
+      var arr=(getDocs()[key])||[];var d=null;arr.forEach(function(x){if(x.id===id)d=x;});
+      if(!d||!d.file||!d.file.data){alert('No file stored for this item.');return;}
+      var parts=d.file.data.split(',');var mime=(parts[0].match(/:(.*?);/)||[])[1]||'application/octet-stream';
+      var bin=atob(parts[1]);var u8=new Uint8Array(bin.length);for(var k=0;k<bin.length;k++)u8[k]=bin.charCodeAt(k);
+      var url=URL.createObjectURL(new Blob([u8],{type:mime}));
+      var w=window.open(url,'_blank');
+      if(!w){var a=document.createElement('a');a.href=url;a.download=d.file.name||'document';document.body.appendChild(a);a.click();a.remove();}
+      setTimeout(function(){URL.revokeObjectURL(url);},60000);
+    }catch(e){alert('Could not open this file.');}
+  };
+  window.rdocsSaveCase=function(i){
+    var st=document.getElementById('rd2-stage-'+i), su=document.getElementById('rd2-status-'+i), dt=document.getElementById('rd2-date-'+i);
+    if(!st)return;
+    var ok=updateCase(i,{stage:st.value,status:su.value,nextDate:dt.value||''});
+    if(!ok){alert('Could not save — device storage may be full.');return;}
+    refresh();
+  };
+  window.rdocsDelDoc=function(key,id){
+    if(!confirm('Remove this document?'))return;
+    var docs=getDocs();docs[key]=(docs[key]||[]).filter(function(d){return d.id!==id;});save('royal_casedocs_v1',docs);refresh();
+  };
+  window.rdocsSaveDoc=function(i){
+    var cs=getCases();var c=cs[i];if(!c)return;var key=ckey(c,i);
+    var desc=(document.getElementById('rd2-desc-'+i)||{}).value||'';
+    var fileInput=document.getElementById('rd2-file-'+i);
+    desc=desc.trim();
+    var file=fileInput&&fileInput.files&&fileInput.files[0];
+    if(!desc&&!file){alert('Add a description or choose a file.');return;}
+    function store(fileObj){
+      var docs=getDocs();if(!docs[key])docs[key]=[];
+      docs[key].push({id:uid(),name:desc||(fileObj?fileObj.name:'Document'),note:'',file:fileObj});
+      if(!save('royal_casedocs_v1',docs)){alert('Could not save — the file may be too large for on-device storage. Try a smaller file, or keep it in your Court Cases folder.');return;}
+      refresh();
+    }
+    if(file){
+      if(file.size>2*1024*1024 && !confirm('This file is large ('+Math.round(file.size/1048576*10)/10+' MB) and may not fit in on-device storage. Add anyway?'))return;
+      var r=new FileReader();
+      r.onload=function(){store({name:file.name,type:file.type,data:r.result});};
+      r.onerror=function(){alert('Could not read the file.');};
+      r.readAsDataURL(file);
+    } else { store(null); }
+  };
+
+  function hook(fn){var o=window[fn];if(typeof o!=='function'||o._rdocs)return;var w=function(n){var r=o.apply(this,arguments);if(n==='chief')setTimeout(ensure,60);return r;};w._rdocs=true;try{window[fn]=w;}catch(e){}}
+  function boot(){hook('go');hook('royalTab');ensure();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  setInterval(function(){hook('go');hook('royalTab');ensure();},1000);
+})();
+</script>
+<!-- ════════════ END CASE DOCUMENTS ════════════ -->
+
 </body>
 </html>
