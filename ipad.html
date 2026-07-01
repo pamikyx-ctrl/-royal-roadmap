@@ -19457,5 +19457,112 @@ window.rrUniversalSearch=function(raw, saidHtml){
   .fin-table th:nth-child(4),.fin-table td:nth-child(4){width:16% !important;}
 }
 </style>
+<!-- ════════════════════════════════════════════
+     MONEY HUB — accurate keyword search engine  [C]
+     Upgrades "💬 Ask your Money Hub": searches EVERY
+     field (name, payee, description, category,
+     purpose, type/book, reference/invoice, method,
+     account, location…) and returns an itemised
+     breakdown — each matching transaction with a
+     verified total and in/out split. Falls back to
+     the original answer for balance/timeframe asks.
+     Self-contained, namespaced rmhs.
+════════════════════════════════════════════ -->
+<style id="rmhs-css">
+.rmhs-box{margin-top:12px;background:var(--dark3,#1A1A28);border:1px solid rgba(201,168,76,0.30);border-radius:12px;padding:14px;}
+.rmhs-h{font-size:14px;font-weight:800;color:var(--gold-light,#E8C96A);margin-bottom:2px;}
+.rmhs-sub{font-size:12px;color:var(--text3,#8A8172);margin-bottom:10px;}
+.rmhs-tot{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;}
+.rmhs-tot .t{background:var(--dark4,#222235);border:1px solid rgba(201,168,76,0.15);border-radius:10px;padding:8px 12px;}
+.rmhs-tot .t .k{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text4,#4A4640);font-weight:800;}
+.rmhs-tot .t .v{font-size:16px;font-weight:800;color:var(--text,#F0EBE0);margin-top:2px;}
+.rmhs-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.rmhs-row:last-child{border-bottom:none;}
+.rmhs-dt{font-size:11px;color:var(--text3,#8A8172);min-width:70px;font-variant-numeric:tabular-nums;}
+.rmhs-desc{flex:1;min-width:120px;}
+.rmhs-desc .d1{font-size:13px;color:var(--text,#F0EBE0);font-weight:600;}
+.rmhs-desc .d2{font-size:11px;color:var(--text3,#8A8172);margin-top:2px;}
+.rmhs-chip{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 7px;border-radius:999px;background:rgba(201,168,76,0.14);color:var(--gold-light,#E8C96A);margin:2px 4px 0 0;}
+.rmhs-amt{font-size:13px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.rmhs-amt.out{color:#E05252;}
+.rmhs-amt.in{color:#4CAF7D;}
+.rmhs-empty{margin-top:12px;background:var(--dark3,#1A1A28);border:1px solid var(--sep,rgba(201,168,76,0.14));border-radius:12px;padding:14px;font-size:13px;color:var(--text2,#C4BAA8);}
+</style>
+<script id="rmhs-js">
+(function(){
+  "use strict";
+  function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+  function data(){ if(typeof window.mhData==='function'){try{var a=window.mhData();if(Array.isArray(a))return a;}catch(e){}} var r=load('royal_moneyhub_v1',[]); return Array.isArray(r)?r:[]; }
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function num(n){var x=parseFloat(String(n).replace(/[^0-9.\-]/g,''));return isNaN(x)?0:x;}
+  function gbp(n){if(typeof window.mhFmt==='function'){try{return window.mhFmt(num(n));}catch(e){}}return '£'+num(n).toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:2});}
+  function pdate(s){if(!s)return '';var p=String(s).slice(0,10).split('-');if(p.length!==3)return String(s);var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return (+p[2])+' '+M[(+p[1]-1)]+' '+p[0];}
+
+  var FIELDS=['description','desc','notes','note','memo','payee','person','recipient','beneficiary','merchant','vendor','cat','category','purpose','type','reference','ref','invoice','invoiceNo','invoiceNumber','source','sourceAccount','sourceAccountLabel','account','accountLabel','method','name','title','book','bookType','taxType','tax','tag','tags','location','who','from','to','label'];
+  function blob(t){var s='';for(var i=0;i<FIELDS.length;i++){var v=t[FIELDS[i]];if(v!=null)s+=' '+(typeof v==='object'?JSON.stringify(v):v);}return s.toLowerCase();}
+  var FILLER=/\b(how|much|many|what|whats|which|when|where|did|do|does|i|we|us|spend|spent|show|showing|see|see|me|my|mine|total|totals|sum|amount|amounts|all|the|a|an|to|in|into|on|of|for|money|monies|sent|send|sending|paid|pay|pays|payment|payments|transfer|transfers|transferred|made|make|get|got|give|given|list|find|search|look|please|entries|entry|transaction|transactions|history|hub|is|are|was|were|be|been|and|or|any|related|relating|regarding|about|with|via|by|from|record|records|so|far|ever|only|just)\b/g;
+  var GENERIC={royal:1,family:1,lawyer:1,legal:1,fund:1,funds:1,'case':1,cases:1,court:1,expense:1,expenses:1,income:1,cash:1,payment:1,fee:1,fees:1,cost:1,costs:1,spend:1,spending:1};
+  function tokenize(q){
+    var clean=(q||'').toLowerCase().replace(/[?!,.;:£€$'"()]/g,' ').replace(FILLER,' ').replace(/\s+/g,' ').trim();
+    var all=clean.split(' ').filter(function(w){return w.length>=3;});
+    var dist=all.filter(function(w){return !GENERIC[w];});
+    return {phrase:clean, tokens:(dist.length?dist:all)};
+  }
+  function isAggregate(q){return /\bbalance\b|\bnet ?worth\b|this month|this year|per month|monthly total|this week|health score/i.test(q);}
+
+  function search(q){
+    var t=tokenize(q); var toks=t.tokens; if(!toks.length)return {terms:[],rows:[]};
+    var out=[];
+    data().forEach(function(tx){
+      if(!tx)return; var b=blob(tx); var matched=[];
+      toks.forEach(function(w){ if(b.indexOf(w)>=0)matched.push(w); });
+      var phraseHit=t.phrase.length>=4 && t.phrase.indexOf(' ')>=0 && b.indexOf(t.phrase)>=0;
+      if(matched.length>0||phraseHit){ out.push({tx:tx, score:matched.length+(phraseHit?5:0), matched:matched}); }
+    });
+    out.sort(function(a,b){return b.score-a.score || String(b.tx.date||'').localeCompare(String(a.tx.date||''));});
+    return {terms:toks, rows:out};
+  }
+
+  function rowHtml(r){
+    var tx=r.tx; var isIn=String(tx.type||'').toLowerCase()==='income';
+    var title=tx.payee||tx.person||tx.recipient||tx.merchant||tx.description||tx.desc||tx.name||tx.title||tx.cat||tx.category||'Entry';
+    var sub=[tx.category||tx.cat, tx.purpose, tx.type, tx.method||tx.sourceAccountLabel, tx.reference||tx.invoice].filter(Boolean).map(function(x){return '<span class="rmhs-chip">'+esc(x)+'</span>';}).join('');
+    var d2=(tx.description&&tx.description!==title)?esc(tx.description):'';
+    return '<div class="rmhs-row"><div class="rmhs-dt">'+esc(pdate(tx.date))+'</div>'+
+      '<div class="rmhs-desc"><div class="d1">'+esc(title)+'</div>'+(d2?'<div class="d2">'+d2+'</div>':'')+(sub?'<div>'+sub+'</div>':'')+'</div>'+
+      '<div class="rmhs-amt '+(isIn?'in':'out')+'">'+(isIn?'+':'−')+gbp(tx.amount)+'</div></div>';
+  }
+  function render(res, q){
+    var rows=res.rows; var inT=0,outT=0;
+    rows.forEach(function(r){var a=num(r.tx.amount);if(String(r.tx.type||'').toLowerCase()==='income')inT+=a;else outT+=a;});
+    var cap=rows.slice(0,120);
+    var tot='<div class="rmhs-tot"><div class="t"><div class="k">Entries</div><div class="v">'+rows.length+'</div></div>'+
+      (outT>0?'<div class="t"><div class="k">Total sent / out</div><div class="v" style="color:#E05252">'+gbp(outT)+'</div></div>':'')+
+      (inT>0?'<div class="t"><div class="k">Total in</div><div class="v" style="color:#4CAF7D">'+gbp(inT)+'</div></div>':'')+'</div>';
+    return '<div class="rmhs-box"><div class="rmhs-h">🔎 Results for “'+esc(res.terms.join(' '))+'”</div>'+
+      '<div class="rmhs-sub">Matched on name, payee, description, category, purpose, type, reference &amp; more.</div>'+
+      tot + cap.map(rowHtml).join('') + (rows.length>cap.length?'<div class="rmhs-sub" style="margin-top:8px;">Showing first '+cap.length+' of '+rows.length+'.</div>':'') + '</div>';
+  }
+
+  function doAsk(){
+    var inp=document.getElementById('mh-ai-input'); if(!inp)return true; var q=(inp.value||'').trim(); if(!q)return true;
+    if(isAggregate(q))return false; /* let original handle balance/timeframe questions */
+    var res=search(q); var out=document.getElementById('mh-ai-result'); if(!out)return true;
+    if(!res.rows.length){ out.innerHTML='<div class="rmhs-empty">No money entries found matching <b>'+esc(res.terms.join(' ')||q)+'</b>.<br>I searched names, payees, descriptions, categories, purpose, type/book and references. Try a shorter keyword (e.g. a surname, a category, or an invoice number).</div>'; return true; }
+    out.innerHTML=render(res,q); return true;
+  }
+  function install(){
+    var orig=window.mhAsk;
+    if(orig&&orig._rmhs)return;
+    window.mhAsk=function(){ try{ if(doAsk())return; }catch(e){} if(typeof orig==='function')return orig.apply(this,arguments); };
+    window.mhAsk._rmhs=true;
+    window.mhAskChip=function(q){var inp=document.getElementById('mh-ai-input');if(inp)inp.value=q;window.mhAsk();};
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+  setInterval(install,2000);
+})();
+</script>
+<!-- ════════════ END RMHS ════════════ -->
+
 </body>
 </html>
