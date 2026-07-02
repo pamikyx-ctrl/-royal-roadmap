@@ -13432,7 +13432,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v2.3 · 13 Jun 2026';
+window.ROYAL_APP_VERSION='v3.0 · 2 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -19788,6 +19788,157 @@ setInterval(hook,2000);
 })();
 </script>
 <!-- ════════════ END RDRY2 ════════════ -->
+
+<!-- ════════════ RDLK · DIARY ↔ iCALENDER LINK — live quick view in Today's schedule, auto-archive of ticked To-Dos ════════════ -->
+<style id="rdlk-css">
+.rdlk-qv{border-top:1.5px dashed rgba(201,168,76,.35);margin-top:12px;padding-top:11px;}
+.rdlk-qv-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.rdlk-qv-title{font-size:12.5px;font-weight:800;color:#E8C96A;letter-spacing:.3px;flex:1;}
+.rdlk-badge{font-size:10.5px;font-weight:800;padding:2px 9px;border-radius:10px;background:rgba(231,76,60,.18);color:#ff9d8f;white-space:nowrap;}
+.rdlk-badge.ok{background:rgba(46,204,113,.15);color:#7ee2a8;}
+.rdlk-lnk{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);color:#E8C96A;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.rdlk-row{display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:13px;color:#D8D2C4;line-height:1.5;cursor:pointer;}
+.rdlk-row input{margin-top:3px;accent-color:#C9A84C;width:15px;height:15px;flex-shrink:0;cursor:pointer;}
+.rdlk-src{font-size:10.5px;color:#8a8578;margin-left:23px;margin-top:-2px;padding-bottom:3px;}
+.rdlk-note{font-size:10.5px;color:#8a8578;margin-top:7px;}
+.rdlk-empty{font-size:12.5px;color:#7ee2a8;padding:4px 0;}
+</style>
+<script id="rdlk-js">
+(function(){
+if(window.__rdlk)return;window.__rdlk=1;
+var AK='royal_diary_actions_v1',RK='rical_data_v1',DK='royal_diary_v1';
+function LD(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function SVS(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function todayIso(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');}
+/* same action extraction as the Diary v2 module */
+function extractActs(e){
+  var acts=[],lines=String(e.text||'').split(/\r?\n/),inNA=false;
+  for(var i=0;i<lines.length;i++){
+    var ln=lines[i].trim();if(!ln)continue;
+    if(/^(next actions?|next steps?|to[- ]?do'?s?|action points?|actions?)[\.:]?$/i.test(ln)){inNA=true;continue;}
+    var m=ln.match(/^(?:\d+[\.\)]|[-•▪‣])\s*(.+)$/);
+    if(inNA){if(m&&m[1]){acts.push(m[1]);}else{inNA=false;}}
+    else if(/^(todo|to do|action)\s*[:\-]\s*\S/i.test(ln)){acts.push(ln.replace(/^(todo|to do|action)\s*[:\-]\s*/i,''));}
+  }
+  return acts;
+}
+function allActions(){
+  var st=LD(AK,{}),out=[];
+  var es=(LD(DK,[])||[]).slice().sort(function(a,b){return ((b.date||'')+' '+(b.time||'')).localeCompare((a.date||'')+' '+(a.time||''));});
+  es.forEach(function(e){
+    extractActs(e).forEach(function(a,idx){
+      var key=(e.id||'')+'|'+idx;
+      out.push({key:key,txt:a,done:!!st[key],t:e.title||'Entry',d:e.date||''});
+    });
+  });
+  return out;
+}
+/* ── SYNC: ticked (done) diary To-Dos → completed tasks in the iCalender store, so they land in 🗄 Archive automatically.
+      Live (unticked) To-Dos stay only on the monitoring panels — never clutter the task list. ── */
+function sync(){
+  try{
+    var acts=allActions();
+    var d=LD(RK,null);if(!d||typeof d!=='object')d={appts:[],tasks:[]};d.appts=d.appts||[];d.tasks=d.tasks||[];
+    var changed=false,byId={},valid={};
+    d.tasks.forEach(function(t){byId[t.id]=t;});
+    acts.forEach(function(a){
+      var id='dact-'+a.key;
+      if(a.done){
+        valid[id]=1;
+        var t=byId[id];
+        if(!t){d.tasks.push({id:id,title:a.txt,date:todayIso(),pri:'med',done:true,src:'diary',from:a.t});changed=true;}
+        else if(!t.done){t.done=true;changed=true;}
+      }
+    });
+    var before=d.tasks.length;
+    d.tasks=d.tasks.filter(function(t){return String(t.id).indexOf('dact-')!==0||valid[t.id];});
+    if(d.tasks.length!==before)changed=true;
+    if(changed){
+      SVS(RK,d);
+      var s=document.getElementById('s-icalender');
+      if(s&&s.classList.contains('active')&&window.RICAL&&typeof window.RICAL.render==='function'){try{window.RICAL.render();lastHash='';}catch(e){}}
+    }
+  }catch(e){}
+}
+/* ── navigation both ways ── */
+window.rdlkGoDiary=function(){
+  try{if(window.RRDL&&typeof window.RRDL.go==='function'){window.RRDL.go('diary');return;}}catch(e){}
+  if(typeof window.go==='function'){try{window.go('diary');return;}catch(e){}}
+  if(typeof window.royalTab==='function'){try{window.royalTab('diary',null);}catch(e){}}
+};
+window.rdlkGoIcal=function(){
+  try{if(typeof window.ricNav==='function'){window.ricNav('icalender');return;}}catch(e){}
+};
+/* ── Live To-Do Quick View, appended at the bottom of the "Today's schedule" card ── */
+var lastHash='';
+function stateHash(){return allActions().map(function(a){return a.key+(a.done?'1':'0');}).join('|');}
+function buildQV(){
+  var acts=allActions(),open=acts.filter(function(a){return !a.done;});
+  var box=document.createElement('div');box.className='rdlk-qv';
+  var head=document.createElement('div');head.className='rdlk-qv-head';
+  head.innerHTML='<span style="font-size:14px;">🎯</span><span class="rdlk-qv-title">Live To-Do Quick View</span>'
+    +'<span class="rdlk-badge'+(open.length?'':' ok')+'">'+(open.length?open.length+' live':'✓ all done')+'</span>';
+  var lk=document.createElement('button');lk.type='button';lk.className='rdlk-lnk';lk.textContent='📔 Royal Diary';
+  lk.onclick=function(ev){ev.stopPropagation();window.rdlkGoDiary();};
+  head.appendChild(lk);
+  box.appendChild(head);
+  if(!open.length){
+    var ok=document.createElement('div');ok.className='rdlk-empty';ok.textContent='All To-Dos done — stored in the 🗄 Archive.';
+    box.appendChild(ok);
+  }else{
+    open.slice(0,8).forEach(function(a){
+      var row=document.createElement('label');row.className='rdlk-row';
+      var cb=document.createElement('input');cb.type='checkbox';
+      var sp=document.createElement('span');sp.textContent=a.txt;
+      cb.onchange=function(){
+        var st=LD(AK,{});if(cb.checked)st[a.key]=true;else delete st[a.key];SVS(AK,st);
+        sync();lastHash='';inject();
+        try{if(typeof window.rd2Refresh==='function')window.rd2Refresh();}catch(e){}
+      };
+      row.appendChild(cb);row.appendChild(sp);box.appendChild(row);
+      var src=document.createElement('div');src.className='rdlk-src';src.textContent='📔 '+a.t+(a.d?' · '+a.d:'');
+      box.appendChild(src);
+    });
+    if(open.length>8){
+      var more=document.createElement('div');more.className='rdlk-note';more.textContent='+'+(open.length-8)+' more in the Royal Diary';
+      box.appendChild(more);
+    }
+    var note=document.createElement('div');note.className='rdlk-note';note.textContent='Tick a To-Do and it moves to the 🗄 Archive automatically.';
+    box.appendChild(note);
+  }
+  return box;
+}
+function inject(){
+  var root=document.getElementById('rical-root');if(!root)return;
+  var hs=root.querySelectorAll('.ric-card>h3'),target=null;
+  for(var i=0;i<hs.length;i++){
+    var tx=hs[i].textContent||'';
+    if(tx.indexOf('Today')===0&&tx.toLowerCase().indexOf('schedule')>-1){target=hs[i].parentNode;break;}
+  }
+  if(!target)return;
+  var h=stateHash();
+  var existing=target.querySelector('.rdlk-qv');
+  if(existing&&h===lastHash)return;
+  if(existing)existing.remove();
+  lastHash=h;
+  target.appendChild(buildQV());
+}
+/* ── add a "📅 iCalender" jump button to the Diary's Live Actions panel ── */
+function linkDiary(){
+  var head=document.querySelector('.rd2-acts-head');
+  if(!head||head.querySelector('.rdlk-lnk'))return;
+  var b=document.createElement('button');b.type='button';b.className='rdlk-lnk';b.textContent='📅 iCalender';
+  b.onclick=function(ev){ev.stopPropagation();window.rdlkGoIcal();};
+  var tgl=head.querySelector('.rd2-tgl');
+  if(tgl)head.insertBefore(b,tgl);else head.appendChild(b);
+}
+function loop(){sync();inject();linkDiary();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loop);else loop();
+setInterval(loop,1500);
+})();
+</script>
+<!-- ════════════ END RDLK ════════════ -->
 
 </body>
 </html>
