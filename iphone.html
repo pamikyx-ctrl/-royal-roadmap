@@ -13368,7 +13368,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v3.5 · 2 Jul 2026';
+window.ROYAL_APP_VERSION='v3.6 · 2 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -19909,8 +19909,8 @@ select.rtx-field{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http:
 .rtx-tbl td input.rtx-box,.rtx-tbl td select.rtx-box{border-color:rgba(201,168,76,.28);}
 .rtx-tbl td input.rtx-box:focus,.rtx-tbl td select.rtx-box:focus{outline:none;border-color:#C9A84C;}
 .rtx-box.ro{border-style:solid;color:#B8B0A0;cursor:default;}
-.rtx-box.amt-in{color:#2ecc71;font-weight:700;text-align:right;}
-.rtx-box.amt-out{color:#e05252;font-weight:700;text-align:right;}
+.rtx-box.amt-in{color:#2ecc71;font-weight:700;text-align:right;padding-left:5px;padding-right:7px;font-size:11.5px;letter-spacing:-.2px;}
+.rtx-box.amt-out{color:#e05252;font-weight:700;text-align:right;padding-left:5px;padding-right:7px;font-size:11.5px;letter-spacing:-.2px;}
 .rtx-tag{font-size:9.5px;padding:3px 8px;border-radius:7px;white-space:nowrap;display:inline-block;}
 .rtx-tag.auto{background:rgba(201,168,76,.14);color:#E8C96A;}
 .rtx-tag.man{background:rgba(46,204,113,.12);color:#7ee2a8;}
@@ -20005,7 +20005,7 @@ function render(pfx){
    +'<select class="rtx-field" id="'+pfx+'-ft"><option value="">In &amp; out</option><option value="in"'+(f.t==='in'?' selected':'')+'>Money in only</option><option value="out"'+(f.t==='out'?' selected':'')+'>Money out only</option></select>'
    +'<span style="font-size:11px;color:#8a8578;">Set-aside %: <input type="number" min="0" max="40" class="rtx-field rtx-pct" id="'+pfx+'-pct" value="'+d.taxPct+'"></span>'
    +'</div>'
-   +'<div class="rtx-scroll"><table class="rtx-tbl"><thead><tr><th style="width:17%">Date</th><th>Description</th><th style="width:14%">Category</th><th style="width:12.5%">In £</th><th style="width:12.5%">Out £</th><th style="width:11%"></th></tr></thead><tbody>';
+   +'<div class="rtx-scroll"><table class="rtx-tbl"><thead><tr><th style="width:16%">Date</th><th>Description</th><th style="width:12%">Category</th><th style="width:14%">In £</th><th style="width:14%">Out £</th><th style="width:10.5%"></th></tr></thead><tbody>';
   rows.forEach(function(r){
     h+='<tr'+(r.excl?' class="rtx-excluded"':'')+'>';
     if(r.auto){
