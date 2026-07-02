@@ -13892,7 +13892,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v3.3 · 2 Jul 2026';
+window.ROYAL_APP_VERSION='v3.4 · 2 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -20357,31 +20357,33 @@ setInterval(loop,1500);
 
 <!-- ════════════ RTAX · TAX BOOKKEEPING — Pamikyx Ltd Accountant Engine v2.1 (card layout, rounded fields — 💷 Income & Wealth + Money Hub 💼 Tax & Bookkeeping) ════════════ -->
 <style id="rtax-css">
-.rtax-block .rtx-card{background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;margin-bottom:14px;}
+.rtax-block{max-width:980px;margin-left:auto !important;margin-right:auto !important;}
+.rtax-block .rtx-card{background:#1A1A26;border:1.5px solid rgba(255,255,255,.09);border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 12px 28px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05);}
 .rtax-block h3.rtx-h{color:#E8C96A;font-size:16px;letter-spacing:.3px;margin-bottom:4px;font-weight:800;}
 .rtax-block h4.rtx-h2{color:#E8C96A;font-size:14.5px;letter-spacing:.3px;margin-bottom:12px;font-weight:800;}
 .rtax-block .rtx-sub{font-size:11.5px;color:#8a8578;margin-bottom:14px;}
 .rtx-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-bottom:14px;}
-.rtx-kpi{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.07);border-left:4px solid #C9A84C;border-radius:12px;padding:11px 13px;}
+.rtx-kpi{background:#1A1A26;border:1.5px solid rgba(255,255,255,.07);border-left:4px solid #C9A84C;border-radius:12px;padding:11px 13px;box-shadow:0 8px 18px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05);}
 .rtx-kpi .l{font-size:10px;color:#8a8578;text-transform:uppercase;letter-spacing:.6px;}
 .rtx-kpi .v{font-size:18px;font-weight:800;margin-top:3px;color:#F5F0E8;}
 .rtx-kpi .v.in{color:#2ecc71;}.rtx-kpi .v.out{color:#e05252;}
 .rtx-lbl{display:block;font-size:11px;color:#8a8578;margin:0 0 5px 2px;text-transform:uppercase;letter-spacing:.8px;font-weight:600;}
-.rtx-field{background:#12121C;border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:#F5F0E8;padding:12px 14px;font-size:14px;width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none;}
+.rtx-field{background:#101019;border:1.5px solid rgba(255,255,255,.11);border-radius:12px;color:#F5F0E8;padding:12px 14px;font-size:14px;width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none;box-shadow:inset 0 3px 8px rgba(0,0,0,.55),inset 0 -1px 0 rgba(255,255,255,.04),0 1px 0 rgba(255,255,255,.05);}
 select.rtx-field{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%23B8B0A0' stroke-width='2' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px;}
 .rtx-field:focus{outline:none;border-color:#C9A84C;}
 .rtx-fr{margin-bottom:12px;}
 .rtx-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
 .rtx-amtrow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;}
-.rtx-btn{background:linear-gradient(135deg,#C9A84C,#7A5F1A);color:#000;border:none;border-radius:12px;padding:13px 26px;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.rtx-btn{background:linear-gradient(135deg,#C9A84C,#7A5F1A);color:#000;border:none;border-radius:12px;padding:13px 26px;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 6px 14px rgba(201,168,76,.28),inset 0 1px 0 rgba(255,255,255,.4);}
 .rtx-btn.ghost{background:rgba(201,168,76,.12);color:#E8C96A;border:1.5px solid rgba(201,168,76,.4);}
 .rtx-filters{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
 .rtx-filters select{width:auto;padding:10px 34px 10px 13px;font-size:13px;}
 .rtx-pct{width:74px;text-align:center;padding:10px 8px;}
-.rtx-tbl{width:100%;border-collapse:separate;border-spacing:0 7px;font-size:13px;}
+.rtx-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.rtx-tbl{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0 8px;font-size:13px;}
 .rtx-tbl th{color:#C9A84C;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;padding:4px 6px 8px;border-bottom:1.5px solid rgba(201,168,76,.35);font-weight:700;}
 .rtx-tbl td{padding:3px 5px;vertical-align:middle;}
-.rtx-box{background:#12121C;border:1.5px solid rgba(255,255,255,.1);border-radius:11px;color:#F5F0E8;padding:10px 12px;font-size:13px;width:100%;box-sizing:border-box;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-appearance:none;appearance:none;}
+.rtx-box{background:#101019;border:1.5px solid rgba(255,255,255,.11);border-radius:11px;color:#F5F0E8;padding:10px 12px;font-size:13px;width:100%;min-width:0;box-sizing:border-box;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-appearance:none;appearance:none;box-shadow:inset 0 3px 7px rgba(0,0,0,.55),inset 0 -1px 0 rgba(255,255,255,.04),0 1px 0 rgba(255,255,255,.05);}
 .rtx-tbl td input.rtx-box,.rtx-tbl td select.rtx-box{border-color:rgba(201,168,76,.28);}
 .rtx-tbl td input.rtx-box:focus,.rtx-tbl td select.rtx-box:focus{outline:none;border-color:#C9A84C;}
 .rtx-box.ro{border-style:solid;color:#B8B0A0;cursor:default;}
@@ -20402,7 +20404,7 @@ select.rtx-field{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http:
 </style>
 <script id="rtax-js">
 (function(){
-if(window.__rtax)return;window.__rtax=3;
+if(window.__rtax)return;window.__rtax=4;
 var TK='royal_taxbook_v1',MK='royal_moneyhub_v1';
 function LD(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function SVS(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -20479,7 +20481,7 @@ function render(pfx){
    +'<select class="rtx-field" id="'+pfx+'-ft"><option value="">In &amp; out</option><option value="in"'+(f.t==='in'?' selected':'')+'>Money in only</option><option value="out"'+(f.t==='out'?' selected':'')+'>Money out only</option></select>'
    +'<span style="font-size:11px;color:#8a8578;">Set-aside %: <input type="number" min="0" max="40" class="rtx-field rtx-pct" id="'+pfx+'-pct" value="'+d.taxPct+'"></span>'
    +'</div>'
-   +'<table class="rtx-tbl"><thead><tr><th style="width:128px">Date</th><th>Description</th><th style="width:150px">Category</th><th style="width:104px">In £</th><th style="width:104px">Out £</th><th style="width:70px">Source</th><th style="width:44px"></th></tr></thead><tbody>';
+   +'<div class="rtx-scroll"><table class="rtx-tbl"><thead><tr><th style="width:14%">Date</th><th>Description</th><th style="width:16%">Category</th><th style="width:12%">In £</th><th style="width:12%">Out £</th><th style="width:8%">Source</th><th style="width:6%"></th></tr></thead><tbody>';
   rows.forEach(function(r){
     h+='<tr'+(r.excl?' class="rtx-excluded"':'')+'>';
     if(r.auto){
@@ -20501,7 +20503,7 @@ function render(pfx){
     h+='</tr>';
   });
   if(!rows.length)h+='<tr><td colspan="7" style="padding:16px;color:#8a8578;">No company entries for this filter yet.</td></tr>';
-  h+='</tbody></table>'
+  h+='</tbody></table></div>'
    +'<div class="rtx-foot">'
    +'<button class="rtx-btn" onclick="rtxExcel(\''+pfx+'\')">⬇️ Download Excel</button>'
    +'<button class="rtx-btn ghost" onclick="rtxPrint(\''+pfx+'\')">🖨 Print</button>'
