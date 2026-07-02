@@ -13432,7 +13432,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v3.1 · 2 Jul 2026';
+window.ROYAL_APP_VERSION='v3.2 · 2 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -19940,10 +19940,10 @@ setInterval(loop,1500);
 </script>
 <!-- ════════════ END RDLK ════════════ -->
 
-<!-- ════════════ RTAX · TAX BOOKKEEPING — Pamikyx Ltd Accountant Engine (inside 💷 Income & Wealth) ════════════ -->
+<!-- ════════════ RTAX · TAX BOOKKEEPING — Pamikyx Ltd Accountant Engine v2 (💷 Income & Wealth + Money Hub 💼 Tax & Bookkeeping) ════════════ -->
 <style id="rtax-css">
-#rtax-root h3.rtx-h{color:#E8C96A;font-size:15px;letter-spacing:.3px;margin-bottom:4px;}
-#rtax-root .rtx-sub{font-size:11.5px;color:#8a8578;margin-bottom:12px;}
+.rtax-block h3.rtx-h{color:#E8C96A;font-size:15px;letter-spacing:.3px;margin-bottom:4px;}
+.rtax-block .rtx-sub{font-size:11.5px;color:#8a8578;margin-bottom:12px;}
 .rtx-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-bottom:12px;}
 .rtx-kpi{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.07);border-left:4px solid #C9A84C;border-radius:11px;padding:10px 12px;}
 .rtx-kpi .l{font-size:10px;color:#8a8578;text-transform:uppercase;letter-spacing:.5px;}
@@ -19975,7 +19975,7 @@ setInterval(loop,1500);
 </style>
 <script id="rtax-js">
 (function(){
-if(window.__rtax)return;window.__rtax=1;
+if(window.__rtax)return;window.__rtax=2;
 var TK='royal_taxbook_v1',MK='royal_moneyhub_v1';
 function LD(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function SVS(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -19983,7 +19983,6 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 function money(n){return '£'+(+n||0).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function store(){var d=LD(TK,null);if(!d||typeof d!=='object')d={};d.manual=d.manual||[];d.excl=d.excl||{};if(typeof d.taxPct!=='number')d.taxPct=19;return d;}
 var CATS=['Care services income','PA services income','Contract / agency income','Other income','Staff wages','Rent / premises','Insurance','Phone, software & IT','Travel & mileage','Materials, PPE & supplies','Accountancy & professional fees','Bank charges','Business credit card','Training & DBS','CQC fees','HMRC payment','Other expense'];
-/* which Money Hub transactions belong to Pamikyx Ltd */
 function isPam(t){
   var s=((t.stream||'')+' '+(t.cat||'')+' '+(t.desc||'')+' '+(t.purpose||'')+' '+(t.ref||'')).toLowerCase();
   return /pamikyx|my own company|paid staff|staff wage|capital ?on ?tap|capitalontap|business cc|cqc/.test(s);
@@ -20004,31 +20003,37 @@ function allRows(){
   rows.sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));});
   return rows;
 }
-var fMonth='',fType='';
-function visible(){return allRows().filter(function(r){return (!fMonth||String(r.date||'').slice(0,7)===fMonth)&&(!fType||r.type===fType);});}
 function totals(rows){
   var tin=0,tout=0;
   rows.forEach(function(r){if(r.excl)return;if(r.type==='in')tin+=r.amt;else tout+=r.amt;});
   return {tin:tin,tout:tout,net:tin-tout};
 }
-function render(){
-  var root=document.getElementById('rtax-root');if(!root)return;
-  var d=store(),rows=visible(),t=totals(rows);
+/* two mounts share one ledger; each keeps its own filters */
+var ROOTS=[
+ {pfx:'rtx0',rootId:'rtax-root',   host:function(){var scr=document.getElementById('s-income');if(!scr)return null;return {scr:scr,place:function(el){var f=scr.querySelector('.cc-foot');if(f)f.parentNode.insertBefore(el,f);else scr.appendChild(el);}};},active:function(){var s=document.getElementById('s-income');return s&&s.classList.contains('active');}},
+ {pfx:'rtx1',rootId:'rtax-root-mh',host:function(){var b=document.getElementById('mh-fic-tax-body');if(!b)return null;return {scr:b,place:function(el){b.appendChild(el);}};},active:function(){var s=document.getElementById('s-moneyhub');return s&&s.classList.contains('active');}}
+];
+var FLT={rtx0:{m:'',t:''},rtx1:{m:'',t:''}};
+function visible(pfx){var f=FLT[pfx];return allRows().filter(function(r){return (!f.m||String(r.date||'').slice(0,7)===f.m)&&(!f.t||r.type===f.t);});}
+function render(pfx){
+  var root=document.getElementById(pfx==='rtx0'?'rtax-root':'rtax-root-mh');if(!root)return;
+  var d=store(),rows=visible(pfx),t=totals(rows);
   var setAside=Math.max(0,t.net)*(d.taxPct/100);
   var months={};allRows().forEach(function(r){var m=String(r.date||'').slice(0,7);if(m)months[m]=1;});
-  var mopts='<option value="">All months</option>'+Object.keys(months).sort().reverse().map(function(m){return '<option value="'+m+'"'+(m===fMonth?' selected':'')+'>'+m+'</option>';}).join('');
+  var f=FLT[pfx];
+  var mopts='<option value="">All months</option>'+Object.keys(months).sort().reverse().map(function(m){return '<option value="'+m+'"'+(m===f.m?' selected':'')+'>'+m+'</option>';}).join('');
   var h='<h3 class="rtx-h">🧾 Tax Bookkeeping — Pamikyx Ltd Accountant Engine</h3>'
-   +'<div class="rtx-sub">Live company ledger. Pamikyx entries are pulled automatically from your Money Hub (🔄 auto); add anything missing by hand (✍️ manual). Data travels in your normal app Backup.</div>'
+   +'<div class="rtx-sub">Live company ledger — one set of books, shown here and in '+(pfx==='rtx0'?'the Money Hub 💼 Tax &amp; Bookkeeping section':'💷 Income &amp; Wealth')+'. Pamikyx entries pulled automatically from the Money Hub (🔄 auto); add anything missing by hand (✍️ manual). Carried in your normal app Backup.</div>'
    +'<div class="rtx-kpis">'
    +'<div class="rtx-kpi"><div class="l">Money in</div><div class="v in">'+money(t.tin)+'</div></div>'
    +'<div class="rtx-kpi"><div class="l">Money out</div><div class="v out">'+money(t.tout)+'</div></div>'
    +'<div class="rtx-kpi"><div class="l">Net</div><div class="v'+(t.net<0?' out':'')+'">'+money(t.net)+'</div></div>'
-   +'<div class="rtx-kpi"><div class="l">Tax set-aside (<span id="rtx-pctlbl">'+d.taxPct+'</span>%)</div><div class="v">'+money(setAside)+'</div></div>'
+   +'<div class="rtx-kpi"><div class="l">Tax set-aside ('+d.taxPct+'%)</div><div class="v">'+money(setAside)+'</div></div>'
    +'</div>'
    +'<div class="rtx-bar">'
-   +'<select id="rtx-fm">'+mopts+'</select>'
-   +'<select id="rtx-ft"><option value="">In &amp; out</option><option value="in"'+(fType==='in'?' selected':'')+'>Money in only</option><option value="out"'+(fType==='out'?' selected':'')+'>Money out only</option></select>'
-   +'<span style="font-size:11px;color:#8a8578;">Set-aside %: <input type="number" min="0" max="40" class="rtx-taxpct" id="rtx-pct" value="'+d.taxPct+'"></span>'
+   +'<select id="'+pfx+'-fm">'+mopts+'</select>'
+   +'<select id="'+pfx+'-ft"><option value="">In &amp; out</option><option value="in"'+(f.t==='in'?' selected':'')+'>Money in only</option><option value="out"'+(f.t==='out'?' selected':'')+'>Money out only</option></select>'
+   +'<span style="font-size:11px;color:#8a8578;">Set-aside %: <input type="number" min="0" max="40" class="rtx-taxpct" id="'+pfx+'-pct" value="'+d.taxPct+'"></span>'
    +'</div>'
    +'<table class="rtx-tbl"><thead><tr><th style="width:96px">Date</th><th>Description</th><th style="width:150px">Category</th><th style="width:90px">In</th><th style="width:90px">Out</th><th style="width:66px">Source</th><th style="width:60px"></th></tr></thead><tbody>';
   rows.forEach(function(r){
@@ -20052,49 +20057,56 @@ function render(){
   if(!rows.length)h+='<tr><td colspan="7" style="padding:16px;color:#8a8578;">No company entries for this filter yet.</td></tr>';
   h+='</tbody></table>'
    +'<div class="rtx-frm">'
-   +'<div><label>Date</label><input type="date" id="rtx-d"></div>'
-   +'<div class="rtx-wide"><label>Description</label><input id="rtx-de" placeholder="e.g. Care invoice — client"></div>'
-   +'<div><label>Category</label><select id="rtx-c">'+CATS.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></div>'
-   +'<div><label>Type</label><select id="rtx-t"><option value="in">Money in</option><option value="out">Money out</option></select></div>'
-   +'<div><label>Amount £</label><input type="number" step="0.01" min="0" id="rtx-a"></div>'
-   +'<div><button class="rtx-btn" onclick="rtxAdd()">➕ Add</button></div>'
+   +'<div><label>Date</label><input type="date" id="'+pfx+'-d"></div>'
+   +'<div class="rtx-wide"><label>Description</label><input id="'+pfx+'-de" placeholder="e.g. Care invoice — client"></div>'
+   +'<div><label>Category</label><select id="'+pfx+'-c">'+CATS.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></div>'
+   +'<div><label>Type</label><select id="'+pfx+'-t"><option value="in">Money in</option><option value="out">Money out</option></select></div>'
+   +'<div><label>Amount £</label><input type="number" step="0.01" min="0" id="'+pfx+'-a"></div>'
+   +'<div><button class="rtx-btn" onclick="rtxAdd(\''+pfx+'\')">➕ Add</button></div>'
    +'</div>'
    +'<div class="rtx-foot">'
-   +'<button class="rtx-btn" onclick="rtxExcel()">⬇️ Download Excel</button>'
-   +'<button class="rtx-btn ghost" onclick="rtxPrint()">🖨 Print</button>'
+   +'<button class="rtx-btn" onclick="rtxExcel(\''+pfx+'\')">⬇️ Download Excel</button>'
+   +'<button class="rtx-btn ghost" onclick="rtxPrint(\''+pfx+'\')">🖨 Print</button>'
    +'<button class="rtx-btn ghost" onclick="rtxSave()">💾 Save</button>'
    +'</div>'
    +'<div class="rtx-note">Excluded 🔄 auto entries stay in the Money Hub but are left out of the company books (e.g. the duplicate staff wages). Set-aside is a working guide, not tax advice — confirm the rate with your accountant.</div>';
   root.innerHTML=h;
-  var dt=root.querySelector('#rtx-d');if(dt)dt.value=new Date().toISOString().slice(0,10);
-  root.querySelector('#rtx-fm').onchange=function(){fMonth=this.value;render();};
-  root.querySelector('#rtx-ft').onchange=function(){fType=this.value;render();};
-  root.querySelector('#rtx-pct').onchange=function(){var d2=store();d2.taxPct=Math.max(0,Math.min(40,parseFloat(this.value)||0));SVS(TK,d2);render();};
+  var dt=document.getElementById(pfx+'-d');if(dt)dt.value=new Date().toISOString().slice(0,10);
+  document.getElementById(pfx+'-fm').onchange=function(){FLT[pfx].m=this.value;render(pfx);};
+  document.getElementById(pfx+'-ft').onchange=function(){FLT[pfx].t=this.value;render(pfx);};
+  document.getElementById(pfx+'-pct').onchange=function(){var d2=store();d2.taxPct=Math.max(0,Math.min(40,parseFloat(this.value)||0));SVS(TK,d2);renderAll();};
 }
-window.rtxUpd=function(id,f,v){var d=store();var m=d.manual.find(function(x){return x.id===id;});if(!m)return;m[f]=(f==='amt')?(parseFloat(v)||0):v;SVS(TK,d);render();};
-window.rtxDel=function(id){if(!confirm('Delete this manual entry?'))return;var d=store();d.manual=d.manual.filter(function(x){return x.id!==id;});SVS(TK,d);render();};
-window.rtxExcl=function(id){var d=store();if(d.excl[id])delete d.excl[id];else d.excl[id]=1;SVS(TK,d);render();};
-window.rtxAdd=function(){
-  var de=document.getElementById('rtx-de'),a=document.getElementById('rtx-a');
-  if(!de.value.trim()){alert('Please add a description.');return;}
+function renderAll(){render('rtx0');render('rtx1');glance();}
+function glance(){
+  var g=document.getElementById('mh-fic-tax-glance');if(!g)return;
+  var t=totals(allRows());
+  g.textContent='Pamikyx: in '+money(t.tin)+' · out '+money(t.tout)+' · net '+money(t.net);
+}
+window.rtxUpd=function(id,f2,v){var d=store();var m=d.manual.find(function(x){return x.id===id;});if(!m)return;m[f2]=(f2==='amt')?(parseFloat(v)||0):v;SVS(TK,d);renderAll();};
+window.rtxDel=function(id){if(!confirm('Delete this manual entry?'))return;var d=store();d.manual=d.manual.filter(function(x){return x.id!==id;});SVS(TK,d);renderAll();};
+window.rtxExcl=function(id){var d=store();if(d.excl[id])delete d.excl[id];else d.excl[id]=1;SVS(TK,d);renderAll();};
+window.rtxAdd=function(pfx){
+  var de=document.getElementById(pfx+'-de'),a=document.getElementById(pfx+'-a');
+  if(!de||!de.value.trim()){alert('Please add a description.');return;}
   var amt=parseFloat(a.value);if(!(amt>0)){alert('Please enter the amount.');return;}
   var d=store();
   d.manual.push({id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
-    date:document.getElementById('rtx-d').value||new Date().toISOString().slice(0,10),
-    desc:de.value.trim(),cat:document.getElementById('rtx-c').value,
-    type:document.getElementById('rtx-t').value,amt:amt});
-  SVS(TK,d);render();
+    date:document.getElementById(pfx+'-d').value||new Date().toISOString().slice(0,10),
+    desc:de.value.trim(),cat:document.getElementById(pfx+'-c').value,
+    type:document.getElementById(pfx+'-t').value,amt:amt});
+  SVS(TK,d);renderAll();
 };
 window.rtxSave=function(){var d=store();SVS(TK,d);var b=document.createElement('div');b.textContent='Saved ✓ — carried in your app Backup';b.style.cssText='position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#C9A84C;color:#000;font-weight:800;font-size:13px;padding:10px 20px;border-radius:10px;z-index:99999;';document.body.appendChild(b);setTimeout(function(){b.remove();},1800);};
-function exportRows(){return visible().filter(function(r){return !r.excl;});}
-window.rtxExcel=function(){
-  var rows=exportRows(),tin=0,tout=0;
+function exportRows(pfx){return visible(pfx).filter(function(r){return !r.excl;});}
+window.rtxExcel=function(pfx){
+  var rows=exportRows(pfx||'rtx0'),tin=0,tout=0;
   var body=rows.map(function(r){
     if(r.type==='in')tin+=r.amt;else tout+=r.amt;
     return '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.desc)+'</td><td>'+esc(r.cat)+'</td><td>'+(r.type==='in'?r.amt.toFixed(2):'')+'</td><td>'+(r.type==='out'?r.amt.toFixed(2):'')+'</td><td>'+(r.auto?'Money Hub':'Manual')+'</td></tr>';
   }).join('');
+  var fm=FLT[(pfx||'rtx0')].m;
   var html='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table border="1">'
-   +'<tr><th colspan="6">Pamikyx Ltd — Tax Bookkeeping (exported '+new Date().toLocaleDateString('en-GB')+(fMonth?', month '+fMonth:'')+')</th></tr>'
+   +'<tr><th colspan="6">Pamikyx Ltd — Tax Bookkeeping (exported '+new Date().toLocaleDateString('en-GB')+(fm?', month '+fm:'')+')</th></tr>'
    +'<tr><th>Date</th><th>Description</th><th>Category</th><th>Money in (£)</th><th>Money out (£)</th><th>Source</th></tr>'+body
    +'<tr><td></td><td></td><th>TOTAL</th><th>'+tin.toFixed(2)+'</th><th>'+tout.toFixed(2)+'</th><td></td></tr>'
    +'<tr><td></td><td></td><th>NET</th><th colspan="2">'+(tin-tout).toFixed(2)+'</th><td></td></tr></table></body></html>';
@@ -20102,11 +20114,12 @@ window.rtxExcel=function(){
   a.download='Pamikyx Ltd — Tax Bookkeeping — '+new Date().toISOString().slice(0,10)+'.xls';
   document.body.appendChild(a);a.click();a.remove();
 };
-window.rtxPrint=function(){
-  var rows=exportRows(),t=totals(rows);
+window.rtxPrint=function(pfx){
+  var rows=exportRows(pfx||'rtx0'),t=totals(rows);
+  var fm=FLT[(pfx||'rtx0')].m;
   var body=rows.map(function(r){return '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.desc)+'</td><td>'+esc(r.cat)+'</td><td style="text-align:right">'+(r.type==='in'?money(r.amt):'')+'</td><td style="text-align:right">'+(r.type==='out'?money(r.amt):'')+'</td></tr>';}).join('');
   var html='<html><head><meta charset="UTF-8"><title>Pamikyx Ltd — Tax Bookkeeping</title><style>body{font-family:Arial;color:#000;padding:24px;}h1{font-size:18px;}p{font-size:11px;color:#444;}table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:10px;}th{border-bottom:2px solid #000;text-align:left;padding:6px;}td{border-bottom:1px solid #ccc;padding:6px;}tfoot th{border-top:2px solid #000;border-bottom:none;}</style></head><body>'
-   +'<h1>Pamikyx Ltd — Tax Bookkeeping</h1><p>Printed '+new Date().toLocaleDateString('en-GB')+(fMonth?' · month '+fMonth:' · all months')+'</p>'
+   +'<h1>Pamikyx Ltd — Tax Bookkeeping</h1><p>Printed '+new Date().toLocaleDateString('en-GB')+(fm?' · month '+fm:' · all months')+'</p>'
    +'<table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th style="text-align:right">Money in</th><th style="text-align:right">Money out</th></tr></thead><tbody>'+body+'</tbody>'
    +'<tfoot><tr><th></th><th></th><th>TOTAL</th><th style="text-align:right">'+money(t.tin)+'</th><th style="text-align:right">'+money(t.tout)+'</th></tr>'
    +'<tr><th></th><th></th><th>NET</th><th colspan="2" style="text-align:right">'+money(t.net)+'</th></tr></tfoot></table></body></html>';
@@ -20114,22 +20127,23 @@ window.rtxPrint=function(){
   f.contentDocument.open();f.contentDocument.write(html);f.contentDocument.close();
   setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print();}catch(e){}setTimeout(function(){f.remove();},4000);},250);
 };
-/* mount inside 💷 Income & Wealth */
 var lastSig='';
-function sig(){var d=store();return JSON.stringify([mhTx().length,d.manual.length,Object.keys(d.excl).length]);}
+function sig(){var d=store();return JSON.stringify([mhTx().length,d.manual.length,Object.keys(d.excl).length,d.taxPct]);}
 function mount(){
-  var scr=document.getElementById('s-income');if(!scr)return;
-  var root=document.getElementById('rtax-root');
-  if(!root){
-    root=document.createElement('div');root.id='rtax-root';root.className='cc-block';
-    var foot=scr.querySelector('.cc-foot');
-    if(foot)foot.parentNode.insertBefore(root,foot);else scr.appendChild(root);
-    render();lastSig=sig();return;
-  }
-  if(scr.classList.contains('active')){
-    var s2=sig();
-    if(s2!==lastSig&&!root.querySelector('input:focus, select:focus')){lastSig=s2;render();}
-  }
+  ROOTS.forEach(function(R){
+    var root=document.getElementById(R.rootId);
+    if(!root){
+      var h=R.host();if(!h)return;
+      root=document.createElement('div');root.id=R.rootId;root.className='rtax-block'+(R.pfx==='rtx0'?' cc-block':'');
+      if(R.pfx==='rtx1')root.style.cssText='margin-top:14px;padding-top:12px;border-top:1px solid rgba(201,168,76,0.15);';
+      h.place(root);render(R.pfx);glance();return;
+    }
+    if(R.active()){
+      var s2=sig();
+      if(s2!==lastSig&&!root.querySelector('input:focus, select:focus')){lastSig=s2;renderAll();}
+    }
+  });
+  glance();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
 setInterval(mount,2000);
