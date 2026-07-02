@@ -13892,7 +13892,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v3.6 · 2 Jul 2026';
+window.ROYAL_APP_VERSION='v3.7 · 2 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -20398,6 +20398,15 @@ select.rtx-field{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http:
 .rtx-excluded .rtx-box{opacity:.35;text-decoration:line-through;}
 .rtx-foot{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
 .rtx-note{font-size:10.5px;color:#8a8578;margin-top:10px;text-align:center;}
+.rtx-preview{margin-top:14px;background:#101019;border:1.5px solid rgba(201,168,76,.28);border-radius:14px;padding:13px 16px;box-shadow:inset 0 3px 8px rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.05);}
+.rtx-pv-title{font-size:11px;font-weight:800;color:#E8C96A;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px;}
+.rtx-pv-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.07);}
+.rtx-pv-row.net{border-bottom:none;border-top:1.5px solid rgba(201,168,76,.35);margin-top:4px;padding-top:9px;}
+.rtx-pv-l{font-size:12px;color:#B8B0A0;}
+.rtx-pv-row.net .rtx-pv-l{font-weight:800;color:#F5F0E8;}
+.rtx-pv-v{font-size:14px;font-weight:800;color:#F5F0E8;}
+.rtx-pv-v.in{color:#2ecc71;}.rtx-pv-v.out{color:#e05252;}
+.rtx-pv-note{font-size:10px;color:#8a8578;margin-top:8px;}
 .rtx-act{text-align:center;}
 .rtx-act .rtx-tag{display:block;margin:0 auto 4px;width:max-content;}
 @media(max-width:700px){
@@ -20415,6 +20424,27 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 function money(n){return '£'+(+n||0).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function store(){var d=LD(TK,null);if(!d||typeof d!=='object')d={};d.manual=d.manual||[];d.excl=d.excl||{};if(typeof d.taxPct!=='number')d.taxPct=19;return d;}
 var CATS=['Care services income','PA services income','Contract / agency income','Other income','Staff wages','Rent / premises','Insurance','Phone, software & IT','Travel & mileage','Materials, PPE & supplies','Accountancy & professional fees','Bank charges','Business credit card','Training & DBS','CQC fees','HMRC payment','Other expense'];
+var DESCS=['Staff wages','Business credit card — Capital on Tap','Rent / office premises','Insurance (incl. employer & public liability)','Phone, software & IT','Travel & mileage','Materials, PPE & supplies','Accountancy & professional fees','Apple care + iPad','apple.com/bill','OneCom','Business Loan / Lloyds','Bank services charge','Bright HR Ltd Payroll','Bright HR Ltd','Business Loan / IWOCA'];
+var ADDOWN='＋ Add your own…';
+function descList(){var d=store();var extra=(d.descs||[]).filter(function(x){return DESCS.indexOf(x)<0;});return DESCS.concat(extra);}
+function rememberDesc(v){if(!v)return;var d=store();d.descs=d.descs||[];if(DESCS.indexOf(v)<0&&d.descs.indexOf(v)<0){d.descs.push(v);SVS(TK,d);}}
+function descOpts(sel){
+  var list=descList();var h='';
+  if(!sel)h+='<option value="">Choose or add a description…</option>';
+  if(sel&&list.indexOf(sel)<0)h+='<option selected>'+esc(sel)+'</option>';
+  list.forEach(function(x){h+='<option'+(x===sel?' selected':'')+'>'+esc(x)+'</option>';});
+  h+='<option value="__own__">'+ADDOWN+'</option>';
+  return h;
+}
+window.rtxDescPick=function(el){
+  if(el.value!=='__own__')return;
+  var v=prompt('Type your own description:');
+  if(v&&v.trim()){v=v.trim();rememberDesc(v);
+    var o=document.createElement('option');o.textContent=v;o.selected=true;
+    el.insertBefore(o,el.lastElementChild);el.value=v;
+  }else{el.selectedIndex=0;}
+  if(el.onchange&&el.getAttribute('data-row')){/* row selects handle save via rtxUpd below */}
+};
 function isPam(t){
   var s=((t.stream||'')+' '+(t.cat||'')+' '+(t.desc||'')+' '+(t.purpose||'')+' '+(t.ref||'')).toLowerCase();
   return /pamikyx|my own company|paid staff|staff wage|capital ?on ?tap|capitalontap|business cc|cqc/.test(s);
@@ -20466,7 +20496,7 @@ function render(pfx){
    +'<div class="rtx-card">'
    +'<h4 class="rtx-h2">➕ Add an entry</h4>'
    +'<div class="rtx-fr"><label class="rtx-lbl">Date</label><input type="date" class="rtx-field" id="'+pfx+'-d"></div>'
-   +'<div class="rtx-fr"><label class="rtx-lbl">Description</label><input class="rtx-field" id="'+pfx+'-de" placeholder="e.g. Care service invoice — client name"></div>'
+   +'<div class="rtx-fr"><label class="rtx-lbl">Description</label><select class="rtx-field" id="'+pfx+'-de" onchange="rtxDescPick(this)">'+descOpts('')+'</select></div>'
    +'<div class="rtx-2col">'
    +'<div><label class="rtx-lbl">Category</label><select class="rtx-field" id="'+pfx+'-c">'+CATS.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></div>'
    +'<div><label class="rtx-lbl">Type</label><select class="rtx-field" id="'+pfx+'-t"><option value="in">Money in</option><option value="out">Money out</option></select></div>'
@@ -20495,7 +20525,7 @@ function render(pfx){
        +'<td class="rtx-act"><span class="rtx-tag auto">🔄 auto</span><button class="rtx-ex" onclick="rtxExcl(\''+r.id+'\')">'+(r.excl?'include':'exclude')+'</button></td>';
     }else{
       h+='<td><input type="date" class="rtx-box" value="'+esc(r.date)+'" onchange="rtxUpd(\''+r.id+'\',\'date\',this.value)"></td>'
-       +'<td><input class="rtx-box" value="'+esc(r.desc)+'" onchange="rtxUpd(\''+r.id+'\',\'desc\',this.value)"></td>'
+       +'<td><select class="rtx-box" data-row="1" onchange="rtxDescPick(this);if(this.value&&this.value!==\'__own__\')rtxUpd(\''+r.id+'\',\'desc\',this.value)">'+descOpts(r.desc)+'</select></td>'
        +'<td><select class="rtx-box" onchange="rtxUpd(\''+r.id+'\',\'cat\',this.value)">'+CATS.map(function(c){return '<option'+(c===r.cat?' selected':'')+'>'+c+'</option>';}).join('')+'</select></td>'
        +'<td>'+(r.type==='in'?'<input type="number" step="0.01" class="rtx-box amt-in" value="'+r.amt+'" onchange="rtxUpd(\''+r.id+'\',\'amt\',this.value)">':'')+'</td>'
        +'<td>'+(r.type==='out'?'<input type="number" step="0.01" class="rtx-box amt-out" value="'+r.amt+'" onchange="rtxUpd(\''+r.id+'\',\'amt\',this.value)">':'')+'</td>'
@@ -20505,6 +20535,14 @@ function render(pfx){
   });
   if(!rows.length)h+='<tr><td colspan="7" style="padding:16px;color:#8a8578;">No company entries for this filter yet.</td></tr>';
   h+='</tbody></table></div>'
+   /* live totals preview at the bottom of the Ledger */
+   +'<div class="rtx-preview">'
+   +'<div class="rtx-pv-title">🔎 Preview — totals for this view</div>'
+   +'<div class="rtx-pv-row"><span class="rtx-pv-l">Total money in</span><span class="rtx-pv-v in">'+money(t.tin)+'</span></div>'
+   +'<div class="rtx-pv-row"><span class="rtx-pv-l">Total money out</span><span class="rtx-pv-v out">'+money(t.tout)+'</span></div>'
+   +'<div class="rtx-pv-row net"><span class="rtx-pv-l">NET</span><span class="rtx-pv-v'+(t.net<0?' out':' in')+'">'+money(t.net)+'</span></div>'
+   +'<div class="rtx-pv-note">This is exactly what the Excel download and print-out will show for the current filter.</div>'
+   +'</div>'
    +'<div class="rtx-foot">'
    +'<button class="rtx-btn" onclick="rtxExcel(\''+pfx+'\')">⬇️ Download Excel</button>'
    +'<button class="rtx-btn ghost" onclick="rtxPrint(\''+pfx+'\')">🖨 Print</button>'
