@@ -13369,7 +13369,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v3.7 · 2 Jul 2026';
+window.ROYAL_APP_VERSION='v3.8 · 2 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -19920,7 +19920,21 @@ select.rtx-field{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http:
 .rtx-excluded .rtx-box{opacity:.35;text-decoration:line-through;}
 .rtx-foot{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
 .rtx-note{font-size:10.5px;color:#8a8578;margin-top:10px;text-align:center;}
-.rtx-preview{margin-top:14px;background:#101019;border:1.5px solid rgba(201,168,76,.28);border-radius:14px;padding:13px 16px;box-shadow:inset 0 3px 8px rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.05);}
+.rtx-preview{margin-top:14px;background:#101019;border:1.5px solid rgba(201,168,76,.28);border-radius:14px;padding:13px 16px;box-shadow:inset 0 3px 8px rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.05);cursor:pointer;transition:border-color .15s,transform .12s;}
+.rtx-preview:hover{border-color:#C9A84C;transform:translateY(-1px);}
+.rtx-pv-open{float:right;font-size:10px;font-weight:700;color:#C9A84C;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);border-radius:8px;padding:3px 9px;text-transform:none;letter-spacing:0;}
+#rtx-pvmodal{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:99995;display:none;align-items:center;justify-content:center;padding:16px;}
+#rtx-pvmodal .rtx-pvm-box{background:#fff;border-radius:14px;max-width:820px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+#rtx-pvmodal .rtx-pvm-bar{background:#1A1A26;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+#rtx-pvmodal .rtx-pvm-bar b{color:#E8C96A;font-size:13px;flex:1;min-width:0;}
+#rtx-pvmodal .rtx-pvm-body{overflow:auto;padding:22px 26px;-webkit-overflow-scrolling:touch;color:#000;}
+#rtx-pvmodal .rtx-pvm-body h1{font-size:18px;font-family:Arial;color:#000;margin:0 0 2px;}
+#rtx-pvmodal .rtx-pvm-body p{font-size:11px;color:#444;margin:0 0 10px;font-family:Arial;}
+#rtx-pvmodal table{width:100%;border-collapse:collapse;font-size:12px;font-family:Arial;color:#000;}
+#rtx-pvmodal th{border-bottom:2px solid #000;text-align:left;padding:6px;color:#000;font-size:11px;}
+#rtx-pvmodal td{border-bottom:1px solid #ccc;padding:6px;color:#222;}
+#rtx-pvmodal tfoot th{border-top:2px solid #000;border-bottom:none;}
+#rtx-pvmodal .rtx-btn.sm{padding:8px 14px;font-size:12px;border-radius:9px;}
 .rtx-pv-title{font-size:11px;font-weight:800;color:#E8C96A;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px;}
 .rtx-pv-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.07);}
 .rtx-pv-row.net{border-bottom:none;border-top:1.5px solid rgba(201,168,76,.35);margin-top:4px;padding-top:9px;}
@@ -20057,9 +20071,9 @@ function render(pfx){
   });
   if(!rows.length)h+='<tr><td colspan="7" style="padding:16px;color:#8a8578;">No company entries for this filter yet.</td></tr>';
   h+='</tbody></table></div>'
-   /* live totals preview at the bottom of the Ledger */
-   +'<div class="rtx-preview">'
-   +'<div class="rtx-pv-title">🔎 Preview — totals for this view</div>'
+   /* live totals preview at the bottom of the Ledger — click to open the full report */
+   +'<div class="rtx-preview" onclick="rtxPreview(\''+pfx+'\')" title="Tap to open the full report preview">'
+   +'<div class="rtx-pv-title">🔎 Preview — totals for this view <span class="rtx-pv-open">👁 Tap to open full report</span></div>'
    +'<div class="rtx-pv-row"><span class="rtx-pv-l">Total money in</span><span class="rtx-pv-v in">'+money(t.tin)+'</span></div>'
    +'<div class="rtx-pv-row"><span class="rtx-pv-l">Total money out</span><span class="rtx-pv-v out">'+money(t.tout)+'</span></div>'
    +'<div class="rtx-pv-row net"><span class="rtx-pv-l">NET</span><span class="rtx-pv-v'+(t.net<0?' out':' in')+'">'+money(t.net)+'</span></div>'
@@ -20115,6 +20129,34 @@ window.rtxExcel=function(pfx){
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+html],{type:'application/vnd.ms-excel'}));
   a.download='Pamikyx Ltd — Tax Bookkeeping — '+new Date().toISOString().slice(0,10)+'.xls';
   document.body.appendChild(a);a.click();a.remove();
+};
+function reportTable(pfx){
+  var rows=exportRows(pfx||'rtx0'),t=totals(rows);
+  var body=rows.map(function(r){return '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.desc)+'</td><td>'+esc(r.cat)+'</td><td style="text-align:right">'+(r.type==='in'?money(r.amt):'')+'</td><td style="text-align:right">'+(r.type==='out'?money(r.amt):'')+'</td></tr>';}).join('');
+  return '<table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th style="text-align:right">Money in</th><th style="text-align:right">Money out</th></tr></thead><tbody>'+body+'</tbody>'
+   +'<tfoot><tr><th></th><th></th><th>TOTAL</th><th style="text-align:right">'+money(t.tin)+'</th><th style="text-align:right">'+money(t.tout)+'</th></tr>'
+   +'<tr><th></th><th></th><th>NET</th><th colspan="2" style="text-align:right">'+money(t.net)+'</th></tr></tfoot></table>';
+}
+window.rtxPreview=function(pfx){
+  pfx=pfx||'rtx0';
+  var fm=FLT[pfx].m;
+  var ov=document.getElementById('rtx-pvmodal');
+  if(!ov){
+    ov=document.createElement('div');ov.id='rtx-pvmodal';
+    ov.onclick=function(ev){if(ev.target===ov)ov.style.display='none';};
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML='<div class="rtx-pvm-box">'
+   +'<div class="rtx-pvm-bar"><b>🔎 Report preview — exactly as it prints</b>'
+   +'<button class="rtx-btn sm" onclick="rtxExcel(\''+pfx+'\')">⬇️ Excel</button>'
+   +'<button class="rtx-btn sm ghost" onclick="rtxPrint(\''+pfx+'\')">🖨 Print</button>'
+   +'<button class="rtx-btn sm ghost" onclick="document.getElementById(\'rtx-pvmodal\').style.display=\'none\'">✕ Close</button></div>'
+   +'<div class="rtx-pvm-body">'
+   +'<h1>Pamikyx Ltd — Tax Bookkeeping</h1>'
+   +'<p>'+new Date().toLocaleDateString('en-GB')+(fm?' · month '+fm:' · all months')+'</p>'
+   +reportTable(pfx)
+   +'</div></div>';
+  ov.style.display='flex';
 };
 window.rtxPrint=function(pfx){
   var rows=exportRows(pfx||'rtx0'),t=totals(rows);
