@@ -19979,5 +19979,230 @@ window.rrUniversalSearch=function(raw, saidHtml){
 </script>
 <!-- ════════════ END RMHS ════════════ -->
 
+<!-- ════════════ RDRY2 · ROYAL DIARY v2 — List/Gallery views, smart formatting, live Actions & To-Do monitor ════════════ -->
+<style id="rdry2-css">
+#rd2-wrap{margin-bottom:14px;}
+.rd2-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;}
+.rd2-pill{border:1.5px solid rgba(201,168,76,.35);background:rgba(255,255,255,.04);color:#B8B0A0;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.rd2-pill.on{background:linear-gradient(135deg,#C9A84C,#7A5F1A);color:#000;border-color:transparent;}
+.rd2-count{margin-left:auto;font-size:12px;color:#8a8578;}
+.rd2-acts{background:rgba(201,168,76,.06);border:1.5px solid rgba(201,168,76,.3);border-radius:14px;padding:14px 16px;margin:10px 0 14px;}
+.rd2-acts-head{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+.rd2-acts-title{font-size:14px;font-weight:800;color:#E8C96A;letter-spacing:.3px;flex:1;}
+.rd2-badge{font-size:11px;font-weight:800;padding:2px 10px;border-radius:10px;background:rgba(231,76,60,.18);color:#ff9d8f;white-space:nowrap;}
+.rd2-badge.ok{background:rgba(46,204,113,.15);color:#7ee2a8;}
+.rd2-acts-body{margin-top:10px;}
+.rd2-act-ent{margin-bottom:10px;}
+.rd2-act-ent-t{font-size:12px;font-weight:700;color:#C9A84C;margin-bottom:5px;}
+.rd2-act-row{display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:13.5px;color:#D8D2C4;line-height:1.5;cursor:pointer;}
+.rd2-act-row input{margin-top:3px;accent-color:#C9A84C;width:16px;height:16px;flex-shrink:0;cursor:pointer;}
+.rd2-act-row.done span{text-decoration:line-through;color:#6f6a5e;}
+.rd2-prog{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px;}
+.rd2-prog i{display:block;height:100%;background:linear-gradient(90deg,#C9A84C,#E8C96A);border-radius:3px;transition:width .3s;}
+.rd2-h{font-size:13px;font-weight:800;color:#E8C96A;letter-spacing:.4px;text-transform:uppercase;margin:14px 0 5px;}
+.rd2-p{font-size:14px;color:#B8B0A0;line-height:1.7;margin:6px 0;}
+.rd2-lead{color:#F5F0E8;}
+.rd2-ol{margin:6px 0 6px 4px;padding-left:20px;}
+.rd2-ol .rd2-li{font-size:14px;color:#B8B0A0;line-height:1.65;margin:5px 0;padding-left:4px;}
+.rd2-ol .rd2-li::marker{color:#C9A84C;font-weight:700;}
+.rd2-amt{color:#E8C96A;font-weight:700;}
+.rd2-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;}
+@media(max-width:480px){.rd2-gal{grid-template-columns:repeat(2,1fr);gap:9px;}}
+.rd2-card{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.07);border-left:4px solid #C9A84C;border-radius:12px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:7px;min-height:130px;transition:transform .12s,border-color .12s;}
+.rd2-card:hover{transform:translateY(-2px);border-color:rgba(201,168,76,.5);}
+.rd2-card-d{font-size:11px;font-weight:700;color:#C9A84C;letter-spacing:.5px;}
+.rd2-card-t{font-size:14px;font-weight:700;color:#F5F0E8;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rd2-card-x{font-size:12px;color:#8a8578;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1;}
+.rd2-card-f{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#6f6a5e;}
+.rd2-mood{background:rgba(255,255,255,.06);color:#aaa;padding:2px 8px;border-radius:6px;font-size:10.5px;white-space:nowrap;}
+#rd2-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99990;display:none;align-items:center;justify-content:center;padding:18px;}
+#rd2-modal .rd2-m-box{background:#15151F;border:1.5px solid rgba(201,168,76,.4);border-radius:16px;max-width:680px;width:100%;max-height:84vh;overflow:auto;padding:22px;-webkit-overflow-scrolling:touch;}
+#rd2-modal .rd2-m-close{float:right;background:rgba(255,255,255,.08);border:none;color:#F5F0E8;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;}
+.rd2-ent{background:rgba(255,255,255,.04);border-radius:12px;padding:18px 20px;margin-bottom:12px;border-left:4px solid #C9A84C;}
+.rd2-ent-head{display:flex;align-items:center;cursor:pointer;user-select:none;}
+.rd2-ent-body.collapsed{display:none;}
+.rd2-tgl{background:none;border:none;color:#C9A84C;font-size:20px;cursor:pointer;transform:rotate(0deg);transition:transform .15s;flex-shrink:0;}
+.rd2-tgl.open{transform:rotate(90deg);}
+</style>
+<script id="rdry2-js">
+(function(){
+if(window.__rdry2)return;window.__rdry2=1;
+var VK='royal_diary_view_v1',AK='royal_diary_actions_v1';
+function LD(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function SVS(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function deco(s){var e=esc(s);e=e.replace(/£\s?[\d,]+(?:\.\d{1,2})?/g,function(m){return '<span class="rd2-amt">'+m+'</span>';});return e;}
+/* ── smart text formatter: headings, numbered lists, lead-bold, £ highlight ── */
+function fmt(text){
+  var lines=String(text||'').split(/\r?\n/),html='',inList=false;
+  function closeList(){if(inList){html+='</ol>';inList=false;}}
+  for(var i=0;i<lines.length;i++){
+    var ln=lines[i].trim();
+    if(!ln){closeList();continue;}
+    var mNum=ln.match(/^(\d+)[\.\)]\s*(.*)$/);
+    if(mNum&&mNum[2]){if(!inList){html+='<ol class="rd2-ol">';inList=true;}html+='<li class="rd2-li">'+deco(mNum[2])+'</li>';continue;}
+    closeList();
+    if(ln.length<=48&&/^[A-Za-z].*[\.:]$/.test(ln)&&ln.indexOf('. ')<0){html+='<div class="rd2-h">'+esc(ln.replace(/[\.:]+$/,''))+'</div>';continue;}
+    var mLead=ln.match(/^([A-Z][^\.]{2,38}\.)\s+(.+)$/);
+    if(mLead){html+='<p class="rd2-p"><b class="rd2-lead">'+esc(mLead[1])+'</b> '+deco(mLead[2])+'</p>';continue;}
+    html+='<p class="rd2-p">'+deco(ln)+'</p>';
+  }
+  closeList();return html;
+}
+/* ── extract action items: numbered/bulleted lines under a "Next actions / To-Do" heading ── */
+function extractActs(e){
+  var acts=[],lines=String(e.text||'').split(/\r?\n/),inNA=false;
+  for(var i=0;i<lines.length;i++){
+    var ln=lines[i].trim();if(!ln)continue;
+    if(/^(next actions?|next steps?|to[- ]?do'?s?|action points?|actions?)[\.:]?$/i.test(ln)){inNA=true;continue;}
+    var m=ln.match(/^(?:\d+[\.\)]|[-•▪‣])\s*(.+)$/);
+    if(inNA){if(m&&m[1]){acts.push(m[1]);}else{inNA=false;}}
+    else if(/^(todo|to do|action)\s*[:\-]\s*\S/i.test(ln)){acts.push(ln.replace(/^(todo|to do|action)\s*[:\-]\s*/i,''));}
+  }
+  return acts;
+}
+function sortEnts(entries){return entries.slice().sort(function(a,b){return ((b.date||'')+' '+(b.time||'00:00')).localeCompare((a.date||'')+' '+(a.time||'00:00'));});}
+/* ── live Actions & Next To-Do panel ── */
+function buildActs(entries){
+  var st=LD(AK,{}),items=[],open=0,done=0;
+  sortEnts(entries).forEach(function(e){
+    var acts=extractActs(e);if(!acts.length)return;
+    var rows=acts.map(function(a,idx){
+      var key=(e.id||'')+'|'+idx,dn=!!st[key];
+      if(dn)done++;else open++;
+      return {key:key,txt:a,done:dn};
+    });
+    items.push({e:e,rows:rows});
+  });
+  var box=document.createElement('div');
+  if(!items.length)return box;
+  box.className='rd2-acts';
+  var collapsed=false;try{collapsed=localStorage.getItem('royal_diary_actpanel_v1')==='1';}catch(err){}
+  var head=document.createElement('div');head.className='rd2-acts-head';
+  head.innerHTML='<span style="font-size:16px;">🎯</span><span class="rd2-acts-title">Live Actions &amp; Next To-Do</span>'
+    +'<span class="rd2-badge'+(open===0?' ok':'')+'">'+(open===0?'✓ All done':open+' open')+'</span>'
+    +'<button class="rd2-tgl'+(collapsed?'':' open')+'" type="button">›</button>';
+  var body=document.createElement('div');body.className='rd2-acts-body';if(collapsed)body.style.display='none';
+  head.onclick=function(){
+    collapsed=!collapsed;body.style.display=collapsed?'none':'';
+    var b=head.querySelector('.rd2-tgl');if(b)b.classList.toggle('open',!collapsed);
+    try{localStorage.setItem('royal_diary_actpanel_v1',collapsed?'1':'0');}catch(err){}
+  };
+  items.slice(0,6).forEach(function(it){
+    var ed=document.createElement('div');ed.className='rd2-act-ent';
+    var edone=it.rows.filter(function(r){return r.done;}).length;
+    ed.innerHTML='<div class="rd2-act-ent-t">📔 '+esc(it.e.title||'Entry')+' · '+esc(it.e.date||'')+' <span style="color:#8a8578;font-weight:600;">('+edone+'/'+it.rows.length+' done)</span></div>';
+    it.rows.forEach(function(r){
+      var row=document.createElement('label');row.className='rd2-act-row'+(r.done?' done':'');
+      var cb=document.createElement('input');cb.type='checkbox';cb.checked=r.done;
+      var sp=document.createElement('span');sp.innerHTML=deco(r.txt);
+      cb.onchange=function(){
+        var s2=LD(AK,{});if(cb.checked)s2[r.key]=true;else delete s2[r.key];SVS(AK,s2);
+        enhance();
+      };
+      row.appendChild(cb);row.appendChild(sp);ed.appendChild(row);
+    });
+    var pr=document.createElement('div');pr.className='rd2-prog';
+    var fill=document.createElement('i');fill.style.width=(it.rows.length?Math.round(edone/it.rows.length*100):0)+'%';
+    pr.appendChild(fill);ed.appendChild(pr);
+    body.appendChild(ed);
+  });
+  box.appendChild(head);box.appendChild(body);
+  return box;
+}
+/* ── view toggle bar ── */
+function buildBar(view,n){
+  var bar=document.createElement('div');bar.className='rd2-bar';
+  [['list','📃 List'],['gallery','🖼 Gallery']].forEach(function(v){
+    var b=document.createElement('button');b.type='button';b.className='rd2-pill'+(view===v[0]?' on':'');b.textContent=v[1];
+    b.onclick=function(){try{localStorage.setItem(VK,v[0]);}catch(err){}enhance();};
+    bar.appendChild(b);
+  });
+  var c=document.createElement('span');c.className='rd2-count';c.textContent=n+(n===1?' entry':' entries');
+  bar.appendChild(c);
+  return bar;
+}
+/* ── modal for gallery cards ── */
+function openModal(e){
+  var ov=document.getElementById('rd2-modal');
+  if(!ov){
+    ov=document.createElement('div');ov.id='rd2-modal';
+    ov.onclick=function(ev){if(ev.target===ov)ov.style.display='none';};
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML='<div class="rd2-m-box">'
+    +'<button class="rd2-m-close" type="button" onclick="document.getElementById(\'rd2-modal\').style.display=\'none\'">✕</button>'
+    +'<div class="rd2-card-d" style="margin-bottom:4px;">'+esc(e.date||'')+(e.time?' · '+esc(e.time):'')+(e.mood?' &nbsp;<span class="rd2-mood">'+esc(e.mood)+'</span>':'')+'</div>'
+    +'<div style="font-size:17px;font-weight:800;color:#F5F0E8;margin-bottom:8px;">'+esc(e.title||'Untitled')+'</div>'
+    +fmt(e.text)+'</div>';
+  ov.style.display='flex';
+}
+/* ── list view (structured cards, newest open) ── */
+function renderList(list,entries){
+  list.innerHTML='';
+  sortEnts(entries).forEach(function(e,i){
+    var outer=document.createElement('div');outer.className='rd2-ent';
+    var head=document.createElement('div');head.className='rd2-ent-head';
+    head.innerHTML='<div style="flex:1;min-width:0;">'
+      +'<div class="rd2-card-d" style="margin-bottom:3px;">'+esc(e.date||'')+(e.time?' · '+esc(e.time):'')+'</div>'
+      +'<div style="font-size:15px;font-weight:700;color:#F5F0E8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(e.title||'Untitled')+'</div></div>'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px;">'
+      +(e.mood?'<span class="rd2-mood">'+esc(e.mood)+'</span>':'')
+      +'<button class="rd2-tgl'+(i===0?' open':'')+'" type="button">›</button></div>';
+    var body=document.createElement('div');body.className='rd2-ent-body'+(i===0?'':' collapsed');
+    body.innerHTML=fmt(e.text);
+    head.onclick=function(){
+      var col=body.classList.toggle('collapsed');
+      var b=head.querySelector('.rd2-tgl');if(b)b.classList.toggle('open',!col);
+    };
+    outer.appendChild(head);outer.appendChild(body);list.appendChild(outer);
+  });
+}
+/* ── gallery view ── */
+function renderGallery(list,entries){
+  list.innerHTML='';
+  var g=document.createElement('div');g.className='rd2-gal';
+  sortEnts(entries).forEach(function(e){
+    var snippet=String(e.text||'').replace(/\s+/g,' ').slice(0,150);
+    var acts=extractActs(e);
+    var card=document.createElement('div');card.className='rd2-card';
+    card.innerHTML='<div class="rd2-card-d">'+esc(e.date||'')+(e.time?' · '+esc(e.time):'')+'</div>'
+      +'<div class="rd2-card-t">'+esc(e.title||'Untitled')+'</div>'
+      +'<div class="rd2-card-x">'+esc(snippet)+'</div>'
+      +'<div class="rd2-card-f">'+(e.mood?'<span class="rd2-mood">'+esc(e.mood)+'</span>':'<span></span>')
+      +'<span>'+(acts.length?'🎯 '+acts.length+' action'+(acts.length>1?'s':'')+' · ':'')+'Open ›</span></div>';
+    card.onclick=function(){openModal(e);};
+    g.appendChild(card);
+  });
+  list.appendChild(g);
+}
+/* ── main enhancer, runs after the original buildDiary ── */
+function enhance(){
+  var list=document.getElementById('diary-list');if(!list)return;
+  var old=document.getElementById('rd2-wrap');if(old)old.remove();
+  if(window.drEditOn)return;
+  var entries=LD('royal_diary_v1',[]);if(!entries.length)return;
+  var view='list';try{view=localStorage.getItem(VK)||'list';}catch(err){}
+  var wrap=document.createElement('div');wrap.id='rd2-wrap';
+  wrap.appendChild(buildActs(entries));
+  wrap.appendChild(buildBar(view,entries.length));
+  list.parentNode.insertBefore(wrap,list);
+  if(view==='gallery')renderGallery(list,entries);else renderList(list,entries);
+}
+window.rd2Refresh=enhance;
+function hook(){
+  if(typeof window.buildDiary!=='function')return;
+  if(window.buildDiary._rd2)return;
+  var orig=window.buildDiary;
+  var f=function(){orig();try{enhance();}catch(err){}};
+  f._rd2=true;window.buildDiary=f;
+  try{enhance();}catch(err){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook);else hook();
+setInterval(hook,2000);
+})();
+</script>
+<!-- ════════════ END RDRY2 ════════════ -->
+
 </body>
 </html>
