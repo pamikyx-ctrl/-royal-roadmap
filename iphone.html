@@ -13369,7 +13369,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.0.1 · 3 Jul 2026';
+window.ROYAL_APP_VERSION='v4.0.2 · 3 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -20275,6 +20275,21 @@ window.rtxPrint=function(pfx){
 };
 var lastSig='';
 function sig(){var d=store();return JSON.stringify([mhTx().length,d.manual.length,Object.keys(d.excl).length,d.taxPct,d.manual.filter(function(m){return m.unpaid;}).length]);}
+/* FILTER WATCH — belt and braces: if any filter select's value differs from the applied filter
+   (because something on the page swallowed the change event), adopt it and re-render. */
+function filterWatch(){
+  ROOTS.forEach(function(R){
+    var fm=document.getElementById(R.pfx+'-fm'),ft=document.getElementById(R.pfx+'-ft');
+    if(!fm||!ft)return;
+    var vm=fm.value,vt=ft.value;
+    if(vm==='__own__'||vt==='__own__')return;
+    if(vm!==FLT[R.pfx].m||vt!==FLT[R.pfx].t){
+      FLT[R.pfx].m=vm;FLT[R.pfx].t=vt;
+      render(R.pfx);
+    }
+  });
+}
+setInterval(function(){try{filterWatch();}catch(e){}},700);
 function mount(){
   ROOTS.forEach(function(R){
     var root=document.getElementById(R.rootId);
