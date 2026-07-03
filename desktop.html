@@ -13893,7 +13893,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v3.9.3 · 3 Jul 2026';
+window.ROYAL_APP_VERSION='v3.9.4 · 3 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -17984,7 +17984,13 @@ if(document.readyState!=='loading'){var s=document.getElementById('s-command');i
 <style id="rrfh-css">
 #rrfh-handle{position:fixed;bottom:284px;right:20px;z-index:100001;width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(135deg,#C9A84C,#7A5F1A);color:#1a1408;font-size:17px;font-weight:800;line-height:1;box-shadow:0 4px 16px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:transform .15s;}
 #rrfh-handle:active{transform:scale(.88);}
-@media (max-width:520px){#rrfh-handle{bottom:calc(100px + env(safe-area-inset-bottom,0px));right:14px;}}
+@media (max-width:520px){
+#rrfh-handle{bottom:calc(100px + env(safe-area-inset-bottom,0px)) !important;right:21px !important;}
+#rr-refresh-fab{bottom:calc(152px + env(safe-area-inset-bottom,0px)) !important;right:16px !important;left:auto !important;}
+#cc-add-fab{bottom:calc(214px + env(safe-area-inset-bottom,0px)) !important;right:16px !important;left:auto !important;}
+#cc-fab{bottom:calc(276px + env(safe-area-inset-bottom,0px)) !important;right:16px !important;left:auto !important;}
+#voice-fab{bottom:calc(338px + env(safe-area-inset-bottom,0px)) !important;right:16px !important;left:auto !important;}
+}
 body.rrfh-hidden #cc-fab,
 body.rrfh-hidden #cc-add-fab,
 body.rrfh-hidden #voice-fab,
