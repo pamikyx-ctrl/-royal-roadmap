@@ -13369,7 +13369,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v3.9.1 · 3 Jul 2026';
+window.ROYAL_APP_VERSION='v3.9.2 · 3 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -20240,7 +20240,7 @@ html.app-light .rdlk-src,html.app-light .rdlk-note{color:#6f675b;}
 #rdbt-fields label{font-size:13px;color:#aaa;display:block;margin-bottom:4px;}
 #rdbt-fields input,#rdbt-fields select{width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;box-sizing:border-box;}
 /* ── C) system health panel ── */
-#rsys-panel{background:rgba(46,204,113,.06);border:1.5px solid rgba(46,204,113,.3);border-radius:14px;padding:14px 16px;margin:12px 0;}
+#rsys-panel{background:rgba(46,204,113,.06);border:1.5px solid rgba(46,204,113,.3);border-radius:14px;padding:14px 16px;margin:12px 0;position:relative;z-index:5;}
 #rsys-panel.warn{background:rgba(224,82,82,.07);border-color:rgba(224,82,82,.4);}
 #rsys-panel .rsys-t{font-size:13px;font-weight:800;color:#7ee2a8;margin-bottom:6px;}
 #rsys-panel.warn .rsys-t{color:#ff9d8f;}
@@ -20436,8 +20436,10 @@ window.rsysCheck=function(){
    +'🐛 Errors caught this week: '+h.errs.length+(h.errs.length?' — latest: '+esc2(h.errs[h.errs.length-1].m):'')+'<br>'
    +'🗄 Last in-app Backup: '+(h.backupDays===null?'not recorded yet — run Backup once so I can track it':(h.backupDays===0?'today ✓':h.backupDays+' day(s) ago'+(h.backupDays>7?' — ⚠ time for a fresh Backup':'')));
   p.innerHTML='<div class="rsys-t">'+(warn?'🛡 AI System Health — needs attention':'🛡 AI System Health — stable ✓')+' <span style="font-weight:400;font-size:11px;color:#8a8578;">'+esc2(window.ROYAL_APP_VERSION||'')+'</span></div>'
-   +'<div class="rsys-l">'+lines+'</div>'
+   +'<div class="rsys-l">'+lines+'<br>⏱ Last checked: '+new Date().toLocaleTimeString('en-GB')+' ✓</div>'
    +'<button onclick="rsysCheck()">↻ Run check again</button>';
+  p.style.boxShadow='0 0 0 3px rgba(201,168,76,.45)';
+  setTimeout(function(){p.style.boxShadow='';},450);
 };
 function rsysMount(){
   if(document.getElementById('rsys-panel'))return;
@@ -20448,8 +20450,19 @@ function rsysMount(){
   window.rsysCheck();
 }
 
+/* self-heal: if the app's global el() helper ever gets overwritten by a stray value, restore it and log the rescue */
+function selfHeal(){
+  if(typeof window.el!=='function'&&window.__rstabElOk){
+    window.el=function(id){return document.getElementById(id);};
+    try{
+      var lg=LD(EK,[]);lg.push({m:'🛡 self-heal: restored el() helper after it was overwritten',src:'rstab',l:0,t:Date.now()});
+      if(lg.length>30)lg=lg.slice(-30);SVS(EK,lg);
+    }catch(e){}
+  }
+  if(typeof window.el==='function')window.__rstabElOk=true;
+}
 /* ══ mount loop ══ */
-function loop(){try{fixDocs();}catch(e){}try{rdbtMount();hookSaveDebt();}catch(e){}try{rsysMount();hookBackup();}catch(e){}}
+function loop(){try{selfHeal();}catch(e){}try{fixDocs();}catch(e){}try{rdbtMount();hookSaveDebt();}catch(e){}try{rsysMount();hookBackup();}catch(e){}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loop);else loop();
 setInterval(loop,1200);
 })();
