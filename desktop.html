@@ -13893,7 +13893,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v3.8 · 2 Jul 2026';
+window.ROYAL_APP_VERSION='v3.9 · 3 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -20674,5 +20674,265 @@ setInterval(mount,2000);
 </script>
 <!-- ════════════ END RTAX ════════════ -->
 
+<!-- ════════════ RSTAB · STABILITY PACK (3 Jul 2026) — Profile docs fix · Smart debt fields · AI System Health · Day-mode contrast ════════════ -->
+<style id="rstab-css">
+/* ── D) DAY-MODE CONTRAST FIXES — only apply when the whole-app light theme is on ── */
+html.app-light [style*="color:#aaa"]{color:#4d473e !important;}
+html.app-light [style*="color:#B8B0A0"]{color:#46413a !important;}
+html.app-light [style*="color:#8a8578"]{color:#5d574c !important;}
+html.app-light [style*="color:#ccc"]{color:#3a352d !important;}
+html.app-light [style*="color:#777"]{color:#55503f !important;}
+html.app-light [style*="background:#1A1A26"],html.app-light [style*="background:#12121C"],html.app-light [style*="background:#101019"],html.app-light [style*="background:#15151F"],html.app-light [style*="background:#1a1a26"]{background:#ffffff !important;color:#1c1a17 !important;border-color:#d9d1bf !important;}
+html.app-light [style*="rgba(255,255,255,0.04)"],html.app-light [style*="rgba(255,255,255,.04)"],html.app-light [style*="rgba(255,255,255,0.06)"],html.app-light [style*="rgba(255,255,255,.06)"]{background:#ffffff !important;}
+html.app-light [style*="color:#F5F0E8"]{color:#1c1a17 !important;}
+/* Tax Bookkeeping engine in Day mode */
+html.app-light .rtx-card,html.app-light .rtx-kpi{background:#ffffff;border-color:rgba(0,0,0,.14);box-shadow:0 8px 20px rgba(0,0,0,.10),inset 0 1px 0 rgba(255,255,255,.8);}
+html.app-light .rtx-field,html.app-light .rtx-box,html.app-light .rtx-preview{background:#f4efe4;color:#1c1a17;border-color:#d0c7b2;box-shadow:inset 0 2px 5px rgba(0,0,0,.10);}
+html.app-light .rtx-box.ro{color:#3a352d;}
+html.app-light .rtx-h,html.app-light .rtx-h2,html.app-light .rtx-pv-title{color:#7a5f1a;}
+html.app-light .rtx-sub,html.app-light .rtx-lbl,html.app-light .rtx-note,html.app-light .rtx-pv-note{color:#5d574c;}
+html.app-light .rtx-tbl td{color:#3a352d;}
+html.app-light .rtx-tbl th{color:#7a5f1a;}
+html.app-light .rtx-kpi .v{color:#1c1a17;}
+html.app-light .rtx-pv-l{color:#46413a;}
+html.app-light .rtx-pv-row.net .rtx-pv-l,html.app-light .rtx-pv-v{color:#1c1a17;}
+html.app-light .rtx-ex{color:#5d574c;border-color:rgba(0,0,0,.22);}
+/* Diary v2 in Day mode */
+html.app-light .rd2-ent,html.app-light .rd2-card{background:#ffffff;border-color:rgba(0,0,0,.12);}
+html.app-light .rd2-p,html.app-light .rd2-ol .rd2-li,html.app-light .rd2-card-x{color:#3a352d;}
+html.app-light .rd2-lead,html.app-light .rd2-card-t{color:#1c1a17;}
+html.app-light .rd2-h{color:#7a5f1a;}
+html.app-light .rd2-acts{background:rgba(201,168,76,.10);}
+html.app-light .rd2-act-row{color:#3a352d;}
+html.app-light .rd2-act-row.done span{color:#9b9488;}
+html.app-light .rd2-pill{color:#46413a;background:rgba(0,0,0,.04);}
+html.app-light #rd2-modal .rd2-m-box{background:#fdfaf3;border-color:rgba(0,0,0,.15);}
+html.app-light #rd2-modal .rd2-m-close{background:rgba(0,0,0,.08);color:#1c1a17;}
+/* Diary↔iCalender quick view in Day mode */
+html.app-light .rdlk-row{color:#3a352d;}
+html.app-light .rdlk-row.done span{color:#9b9488;}
+html.app-light .rdlk-src,html.app-light .rdlk-note{color:#6f675b;}
+/* ── B) smart debt fields styling ── */
+#rdbt-fields{border:1px solid rgba(201,168,76,.35);border-radius:8px;padding:11px 13px;background:rgba(201,168,76,.07);}
+#rdbt-fields .rdbt-t{font-size:12px;font-weight:700;color:#C9A84C;margin-bottom:9px;}
+#rdbt-fields .rdbt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+#rdbt-fields label{font-size:13px;color:#aaa;display:block;margin-bottom:4px;}
+#rdbt-fields input,#rdbt-fields select{width:100%;background:#1A1A26;border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F0E8;padding:9px 11px;font-size:14px;box-sizing:border-box;}
+/* ── C) system health panel ── */
+#rsys-panel{background:rgba(46,204,113,.06);border:1.5px solid rgba(46,204,113,.3);border-radius:14px;padding:14px 16px;margin:12px 0;}
+#rsys-panel.warn{background:rgba(224,82,82,.07);border-color:rgba(224,82,82,.4);}
+#rsys-panel .rsys-t{font-size:13px;font-weight:800;color:#7ee2a8;margin-bottom:6px;}
+#rsys-panel.warn .rsys-t{color:#ff9d8f;}
+#rsys-panel .rsys-l{font-size:12px;color:#B8B0A0;line-height:1.7;}
+#rsys-panel button{background:rgba(201,168,76,.12);border:1.5px solid rgba(201,168,76,.4);color:#E8C96A;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;}
+html.app-light #rsys-panel .rsys-l{color:#46413a;}
+/* profile doc loader */
+.rcvd-btn{background:rgba(201,168,76,.12);border:1.5px solid rgba(201,168,76,.4);color:#E8C96A;border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;}
+</style>
+<script id="rstab-js">
+(function(){
+if(window.__rstab)return;window.__rstab=1;
+function LD(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function SVS(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+/* ══ A) PROFILE DOCUMENTS — CV & Portfolio, private per device (never in the public code) ══ */
+var DK='royal_profiledocs_v1';
+function fixDocs(){
+  var docs=LD(DK,{});
+  var cvA=document.querySelector('a[download="Elias_Nettey_CV.pdf"]');
+  var poA=document.querySelector('a[download="Elias_Nettey_Portfolio.pdf"]');
+  if(cvA&&!cvA.getAttribute('href')&&docs.cv)cvA.setAttribute('href',docs.cv);
+  if(poA&&!poA.getAttribute('href')&&docs.port)poA.setAttribute('href',docs.port);
+  var bar=document.querySelector('.profile-download-bar');
+  if(!bar)return;
+  var needCv=cvA&&!cvA.getAttribute('href'),needPo=poA&&!poA.getAttribute('href');
+  var old=document.getElementById('rcvd-load');
+  if(!needCv&&!needPo){if(old)old.remove();return;}
+  if(old)return;
+  var w=document.createElement('span');w.id='rcvd-load';
+  function mk(label,slot){
+    var b=document.createElement('button');b.type='button';b.className='rcvd-btn';b.textContent=label;
+    b.onclick=function(){
+      var inp=document.createElement('input');inp.type='file';inp.accept='application/pdf';
+      inp.onchange=function(){
+        var f=inp.files&&inp.files[0];if(!f)return;
+        var rd=new FileReader();
+        rd.onload=function(){var d=LD(DK,{});d[slot]=rd.result;SVS(DK,d);fixDocs();};
+        rd.readAsDataURL(f);
+      };
+      inp.click();
+    };
+    return b;
+  }
+  if(needCv)w.appendChild(mk('📥 Load CV (private, this device)','cv'));
+  if(needPo)w.appendChild(mk('📥 Load Portfolio (private, this device)','port'));
+  bar.appendChild(w);
+}
+
+/* ══ B) SMART DEBT FIELDS — the form adapts to the chosen category ══ */
+var RDBT={
+ credit:[['Credit Limit (£)','number','creditLimit'],['Interest rate (APR %)','number','apr'],['Minimum payment (£)','number','minPay'],['Card ending (last 4 digits)','text','card4']],
+ biz:[['Credit Limit (£)','number','creditLimit'],['Interest rate (APR %)','number','apr'],['Minimum payment (£)','number','minPay'],['Card ending (last 4 digits)','text','card4']],
+ hmrc:[['Tax type (CT / PAYE / VAT)','text','taxType'],['UTR / Tax reference','text','taxRef'],['Time to Pay?','sel:Yes,Being discussed,No','ttp']],
+ loan:[['Loan term (months)','number','termMonths'],['Interest rate (%)','number','apr'],['Loan purpose','text','purpose']],
+ ploan:[['Loan term (months)','number','termMonths'],['Interest rate (%)','number','apr'],['Loan purpose','text','purpose']],
+ private:[['Agreed with (person)','text','person'],['Agreed repayment terms','text','terms']],
+ legal:[['Case / matter','text','matter'],['Solicitor / firm','text','firm']],
+ bills:[['Property / landlord','text','landlord'],['Arrears period (e.g. Mar–Jun)','text','period']],
+ utils:[['Provider account no.','text','acctNo'],['Supply address','text','addr']],
+ council:[['Council name','text','council'],['Account year','text','year']],
+ mobile:[['Network / provider','text','provider'],['Contract end date','date','contractEnd']],
+ vehicle:[['Vehicle (make / model)','text','vehicle'],['Finance type (HP / PCP / Lease)','text','finType'],['Final / balloon payment (£)','number','balloon']],
+ bnpl:[['Provider (Klarna / Clearpay…)','text','provider'],['Number of instalments','number','instalments']]
+};
+var RDBT_LBL={credit:'💳 Credit Card Details',biz:'💳 Company Card Details',hmrc:'🏛️ HMRC Details',loan:'🏦 Loan Details',ploan:'💰 Loan Details',private:'🤝 Private Loan Details',legal:'⚖️ Legal Matter Details',bills:'🏠 Rent Details',utils:'⚡ Utility Details',council:'🏘️ Council Tax Details',mobile:'📱 Contract Details',vehicle:'🚗 Vehicle Finance Details',bnpl:'🛍️ BNPL Details'};
+function esc2(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function rdbtRender(){
+  var cat=(document.getElementById('nd-cat')||{}).value||'';
+  var box=document.getElementById('rdbt-fields');if(!box)return;
+  var fields=RDBT[cat];
+  if(!fields){box.style.display='none';box.innerHTML='';return;}
+  box.style.display='block';
+  var h='<div class="rdbt-t">'+(RDBT_LBL[cat]||'Details')+' <span style="font-weight:400;color:#8a8578;">(smart fields for this type)</span></div><div class="rdbt-grid">';
+  fields.forEach(function(f,i){
+    var id='rdbt-f'+i;
+    h+='<div'+(fields.length%2===1&&i===fields.length-1?' style="grid-column:1/-1;"':'')+'><label>'+esc2(f[0])+'</label>';
+    if(f[1].indexOf('sel:')===0){
+      h+='<select id="'+id+'" data-k="'+f[2]+'">'+f[1].slice(4).split(',').map(function(o){return '<option>'+o+'</option>';}).join('')+'</select>';
+    }else{
+      h+='<input type="'+f[1]+'" id="'+id+'" data-k="'+f[2]+'"'+(f[1]==='number'?' step="0.01"':'')+'>';
+    }
+    h+='</div>';
+  });
+  box.innerHTML=h+'</div>';
+}
+function rdbtMount(){
+  var cat=document.getElementById('nd-cat');
+  if(!cat||document.getElementById('rdbt-fields'))return;
+  var box=document.createElement('div');box.id='rdbt-fields';box.style.display='none';
+  var insAnchor=document.getElementById('nd-ins-fields');
+  if(insAnchor)insAnchor.parentNode.insertBefore(box,insAnchor);
+  else cat.closest('div').parentNode.appendChild(box);
+  cat.addEventListener('change',rdbtRender);
+  rdbtRender();
+}
+function rdbtCollect(){
+  var out={},box=document.getElementById('rdbt-fields');
+  if(!box||box.style.display==='none')return out;
+  box.querySelectorAll('[data-k]').forEach(function(el){
+    var v=(el.value||'').trim();if(v)out[el.getAttribute('data-k')]=v;
+  });
+  return out;
+}
+function rdbtSummary(x){
+  var bits=[];
+  if(x.creditLimit)bits.push('Credit limit £'+x.creditLimit);
+  if(x.apr)bits.push('APR '+x.apr+'%');
+  if(x.minPay)bits.push('Min payment £'+x.minPay);
+  if(x.card4)bits.push('Card •••• '+x.card4);
+  if(x.taxType)bits.push('Tax: '+x.taxType);
+  if(x.taxRef)bits.push('Ref '+x.taxRef);
+  if(x.ttp)bits.push('Time to Pay: '+x.ttp);
+  if(x.termMonths)bits.push('Term '+x.termMonths+' months');
+  if(x.purpose)bits.push(x.purpose);
+  if(x.person)bits.push('With '+x.person);
+  if(x.terms)bits.push(x.terms);
+  if(x.matter)bits.push(x.matter);
+  if(x.firm)bits.push(x.firm);
+  if(x.landlord)bits.push(x.landlord);
+  if(x.period)bits.push('Period '+x.period);
+  if(x.acctNo)bits.push('Acct '+x.acctNo);
+  if(x.addr)bits.push(x.addr);
+  if(x.council)bits.push(x.council);
+  if(x.year)bits.push('Year '+x.year);
+  if(x.provider)bits.push(x.provider);
+  if(x.contractEnd)bits.push('Contract ends '+x.contractEnd);
+  if(x.vehicle)bits.push(x.vehicle);
+  if(x.finType)bits.push(x.finType);
+  if(x.balloon)bits.push('Balloon £'+x.balloon);
+  if(x.instalments)bits.push(x.instalments+' instalments');
+  return bits.join(' · ');
+}
+function hookSaveDebt(){
+  if(typeof window.saveNewDebt!=='function'||window.saveNewDebt._rdbt)return;
+  var orig=window.saveNewDebt;
+  var f=function(){
+    var extra=rdbtCollect();
+    var before=0;try{before=(JSON.parse(localStorage.getItem('royal_debts_v1'))||[]).length;}catch(e){}
+    orig.apply(this,arguments);
+    try{
+      var debts=JSON.parse(localStorage.getItem('royal_debts_v1'))||[];
+      if(debts.length>before&&Object.keys(extra).length){
+        var d=debts[debts.length-1];
+        d.extra=extra;
+        var sum=rdbtSummary(extra);
+        if(sum)d.notes=(d.notes?d.notes+'\n':'')+'📌 '+sum;
+        localStorage.setItem('royal_debts_v1',JSON.stringify(debts));
+        if(typeof window.buildDebts==='function'){try{window.buildDebts();}catch(e){}}
+      }
+    }catch(e){}
+  };
+  f._rdbt=true;window.saveNewDebt=f;
+}
+
+/* ══ C) AI SYSTEM HEALTH — watchdog, integrity check, backup reminder ══ */
+var EK='royal_syslog_v1';
+window.addEventListener('error',function(ev){
+  try{
+    var log=LD(EK,[]);
+    log.push({m:String(ev.message||'').slice(0,160),src:String(ev.filename||'').slice(-40),l:ev.lineno||0,t:Date.now()});
+    if(log.length>30)log=log.slice(-30);
+    SVS(EK,log);
+  }catch(e){}
+});
+function hookBackup(){
+  if(typeof window.sysExportAll!=='function'||window.sysExportAll._rsys)return;
+  var orig=window.sysExportAll;
+  var f=function(){try{localStorage.setItem('royal_lastbackup_v1',String(Date.now()));}catch(e){}return orig.apply(this,arguments);};
+  f._rsys=true;window.sysExportAll=f;
+}
+function health(){
+  var ok=0,bad=[],bytes=0;
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);if(!k||k.indexOf('royal')!==0&&k.indexOf('rical')!==0&&k.indexOf('pamikyx')!==0)continue;
+    var v=localStorage.getItem(k)||'';bytes+=v.length+k.length;
+    if(v&&(v.charAt(0)==='{'||v.charAt(0)==='[')){try{JSON.parse(v);ok++;}catch(e){bad.push(k);}}
+    else ok++;
+  }
+  var week=Date.now()-7*86400000;
+  var errs=LD(EK,[]).filter(function(x){return x.t>week;});
+  var lb=parseInt(localStorage.getItem('royal_lastbackup_v1')||'0',10);
+  var days=lb?Math.floor((Date.now()-lb)/86400000):null;
+  return {ok:ok,bad:bad,kb:Math.round(bytes/1024),pct:Math.min(100,Math.round(bytes/1024/5120*100)),errs:errs,backupDays:days};
+}
+window.rsysCheck=function(){
+  var p=document.getElementById('rsys-panel');if(!p)return;
+  var h=health();
+  var warn=h.bad.length>0||h.errs.length>3;
+  p.className=warn?'warn':'';
+  var lines='✔ '+h.ok+' data stores checked — '+(h.bad.length?('⚠ problems in: '+h.bad.join(', ')):'all healthy')+'<br>'
+   +'💾 Storage used: '+h.kb+' KB ('+h.pct+'% of safe space)'+(h.pct>80?' — ⚠ getting full, do a Backup and tell Claude':'')+'<br>'
+   +'🐛 Errors caught this week: '+h.errs.length+(h.errs.length?' — latest: '+esc2(h.errs[h.errs.length-1].m):'')+'<br>'
+   +'🗄 Last in-app Backup: '+(h.backupDays===null?'not recorded yet — run Backup once so I can track it':(h.backupDays===0?'today ✓':h.backupDays+' day(s) ago'+(h.backupDays>7?' — ⚠ time for a fresh Backup':'')));
+  p.innerHTML='<div class="rsys-t">'+(warn?'🛡 AI System Health — needs attention':'🛡 AI System Health — stable ✓')+' <span style="font-weight:400;font-size:11px;color:#8a8578;">'+esc2(window.ROYAL_APP_VERSION||'')+'</span></div>'
+   +'<div class="rsys-l">'+lines+'</div>'
+   +'<button onclick="rsysCheck()">↻ Run check again</button>';
+};
+function rsysMount(){
+  if(document.getElementById('rsys-panel'))return;
+  var scr=document.getElementById('s-settings');if(!scr)return;
+  var p=document.createElement('div');p.id='rsys-panel';
+  var anchor=scr.querySelector('.cc-wrap')||scr;
+  anchor.insertBefore(p,anchor.firstChild&&anchor.firstChild.nextSibling?anchor.firstChild.nextSibling:anchor.firstChild);
+  window.rsysCheck();
+}
+
+/* ══ mount loop ══ */
+function loop(){try{fixDocs();}catch(e){}try{rdbtMount();hookSaveDebt();}catch(e){}try{rsysMount();hookBackup();}catch(e){}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loop);else loop();
+setInterval(loop,1200);
+})();
+</script>
+<!-- ════════════ END RSTAB ════════════ -->
 </body>
 </html>
