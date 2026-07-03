@@ -5737,7 +5737,7 @@ function closeSyncOverlay(){document.getElementById('sync-overlay').style.displa
 function sGet(key,def){try{var v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch(e){return def;}}
 function sSet(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
 function uid8(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 var LS_DEBTS='royal_debts_v1';
 var debtFilter='all';
@@ -13893,7 +13893,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v3.9 · 3 Jul 2026';
+window.ROYAL_APP_VERSION='v3.9.1 · 3 Jul 2026';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -16192,7 +16192,7 @@ function daysTo(d){return Math.ceil((new Date(d)-new Date())/86400000);}
 function pctTime(d,s){s=s||'2026-01-01';var a=new Date(s),e=new Date(d),n=new Date();if(n>=e)return 100;if(n<=a)return 0;return Math.round((n-a)/(e-a)*100);}
 function clamp(n){return Math.max(0,Math.min(100,Math.round(n)));}
 function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function esc(s){return (''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmtDate(d){try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}}
 function go(tab){if(typeof window.go==='function')window.go(tab);}
 
