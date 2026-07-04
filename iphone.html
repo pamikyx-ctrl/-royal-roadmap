@@ -13369,7 +13369,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.2.1 · 4 Jul 2026 · date-filter';
+window.ROYAL_APP_VERSION='v4.3 · 4 Jul 2026 · ledger-collapse';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -19887,6 +19887,8 @@ setInterval(loop,1500);
 <!-- ════════════ RTAX · TAX BOOKKEEPING — Pamikyx Ltd Accountant Engine v3 (period filters · unpaid-bill tracker · 💷 Income & Wealth + Money Hub) ════════════ -->
 <style id="rtax-css">
 .rtax-block{max-width:980px;margin-left:auto !important;margin-right:auto !important;}
+.rtax-block .rtx-ledtog{cursor:pointer;font-size:12px;font-weight:700;padding:3px 12px;margin-left:10px;border-radius:10px;border:1px solid rgba(232,201,106,.45);background:rgba(232,201,106,.14);color:#E8C96A;vertical-align:middle}
+.rtax-block.led-collapsed .rtx-scroll{display:none}
 .rtax-block .rtx-card{background:#1A1A26;border:1.5px solid rgba(255,255,255,.09);border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 12px 28px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05);}
 .rtax-block h3.rtx-h{color:#E8C96A;font-size:16px;letter-spacing:.3px;margin-bottom:4px;font-weight:800;}
 .rtax-block h4.rtx-h2{color:#E8C96A;font-size:14.5px;letter-spacing:.3px;margin-bottom:12px;font-weight:800;}
@@ -20070,6 +20072,7 @@ var ROOTS=[
  {pfx:'rtx1',rootId:'rtax-root-mh',host:function(){var b=document.getElementById('mh-fic-tax-body');if(!b)return null;return {place:function(el){b.appendChild(el);}};},active:function(){var s=document.getElementById('s-moneyhub');return s&&s.classList.contains('active');}}
 ];
 var FLT={rtx0:{m:'',t:'',d:''},rtx1:{m:'',t:'',d:''}};
+var LEDCOL=(function(){try{return JSON.parse(localStorage.getItem('royal_taxbook_ledcol_v1'))||{rtx0:true,rtx1:true};}catch(e){return{rtx0:true,rtx1:true};}})();
 function visible(pfx){var f=FLT[pfx];return allRows().filter(function(r){return periodMatch(r,f.m)&&(!f.d||String(r.date||'').slice(0,10)===f.d)&&(!f.t||(f.t==='unpaid'?r.unpaid:(r.type===f.t&&!r.unpaid)));});}
 function boxRO(v,extra){return '<span class="rtx-box ro'+(extra?' '+extra:'')+'">'+v+'</span>';}
 /* ── unpaid-bill alert for the selected period ── */
@@ -20115,7 +20118,7 @@ function render(pfx){
    +'</div>'
    +'</div>'
    +'<div class="rtx-card">'
-   +'<h4 class="rtx-h2">📒 Ledger</h4>'
+   +'<h4 class="rtx-h2">📒 Ledger<button type="button" class="rtx-ledtog" onclick="rtxLedToggle(\''+pfx+'\')">'+(LEDCOL[pfx]?'▸ Show '+rows.length+' rows':'▾ Hide table')+'</button></h4>'
    +'<div class="rtx-filters">'
    +'<select class="rtx-field" id="'+pfx+'-fm" data-rrdd-skip="1" onchange="rtxFm(\''+pfx+'\',this.value)">'+monthOpts(f.m)+'</select>'
    +'<input type="date" class="rtx-field" id="'+pfx+'-fd" data-rrdd-skip="1" style="max-width:150px" value="'+(f.d||'')+'" onchange="rtxFd(\''+pfx+'\',this.value)" title="Show one date only">'
@@ -20168,13 +20171,14 @@ function render(pfx){
    +'</div>'
    +'<div class="rtx-note">Excluded 🔄 auto entries stay in the Money Hub but are left out of the company books. Unpaid bills show red until you tap ✓ paid or record a 📋 plan. Set-aside is a working guide, not tax advice.</div>'
    +'</div>';
-  root.innerHTML=h;
+  root.innerHTML=h;root.classList.toggle('led-collapsed',!!LEDCOL[pfx]);
   var dt=document.getElementById(pfx+'-d');if(dt)dt.value=new Date().toISOString().slice(0,10);
 }
 /* filter handlers live on window + inline attributes so they survive any select rebuilding */
 window.rtxFm=function(pfx,v){if(v==='__own__')return;FLT[pfx].m=v;render(pfx);};
 window.rtxFt=function(pfx,v){if(v==='__own__')return;FLT[pfx].t=v;render(pfx);};
 window.rtxFd=function(pfx,v){FLT[pfx].d=v;render(pfx);};
+window.rtxLedToggle=function(pfx){LEDCOL[pfx]=!LEDCOL[pfx];try{localStorage.setItem('royal_taxbook_ledcol_v1',JSON.stringify(LEDCOL));}catch(e){}render(pfx);};
 window.rtxPct=function(v){var d2=store();d2.taxPct=Math.max(0,Math.min(40,parseFloat(v)||0));SVS(TK,d2);renderAll();};
 function renderAll(){render('rtx0');render('rtx1');glance();}
 function glance(){
