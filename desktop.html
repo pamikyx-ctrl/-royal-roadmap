@@ -13893,7 +13893,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.6.0 · 5 Jul 2026 · view-period+countdown';
+window.ROYAL_APP_VERSION='v4.6.1 · 5 Jul 2026 · period-dropdown-tidy';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21389,11 +21389,12 @@ setInterval(loop,1200);
     var bar=document.getElementById('rvpd-bar');
     if(!bar){
       bar=document.createElement('div'); bar.id='rvpd-bar';
-      bar.innerHTML='<span class="rvpd-lab">📅 View Period</span><select id="rvpd-sel"></select><span id="rvpd-note"></span>';
+      bar.innerHTML='<span class="rvpd-lab">📅 View Period</span><select id="rvpd-sel" class="no-add"></select><span id="rvpd-note"></span>';
       anchor.parentNode.insertBefore(bar, anchor);
       bar.querySelector('#rvpd-sel').addEventListener('change', onChange);
     }
     var sel=document.getElementById('rvpd-sel'); if(!sel) return;
+    for(var _oi=sel.options.length-1;_oi>=0;_oi--){var _ot=sel.options[_oi];if(_ot.value==='__rr_add_custom__'||/add (your own|another|new)|➕|＋/i.test(_ot.text||'')){sel.remove(_oi);}}
     var cm=curMonth();
     var wanted='all'+months().join('|');
     if(sel._sig!==wanted){
