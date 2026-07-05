@@ -13895,7 +13895,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.8.0 · 5 Jul 2026 · rota-countdown';
+window.ROYAL_APP_VERSION='v4.9.0 · 5 Jul 2026 · cc-mobile+collapse';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21736,6 +21736,193 @@ setInterval(loop,1200);
 })();
 </script>
 <!-- ════════ END RRCD ════════ -->
+
+
+<!-- ════════ RCCT · Credit Card + Loan Tracker — restore on iPhone/iPad ════════
+     The tracker render code exists on mobile but the container markup (cc-tracker-section /
+     loan-tracker-section) was missing, so nothing showed. This injects the containers into the
+     Debt Management screen if absent, then lets the existing filter tabs + buildCCTracker /
+     buildLoanTracker populate them. Namespaced rcct. -->
+<script id="rcct-js">
+(function(){
+  "use strict";
+  function make(id, html){ var d=document.createElement('div'); d.id=id; return d; }
+  function ensure(){
+    var anchor=document.getElementById('debt-perf')||document.getElementById('debts-list');
+    if(!anchor||!anchor.parentNode) return;
+    var host=anchor.parentNode;
+    /* Credit Card tracker */
+    if(!document.getElementById('cc-tracker-section')){
+      var cc=document.createElement('div'); cc.id='cc-tracker-section'; cc.style.cssText='display:none;margin-top:28px;';
+      cc.innerHTML=''
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap;">'
+          +'<div><div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim);margin-bottom:4px;">Credit Card Tracker</div>'
+          +'<div style="font-size:13px;color:var(--text3);">Live balance, limit, and minimum payment for every card.</div></div>'
+          +'<button class="btn btn-gold btn-sm" onclick="ccAddCard()">＋ Add Card</button>'
+        +'</div>'
+        +'<div id="cc-summary-strip" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;"></div>'
+        +'<div id="cc-cards-list"></div>';
+      host.insertBefore(cc, anchor.nextSibling);
+      try{ if(typeof buildCCTracker==='function') buildCCTracker(); }catch(e){}
+    }
+    /* Business Loan tracker */
+    if(!document.getElementById('loan-tracker-section')){
+      var ln=document.createElement('div'); ln.id='loan-tracker-section'; ln.style.cssText='display:none;margin-top:28px;';
+      ln.innerHTML=''
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap;">'
+          +'<div><div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim);margin-bottom:4px;">Business Loan Tracker</div>'
+          +'<div style="font-size:13px;color:var(--text3);">Fixed-term loans, repayment schedule, and due-date reminders.</div></div>'
+          +'<button class="btn btn-gold btn-sm" onclick="loanAddEntry()">＋ Add Loan</button>'
+        +'</div>'
+        +'<div id="loan-reminder-bar" style="display:none;background:rgba(255,159,10,0.1);border:1px solid rgba(255,159,10,0.35);border-radius:var(--r2);padding:14px 18px;margin-bottom:16px;"></div>'
+        +'<div id="loan-cards-list"></div>';
+      var ccSec=document.getElementById('cc-tracker-section');
+      host.insertBefore(ln, (ccSec&&ccSec.parentNode===host)?ccSec.nextSibling:anchor.nextSibling);
+      try{ if(typeof buildLoanTracker==='function') buildLoanTracker(); }catch(e){}
+    }
+  }
+  function boot(){ try{ ensure(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  setInterval(boot, 2000);
+})();
+</script>
+<!-- ════════ END RCCT ════════ -->
+
+<!-- ════════ RNCOL · Home notification cards — collapse / expand ════════
+     Adds a ▾/▸ toggle to each home notification card (Colour of the Day, Upcoming, Rota).
+     Collapsed = only the top line shows. State saved per card. Namespaced rncol. -->
+<style id="rncol-css">
+.rncol-chev{position:absolute;top:12px;right:14px;width:26px;height:26px;border-radius:8px;border:1px solid rgba(201,168,76,.35);background:rgba(201,168,76,.10);color:#E8C96A;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;padding:0;}
+.rncol-chev:hover{background:rgba(201,168,76,.22);}
+#rcol-home-card,#rcdn-home-card,#rrcd-home-card{position:relative;}
+</style>
+<script id="rncol-js">
+(function(){
+  "use strict";
+  var KEY='royal_home_cards_collapsed_v1';
+  var CARDS=['rcol-home-card','rcdn-home-card','rrcd-home-card'];
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ return {}; } }
+  function save(o){ try{ localStorage.setItem(KEY, JSON.stringify(o)); }catch(e){} }
+  function apply(card, collapsed){
+    var kids=Array.prototype.slice.call(card.children).filter(function(el){ return !el.classList.contains('rncol-chev'); });
+    kids.forEach(function(el, idx){
+      if(idx===0) return; /* keep the header/eyebrow line visible */
+      el.style.display = collapsed ? 'none' : '';
+    });
+  }
+  function tick(){
+    var st=load();
+    CARDS.forEach(function(id){
+      var card=document.getElementById(id); if(!card) return;
+      var collapsed=!!st[id];
+      var chev=card.querySelector('.rncol-chev');
+      if(!chev){
+        chev=document.createElement('button'); chev.type='button'; chev.className='rncol-chev';
+        chev.addEventListener('click', function(e){
+          e.stopPropagation(); e.preventDefault();
+          var s=load(); s[id]=!s[id]; save(s);
+          chev.textContent=s[id]?'▸':'▾'; apply(card, !!s[id]);
+        });
+        card.appendChild(chev);
+      }
+      chev.textContent=collapsed?'▸':'▾';
+      apply(card, collapsed);
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', tick); else tick();
+  setInterval(tick, 1200);
+})();
+</script>
+<!-- ════════ END RNCOL ════════ -->
+
+<!-- ════════ RFSC · Royal Family Support "Recent" — date filter + collapse/expand ════════
+     Rebuilds the fs-recent list with a 📅 date filter (pick a day → only that day's entries) like
+     the Ledger / iCalender, plus a collapse/expand toggle for the full list. Reads Money Hub
+     entries tagged Ghana / Family (read-only). Namespaced rfsc. -->
+<style id="rfsc-css">
+#fsc-wrap .fsc-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 10px;}
+#fsc-wrap .fsc-h{font-size:16px;font-weight:800;color:var(--gold,#C9A84C);}
+#fsc-wrap .fsc-date{background:var(--dark4,#222235);color:var(--gold-light,#E8C96A);border:1px solid rgba(201,168,76,.4);border-radius:9px;padding:6px 10px;font-size:12px;}
+#fsc-wrap .fsc-btn{background:rgba(201,168,76,.10);border:1px solid rgba(201,168,76,.4);color:#E8C96A;border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;}
+#fsc-wrap .fsc-btn:hover{background:rgba(201,168,76,.22);}
+#fsc-wrap .fsc-count{font-size:11px;color:var(--text4,#8a8172);margin-left:auto;}
+#fsc-wrap .fsc-total{font-size:12px;font-weight:800;color:var(--gold-light,#E8C96A);}
+#fsc-list .fsc-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+#fsc-list .fsc-row:last-child{border-bottom:none;}
+#fsc-list .fsc-mid{flex:1;min-width:0;}
+#fsc-list .fsc-t{font-size:13.5px;color:var(--text,#F0EBE0);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#fsc-list .fsc-s{font-size:11px;color:var(--text3,#8a8172);margin-top:2px;}
+#fsc-list .fsc-amt{font-size:13.5px;font-weight:800;color:#5B8DD9;white-space:nowrap;}
+#fsc-list .fsc-empty{font-size:12.5px;color:var(--text3,#8a8172);font-style:italic;padding:8px 0;}
+</style>
+<script id="rfsc-js">
+(function(){
+  "use strict";
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var CKEY='royal_fs_recent_collapsed_v1';
+  window.fsfDate = window.fsfDate || '';
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function num(n){ var x=parseFloat(String(n).replace(/[^0-9.\-]/g,'')); return isNaN(x)?0:x; }
+  function gbp(n){ if(typeof window.mhFmt==='function'){ try{ return window.mhFmt(num(n)); }catch(e){} } return '£'+num(n).toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+  function fdate(s){ var p=String(s||'').slice(0,10).split('-'); if(p.length!==3) return String(s||''); return (+p[2])+' '+MON[(+p[1]-1)]+' '+p[0]; }
+  function collapsed(){ try{ return localStorage.getItem(CKEY)==='1'; }catch(e){ return false; } }
+  function setCollapsed(v){ try{ localStorage.setItem(CKEY, v?'1':'0'); }catch(e){} }
+
+  function famRows(){
+    var d=(typeof window.mhData==='function')?window.mhData():[];
+    if(!Array.isArray(d)) return [];
+    return d.filter(function(t){ var ty=String(t.type||'').toLowerCase(); return ty==='ghana'||ty==='family'; })
+            .slice().sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); });
+  }
+
+  function render(){
+    var host=document.getElementById('fs-recent'); if(!host) return;
+    var all=famRows();
+    var date=window.fsfDate;
+    var rows = date ? all.filter(function(t){ return String(t.date||'').slice(0,10)===date; }) : all;
+    var total = rows.reduce(function(s,t){ return s+num(t.amount); }, 0);
+    var isCol = collapsed();
+    var listHtml;
+    if(!rows.length){
+      listHtml='<div class="fsc-empty">'+(date?('No family / Ghana entries on '+fdate(date)+'.'):'Nothing yet. Add via Quick Capture → 💸 Money to Ghana.')+'</div>';
+    } else {
+      listHtml=rows.map(function(t){
+        var title=esc(t.recipient||t.beneficiary||t.desc||t.cat||'Payment');
+        var sub=[t.desc&&t.desc!==title?t.desc:'', t.date?fdate(t.date):'', t.method].filter(Boolean).map(esc).join(' · ');
+        return '<div class="fsc-row"><div class="fsc-mid"><div class="fsc-t">'+title+'</div><div class="fsc-s">'+sub+'</div></div><div class="fsc-amt">'+gbp(t.amount)+'</div></div>';
+      }).join('');
+    }
+    host.innerHTML=
+      '<div id="fsc-wrap">'
+      +'<div class="fsc-bar"><span class="fsc-h">🧾 Recent</span>'
+        +'<input type="date" class="fsc-date" id="fsc-date" value="'+esc(date)+'">'
+        +(date?'<button class="fsc-btn" id="fsc-clear">✕ '+esc(fdate(date))+'</button>':'')
+        +'<button class="fsc-btn" id="fsc-collapse">'+(isCol?'▸ Show':'▾ Hide')+'</button>'
+        +'<span class="fsc-count">'+rows.length+' entr'+(rows.length===1?'y':'ies')+(rows.length?' · <span class="fsc-total">'+gbp(total)+'</span>':'')+'</span>'
+      +'</div>'
+      +'<div id="fsc-list" style="'+(isCol?'display:none;':'')+'">'+listHtml+'</div>'
+      +'</div>';
+    var di=document.getElementById('fsc-date'); if(di) di.addEventListener('change', function(){ window.fsfDate=di.value||''; render(); });
+    var cl=document.getElementById('fsc-clear'); if(cl) cl.addEventListener('click', function(){ window.fsfDate=''; render(); });
+    var co=document.getElementById('fsc-collapse'); if(co) co.addEventListener('click', function(){ setCollapsed(!collapsed()); render(); });
+  }
+  window.fscRender=render;
+
+  /* run after the app builds the Family page, and keep it applied */
+  function hook(){
+    if(typeof window.buildFamily==='function' && !window.buildFamily._rfsc){
+      var o=window.buildFamily;
+      window.buildFamily=function(){ var r=o.apply(this,arguments); try{ render(); }catch(e){} return r; };
+      window.buildFamily._rfsc=true;
+    }
+    var host=document.getElementById('fs-recent');
+    if(host && !document.getElementById('fsc-wrap')){ try{ render(); }catch(e){} }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hook); else hook();
+  setInterval(hook, 1500);
+})();
+</script>
+<!-- ════════ END RFSC ════════ -->
 
 </body>
 </html>
