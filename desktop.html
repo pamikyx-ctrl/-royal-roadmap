@@ -13893,7 +13893,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.3.2 · 4 Jul 2026 · ledger-collapse';
+window.ROYAL_APP_VERSION='v4.4.0 · 5 Jul 2026 · pray-sort+fx+search';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -19912,6 +19912,7 @@ window.rrUniversalSearch=function(raw, saidHtml){
 .rmhs-empty{margin-top:12px;background:var(--dark3,#1A1A28);border:1px solid var(--sep,rgba(201,168,76,0.14));border-radius:12px;padding:14px;font-size:13px;color:var(--text2,#C4BAA8);}
 </style>
 <script id="rmhs-js">
+
 (function(){
   "use strict";
   function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
@@ -19923,27 +19924,63 @@ window.rrUniversalSearch=function(raw, saidHtml){
 
   var FIELDS=['description','desc','notes','note','memo','payee','person','recipient','beneficiary','merchant','vendor','cat','category','purpose','type','reference','ref','invoice','invoiceNo','invoiceNumber','source','sourceAccount','sourceAccountLabel','account','accountLabel','method','name','title','book','bookType','taxType','tax','tag','tags','location','who','from','to','label'];
   function blob(t){var s='';for(var i=0;i<FIELDS.length;i++){var v=t[FIELDS[i]];if(v!=null)s+=' '+(typeof v==='object'?JSON.stringify(v):v);}return s.toLowerCase();}
-  var FILLER=/\b(how|much|many|what|whats|which|when|where|did|do|does|i|we|us|spend|spent|show|showing|see|see|me|my|mine|total|totals|sum|amount|amounts|all|the|a|an|to|in|into|on|of|for|money|monies|sent|send|sending|paid|pay|pays|payment|payments|transfer|transfers|transferred|made|make|get|got|give|given|list|find|search|look|please|entries|entry|transaction|transactions|history|hub|is|are|was|were|be|been|and|or|any|related|relating|regarding|about|with|via|by|from|record|records|so|far|ever|only|just)\b/g;
+
+  var FILLER=/\b(how|much|many|what|whats|which|when|where|did|do|does|i|we|us|spend|spent|show|showing|see|me|my|mine|total|totals|sum|amount|amounts|all|the|a|an|to|in|into|on|of|for|money|monies|sent|send|sending|paid|pay|pays|payment|payments|transfer|transfers|transferred|made|make|get|got|give|given|list|find|search|look|please|entries|entry|transaction|transactions|history|hub|is|are|was|were|be|been|and|or|any|related|relating|regarding|about|with|via|by|from|record|records|so|far|ever|only|just)\b/g;
   var GENERIC={royal:1,family:1,lawyer:1,legal:1,fund:1,funds:1,'case':1,cases:1,court:1,expense:1,expenses:1,income:1,cash:1,payment:1,fee:1,fees:1,cost:1,costs:1,spend:1,spending:1};
+  var MONTHS={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,sept:9,oct:10,nov:11,dec:12};
+  var TIMEWORD=/\b(this|last|current|previous|past|recent|recently|lately|ago|year|years|month|months|week|weeks|day|days|today|yesterday|ytd|january|february|march|april|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec|20\d\d)\b/g;
+
+  function pad2(n){n=String(n);return n.length<2?('0'+n):n;}
+  function detectWindow(q){
+    var s=(q||'').toLowerCase(); var now=new Date();
+    function ym(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1);}
+    if(/\bthis month\b|\bcurrent month\b/.test(s)) return {type:'month', key:ym(now), label:'this month'};
+    if(/\blast month\b|\bprevious month\b/.test(s)){ var d=new Date(now.getFullYear(),now.getMonth()-1,1); return {type:'month',key:ym(d),label:'last month'}; }
+    if(/\bthis year\b|\bcurrent year\b/.test(s)) return {type:'year', key:String(now.getFullYear()), label:'this year'};
+    if(/\blast year\b|\bprevious year\b/.test(s)) return {type:'year', key:String(now.getFullYear()-1), label:'last year'};
+    var yrM=s.match(/\b(20\d\d)\b/);
+    var mn=s.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept|sep|oct|nov|dec)\b/);
+    if(mn){ var mk=MONTHS[mn[1]]; var yr=yrM?yrM[1]:String(now.getFullYear()); return {type:'month', key:yr+'-'+pad2(mk), label:mn[1]+' '+yr}; }
+    if(yrM) return {type:'year', key:yrM[1], label:yrM[1]};
+    if(/\bthis week\b/.test(s)){ var ws=new Date(now); ws.setDate(now.getDate()-now.getDay()); return {type:'range', from:ws.getFullYear()+'-'+pad2(ws.getMonth()+1)+'-'+pad2(ws.getDate()), to:now.getFullYear()+'-'+pad2(now.getMonth()+1)+'-'+pad2(now.getDate()), label:'this week'}; }
+    return null;
+  }
+  function inWindow(dateStr, win){
+    if(!win) return true; var d=String(dateStr||'').slice(0,10); if(!d) return false;
+    if(win.type==='month') return d.slice(0,7)===win.key;
+    if(win.type==='year') return d.slice(0,4)===win.key;
+    if(win.type==='range') return d>=win.from && d<=win.to;
+    return true;
+  }
+
   function tokenize(q){
-    var clean=(q||'').toLowerCase().replace(/[?!,.;:£€$'"()]/g,' ').replace(FILLER,' ').replace(/\s+/g,' ').trim();
+    var clean=(q||'').toLowerCase().replace(/[?!,.;:£€$'"()]/g,' ').replace(TIMEWORD,' ').replace(FILLER,' ').replace(/\s+/g,' ').trim();
     var all=clean.split(' ').filter(function(w){return w.length>=3;});
     var dist=all.filter(function(w){return !GENERIC[w];});
     return {phrase:clean, tokens:(dist.length?dist:all)};
   }
-  function isAggregate(q){return /\bbalance\b|\bnet ?worth\b|this month|this year|per month|monthly total|this week|health score/i.test(q);}
+  function isAggregate(q){return /\bbalance\b|\bnet ?worth\b|health score|how much (money )?(do i|have i|is there)\b/i.test(q);}
+
+  /* word-START match: token must begin at a word boundary in the field blob.
+     Kills false positives like "car" matching "abiCARe". */
+  function wordHit(hay,w){ var i=hay.indexOf(w); while(i>=0){ var c=(i===0)?' ':hay.charAt(i-1); if(!/[a-z0-9]/.test(c)) return true; i=hay.indexOf(w,i+1);} return false; }
 
   function search(q){
-    var t=tokenize(q); var toks=t.tokens; if(!toks.length)return {terms:[],rows:[]};
+    var t=tokenize(q); var toks=t.tokens; var win=detectWindow(q);
+    if(!toks.length && !win) return {terms:[],rows:[],win:null};
+    var need = toks.length<=2 ? toks.length : Math.max(2, Math.ceil(toks.length*0.6));
     var out=[];
     data().forEach(function(tx){
-      if(!tx)return; var b=blob(tx); var matched=[];
-      toks.forEach(function(w){ if(b.indexOf(w)>=0)matched.push(w); });
+      if(!tx)return;
+      if(!inWindow(tx.date, win)) return;
+      if(!toks.length){ out.push({tx:tx, score:0, matched:[]}); return; }
+      var b=blob(tx); var matched=[];
+      toks.forEach(function(w){ if(wordHit(b,w))matched.push(w); });
       var phraseHit=t.phrase.length>=4 && t.phrase.indexOf(' ')>=0 && b.indexOf(t.phrase)>=0;
-      if(matched.length>0||phraseHit){ out.push({tx:tx, score:matched.length+(phraseHit?5:0), matched:matched}); }
+      if(phraseHit || matched.length>=need){ out.push({tx:tx, score:matched.length+(phraseHit?5:0), matched:matched}); }
     });
     out.sort(function(a,b){return b.score-a.score || String(b.tx.date||'').localeCompare(String(a.tx.date||''));});
-    return {terms:toks, rows:out};
+    return {terms:toks, rows:out, win:win};
   }
 
   function rowHtml(r){
@@ -19959,19 +19996,24 @@ window.rrUniversalSearch=function(raw, saidHtml){
     var rows=res.rows; var inT=0,outT=0;
     rows.forEach(function(r){var a=num(r.tx.amount);if(String(r.tx.type||'').toLowerCase()==='income')inT+=a;else outT+=a;});
     var cap=rows.slice(0,120);
+    var winLbl=res.win?(' · '+res.win.label):'';
+    var termLbl=res.terms.length?res.terms.join(' '):(res.win?res.win.label:'');
     var tot='<div class="rmhs-tot"><div class="t"><div class="k">Entries</div><div class="v">'+rows.length+'</div></div>'+
       (outT>0?'<div class="t"><div class="k">Total sent / out</div><div class="v" style="color:#E05252">'+gbp(outT)+'</div></div>':'')+
-      (inT>0?'<div class="t"><div class="k">Total in</div><div class="v" style="color:#4CAF7D">'+gbp(inT)+'</div></div>':'')+'</div>';
-    return '<div class="rmhs-box"><div class="rmhs-h">🔎 Results for “'+esc(res.terms.join(' '))+'”</div>'+
-      '<div class="rmhs-sub">Matched on name, payee, description, category, purpose, type, reference &amp; more.</div>'+
+      (inT>0?'<div class="t"><div class="k">Total in</div><div class="v" style="color:#4CAF7D">'+gbp(inT)+'</div></div>':'')+
+      ((inT>0&&outT>0)?'<div class="t"><div class="k">Net</div><div class="v">'+gbp(inT-outT)+'</div></div>':'')+'</div>';
+    return '<div class="rmhs-box"><div class="rmhs-h">🔎 Results for “'+esc(termLbl)+'”'+esc(winLbl)+'</div>'+
+      '<div class="rmhs-sub">Exact word match on name, payee, description, category, purpose, type, reference &amp; more'+(res.win?', filtered to '+esc(res.win.label):'')+'.</div>'+
       tot + cap.map(rowHtml).join('') + (rows.length>cap.length?'<div class="rmhs-sub" style="margin-top:8px;">Showing first '+cap.length+' of '+rows.length+'.</div>':'') + '</div>';
   }
 
   function doAsk(){
     var inp=document.getElementById('mh-ai-input'); if(!inp)return true; var q=(inp.value||'').trim(); if(!q)return true;
-    if(isAggregate(q))return false; /* let original handle balance/timeframe questions */
-    var res=search(q); var out=document.getElementById('mh-ai-result'); if(!out)return true;
-    if(!res.rows.length){ out.innerHTML='<div class="rmhs-empty">No money entries found matching <b>'+esc(res.terms.join(' ')||q)+'</b>.<br>I searched names, payees, descriptions, categories, purpose, type/book and references. Try a shorter keyword (e.g. a surname, a category, or an invoice number).</div>'; return true; }
+    if(isAggregate(q))return false; /* let original handle balance / net-worth questions */
+    var res=search(q);
+    if(!res.terms.length && !res.win) return false; /* nothing searchable -> let original try (greetings etc.) */
+    var out=document.getElementById('mh-ai-result'); if(!out)return true;
+    if(!res.rows.length){ out.innerHTML='<div class="rmhs-empty">No money entries found matching <b>'+esc(res.terms.join(' ')||(res.win?res.win.label:q))+'</b>.<br>I searched names, payees, descriptions, categories, purpose, type/book and references using exact word matching. Try a shorter keyword (e.g. a surname, a category, or an invoice number).</div>'; return true; }
     out.innerHTML=render(res,q); return true;
   }
   function install(){
@@ -19981,9 +20023,11 @@ window.rrUniversalSearch=function(raw, saidHtml){
     window.mhAsk._rmhs=true;
     window.mhAskChip=function(q){var inp=document.getElementById('mh-ai-input');if(inp)inp.value=q;window.mhAsk();};
   }
+  window.rmhsSearch=search; /* exposed for testing */
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
   setInterval(install,2000);
 })();
+
 </script>
 <!-- ════════════ END RMHS ════════════ -->
 
@@ -21071,5 +21115,134 @@ setInterval(loop,1200);
 })();
 </script>
 <!-- ════════════ END RSTAB ════════════ -->
+
+<!-- ════════ RPSORT · Royal Prayers — reorder blocks in Edit mode ════════
+     Adds ▲/▼ move controls to each prayer block while editing, so blocks
+     can be arranged into the exact sequence of the prayer flow. Reorders
+     within the current section (Morning/Evening/Declarations) and saves
+     automatically. Self-contained, namespaced rpsort. -->
+<style id="rpsort-css">
+.rpsort-wrap{display:flex;flex-direction:column;gap:3px;margin-right:8px;flex-shrink:0;}
+.rpsort-btn{width:30px;height:22px;line-height:1;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.10);color:#E8C96A;border-radius:6px;font-size:12px;font-weight:800;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;}
+.rpsort-btn:hover{background:rgba(201,168,76,.24);}
+.rpsort-btn:disabled{opacity:.25;cursor:default;}
+.rpsort-hint{font-size:11.5px;color:#8a8578;margin:2px 0 10px;font-style:italic;}
+</style>
+<script id="rpsort-js">
+(function(){
+  "use strict";
+  if(typeof window.renderPray!=='function') { /* try again shortly in case scripts load later */ }
+
+  function arr(){ return Array.isArray(window.prayData)?window.prayData:null; }
+  function curPanel(){ return (typeof window.curPrayPanel==='string')?window.curPrayPanel:null; }
+
+  window.prayMove=function(id, dir){
+    var a=arr(); if(!a) return;
+    var item=null; for(var i=0;i<a.length;i++){ if(a[i]&&a[i].id===id){ item=a[i]; break; } }
+    if(!item) return;
+    var panel=item.panel;
+    var idxs=[]; for(var j=0;j<a.length;j++){ if(a[j]&&a[j].panel===panel) idxs.push(j); }
+    var pos=-1; for(var k=0;k<idxs.length;k++){ if(a[idxs[k]].id===id){ pos=k; break; } }
+    var np=pos+dir;
+    if(pos<0||np<0||np>=idxs.length) return;
+    var ai=idxs[pos], bi=idxs[np];
+    var tmp=a[ai]; a[ai]=a[bi]; a[bi]=tmp;
+    if(typeof window.savePray==='function') window.savePray();
+    if(typeof window.renderPray==='function') window.renderPray();
+  };
+
+  function inject(){
+    if(!window.prayEditOn) return;
+    var con=document.getElementById('pray-content'); if(!con) return;
+    var items=con.querySelectorAll('.pray-edit-item');
+    if(items.length && !con._rpsortHint){
+      var h=document.createElement('div'); h.className='rpsort-hint';
+      h.textContent='Tip: use ▲ ▼ to arrange blocks into your prayer sequence — saved automatically.';
+      con.insertBefore(h, con.firstChild); con._rpsortHint=true;
+    }
+    for(var i=0;i<items.length;i++){
+      var it=items[i]; var head=it.querySelector('.pray-edit-head'); if(!head) continue;
+      if(head.querySelector('.rpsort-wrap')) continue;
+      var id=it.getAttribute('data-id');
+      var wrap=document.createElement('div'); wrap.className='rpsort-wrap';
+      var up=document.createElement('button'); up.type='button'; up.className='rpsort-btn'; up.title='Move up'; up.textContent='▲';
+      var dn=document.createElement('button'); dn.type='button'; dn.className='rpsort-btn'; dn.title='Move down'; dn.textContent='▼';
+      up.disabled=(i===0); dn.disabled=(i===items.length-1);
+      (function(theId){
+        up.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); window.prayMove(theId,-1); });
+        dn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); window.prayMove(theId, 1); });
+      })(id);
+      wrap.appendChild(up); wrap.appendChild(dn);
+      head.insertBefore(wrap, head.firstChild);
+    }
+  }
+
+  function hook(){
+    if(typeof window.renderPray==='function' && !window.renderPray._rpsort){
+      var orig=window.renderPray;
+      window.renderPray=function(){ var r=orig.apply(this,arguments); try{ inject(); }catch(e){} return r; };
+      window.renderPray._rpsort=true;
+    }
+    try{ inject(); }catch(e){}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hook); else hook();
+  setInterval(hook, 1500);
+})();
+</script>
+<!-- ════════ END RPSORT ════════ -->
+
+<!-- ════════ RFXF · Quick Entry £→GH₵ field guarantee (all devices, iOS-safe) ════════
+     Ensures the live "≈ Ghanaian Cedi" conversion box always appears under the
+     Amount field in Money Hub Quick Entry, even on iPhone/iPad where the original
+     init could run before the form was on screen. Idempotent — never duplicates.
+     Uses the live rate via window.mhCedi when available. Namespaced rfxf. -->
+<script id="rfxf-js">
+(function(){
+  "use strict";
+  function activeType(){
+    var a=document.querySelector('.mh-entry-tabs .active'); if(!a) return '';
+    var m=(a.className||'').match(/et-([a-z-]+)/); return m?m[1]:'';
+  }
+  function cedi(n){
+    if(typeof window.mhCedi==='function'){ try{ return window.mhCedi(n); }catch(e){} }
+    var r=(typeof window.mhRate==='function')?window.mhRate():19.6;
+    var v=Math.abs(parseFloat(n)||0)*r;
+    return 'GH₵' + v.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+  function update(){
+    var inp=document.getElementById('mh-f-amount'), box=document.getElementById('mh-f-amount-cedi');
+    if(!inp||!box) return;
+    var n=parseFloat(inp.value)||0; var t=activeType();
+    var toGhana=(t==='ghana'||t==='family'||t==='vodafone-cash'||t==='stanbic');
+    var lab=box.querySelector('.mhc-lab'), val=box.querySelector('.mhc-val');
+    if(val) val.textContent = n ? cedi(n) : 'GH₵ —';
+    if(lab) lab.textContent = toGhana ? '≈ Ghanaian Cedi (sending to Ghana)' : '≈ Ghanaian Cedi';
+    box.style.borderColor = toGhana ? 'rgba(201,168,76,.6)' : 'rgba(201,168,76,.3)';
+    box.style.background  = toGhana ? 'rgba(201,168,76,.14)' : 'rgba(201,168,76,.06)';
+  }
+  window.mhCediUpdate=update;
+  function ensure(){
+    var inp=document.getElementById('mh-f-amount'); if(!inp) return;
+    if(inp.offsetParent===null && inp.getClientRects().length===0) return; /* form not on screen */
+    var box=document.getElementById('mh-f-amount-cedi');
+    if(!box){
+      box=document.createElement('div');
+      box.id='mh-f-amount-cedi';
+      box.style.cssText='margin-top:6px;border:1px solid rgba(201,168,76,.3);background:rgba(201,168,76,.06);border-radius:8px;padding:7px 10px;';
+      box.innerHTML='<div class="mhc-lab" style="font-size:10px;color:var(--text4,#8a8172);text-transform:uppercase;letter-spacing:.5px;">≈ Ghanaian Cedi</div>'
+        +'<div class="mhc-val" style="font-size:15px;font-weight:700;color:var(--gold,#E8C96A);margin-top:2px;">GH₵ —</div>';
+      inp.parentNode.appendChild(box);
+    }
+    if(!inp._rfxfHooked){ inp._rfxfHooked=true; inp.addEventListener('input', update); }
+    update();
+  }
+  function boot(){ try{ ensure(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  setInterval(boot, 900);
+  document.addEventListener('click', function(){ setTimeout(boot,150); }, true);
+})();
+</script>
+<!-- ════════ END RFXF ════════ -->
+
 </body>
 </html>
