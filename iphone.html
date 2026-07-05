@@ -13369,7 +13369,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.5.0 · 5 Jul 2026 · colour-of-day';
+window.ROYAL_APP_VERSION='v4.6.0 · 5 Jul 2026 · view-period+countdown';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -17894,7 +17894,7 @@ window.rrUniversalSearch=function(raw, saidHtml){
   function safeEsc(s){ return (typeof esc==='function') ? esc(s) : String(s==null?'':s); }
 
   function calc(){
-    var all = mhData();
+    var all = (window.mhVPfilter?window.mhVPfilter(mhData()):mhData());
     var inAll=0, out=0, invest=0, ghana=0;
     all.forEach(function(t){
       var a=num(t.amount);
@@ -17903,7 +17903,7 @@ window.rrUniversalSearch=function(raw, saidHtml){
     });
     var balance = inAll-out;
     var netWorth = balance + invest + ghana;
-    var cm=curMonth(); var d=new Date(); var lm=new Date(d.getFullYear(),d.getMonth()-1,1);
+    var cm=((window.mhVPmonth&&window.mhVPmonth())||curMonth()); var d=new Date(); var lm=new Date(d.getFullYear(),d.getMonth()-1,1);
     var lk=lm.getFullYear()+'-'+String(lm.getMonth()+1).padStart(2,'0');
     function mIn(k){ return all.filter(function(t){return t.type==='income'&&mk(t.date)===k;}).reduce(function(s,t){return s+num(t.amount);},0); }
     function mOut(k){ return all.filter(function(t){return t.type!=='income'&&mk(t.date)===k;}).reduce(function(s,t){return s+num(t.amount);},0); }
@@ -20865,6 +20865,235 @@ setInterval(loop,1200);
 })();
 </script>
 <!-- ════════ END RCOL ════════ -->
+
+
+<!-- ════════ RVPD · Money Hub "📅 View Period" — whole FIC + All Transactions follow one period ════════
+     A master period selector (All Time / each month). It drives the Financial Intelligence Centre
+     (KPIs, Financial Health, Spending, Cash Flow) via a guarded hook in calc(), and keeps the
+     All Transactions list in sync. Falls back to normal (all-time) behaviour if not loaded.
+     Namespaced rvpd. Persists in royal_mh_viewperiod. -->
+<style id="rvpd-css">
+#rvpd-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 14px;}
+#rvpd-bar .rvpd-lab{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--gold-dim,#9a8748);}
+#rvpd-sel{background:var(--dark4,#222235);color:var(--gold-light,#E8C96A);border:1px solid rgba(201,168,76,.4);border-radius:10px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;}
+#rvpd-note{font-size:11px;color:var(--text4,#8a8172);}
+</style>
+<script id="rvpd-js">
+(function(){
+  "use strict";
+  var KEY='royal_mh_viewperiod';
+  var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  try{ window.mhVP = localStorage.getItem(KEY)||''; }catch(e){ window.mhVP=''; }
+  if(!/^\d{4}-\d{2}$/.test(window.mhVP)) window.mhVP='';
+
+  window.mhVPmonth=function(){ return /^\d{4}-\d{2}$/.test(window.mhVP)?window.mhVP:''; };
+  window.mhVPfilter=function(list){
+    if(!Array.isArray(list)) return list;
+    var m=window.mhVPmonth(); if(!m) return list;
+    return list.filter(function(t){ return t && String(t.date||'').slice(0,7)===m; });
+  };
+  function periodLabel(v){ if(!/^\d{4}-\d{2}$/.test(v)) return 'All Time'; var p=v.split('-'); return MONTHS[(+p[1])-1]+' '+p[0]; }
+  function curMonth(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+
+  function months(){
+    var data=(typeof window.mhData==='function')?window.mhData():[];
+    var seen={}, out=[];
+    (data||[]).forEach(function(t){ var k=String(t.date||'').slice(0,7); if(/^\d{4}-\d{2}$/.test(k)&&!seen[k]){seen[k]=1;out.push(k);} });
+    out.sort().reverse();
+    var cm=curMonth(); if(out.indexOf(cm)===-1) out.unshift(cm);
+    return out;
+  }
+
+  function buildBar(){
+    var fic=document.getElementById('mh-fic'); if(!fic) return;
+    var anchor=document.getElementById('mh-fic-overview'); if(!anchor) return;
+    var bar=document.getElementById('rvpd-bar');
+    if(!bar){
+      bar=document.createElement('div'); bar.id='rvpd-bar';
+      bar.innerHTML='<span class="rvpd-lab">📅 View Period</span><select id="rvpd-sel"></select><span id="rvpd-note"></span>';
+      anchor.parentNode.insertBefore(bar, anchor);
+      bar.querySelector('#rvpd-sel').addEventListener('change', onChange);
+    }
+    var sel=document.getElementById('rvpd-sel'); if(!sel) return;
+    var cm=curMonth();
+    var wanted='all'+months().join('|');
+    if(sel._sig!==wanted){
+      sel._sig=wanted;
+      var html='<option value="all">All Time</option>';
+      months().forEach(function(m){ html+='<option value="'+m+'">'+periodLabel(m)+(m===cm?' ★':'')+'</option>'; });
+      sel.innerHTML=html;
+    }
+    sel.value=window.mhVP||'all';
+    var note=document.getElementById('rvpd-note');
+    if(note) note.textContent = window.mhVP ? ('showing '+periodLabel(window.mhVP)) : 'showing everything';
+  }
+
+  function onChange(){
+    var sel=document.getElementById('rvpd-sel'); if(!sel) return;
+    window.mhVP = (sel.value==='all')?'':sel.value;
+    try{ localStorage.setItem(KEY, window.mhVP); }catch(e){}
+    // sync All Transactions month dropdown
+    var tx=document.getElementById('mh-tx-month');
+    if(tx){ tx.value=window.mhVP; }
+    if(typeof window.mhRenderFIC==='function'){ try{ window.mhRenderFIC(); }catch(e){} }
+    if(typeof window.mhRenderTx==='function'){ try{ window.mhRenderTx(); }catch(e){} }
+    buildBar(); relabel();
+  }
+
+  /* when the All Transactions dropdown is changed directly, mirror it into the period */
+  function hookTx(){
+    var tx=document.getElementById('mh-tx-month');
+    if(tx && !tx._rvpdHook){
+      tx._rvpdHook=true;
+      tx.addEventListener('change', function(){
+        var v=tx.value||''; window.mhVP=/^\d{4}-\d{2}$/.test(v)?v:'';
+        try{ localStorage.setItem(KEY, window.mhVP); }catch(e){}
+        if(typeof window.mhRenderFIC==='function'){ try{ window.mhRenderFIC(); }catch(e){} }
+        buildBar(); relabel();
+      });
+    }
+  }
+
+  function relabel(){
+    var fic=document.getElementById('mh-fic'); if(!fic) return;
+    var lbl=periodLabel(window.mhVP);
+    var active=!!window.mhVPmonth();
+    var ov=document.getElementById('mh-fic-overview');
+    if(ov){
+      var nodes=ov.querySelectorAll('*');
+      for(var i=0;i<nodes.length;i++){
+        var el=nodes[i]; if(el.children.length) continue;
+        var t=el.textContent;
+        if(/all[\s ]*time/i.test(t)){
+          el.textContent = active ? t.replace(/\(?\s*all[\s ]*time\s*\)?/i, lbl) : t;
+        }
+      }
+    }
+    // health cash-flow caption
+    var all=fic.querySelectorAll('*');
+    for(var j=0;j<all.length;j++){
+      var e=all[j]; if(e.children.length) continue;
+      if(/cash flow (this month|·)/i.test(e.textContent)){
+        e.textContent = active ? ('cash flow · '+lbl) : 'cash flow this month';
+      }
+    }
+  }
+  window.mhVPrelabel=relabel;
+
+  /* keep labels correct whenever the FIC re-renders (rate refresh, edits, etc.) */
+  function wrapFIC(){
+    if(typeof window.mhRenderFIC==='function' && !window.mhRenderFIC._rvpd){
+      var o=window.mhRenderFIC;
+      window.mhRenderFIC=function(){ var r=o.apply(this,arguments); try{ relabel(); }catch(e){} return r; };
+      window.mhRenderFIC._rvpd=true;
+    }
+  }
+
+  function tick(){ try{ buildBar(); }catch(e){} try{ hookTx(); }catch(e){} try{ wrapFIC(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', tick); else tick();
+  setInterval(tick, 1500);
+})();
+</script>
+<!-- ════════ END RVPD ════════ -->
+
+<!-- ════════ RCDN · Home "Upcoming" countdown card — from Royal iCalender + Legacy Daily ════════
+     Shows the next few upcoming items (appointments, calendar tasks, dated diary entries) each
+     with a live countdown. Reads rical_data_v1 (appts + tasks) and royal_diary_v1 read-only.
+     Namespaced rcdn. -->
+<style id="rcdn-css">
+#rcdn-home-card{margin:0 0 16px;border:1.5px solid rgba(201,168,76,.30);border-radius:16px;padding:15px 17px;background:linear-gradient(135deg,rgba(91,141,217,.10),rgba(201,168,76,.03));}
+.rcdn-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.rcdn-eyebrow{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim,#9a8748);}
+.rcdn-title{font-size:15px;font-weight:800;color:var(--gold-light,#E8C96A);margin-bottom:10px;}
+.rcdn-item{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.rcdn-item:last-child{border-bottom:none;}
+.rcdn-ic{font-size:17px;width:24px;text-align:center;flex-shrink:0;}
+.rcdn-mid{flex:1;min-width:0;}
+.rcdn-nm{font-size:13.5px;color:var(--text,#F0EBE0);font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.rcdn-dt{font-size:11px;color:var(--text3,#8a8172);margin-top:2px;}
+.rcdn-cd{flex-shrink:0;text-align:right;}
+.rcdn-cd .big{font-size:15px;font-weight:800;color:var(--gold-light,#E8C96A);line-height:1;white-space:nowrap;}
+.rcdn-cd .sm{font-size:9.5px;color:var(--text4,#8a8172);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.rcdn-cd.today .big{color:#30D158;}
+.rcdn-cd.soon .big{color:#E0A93A;}
+.rcdn-empty{font-size:12.5px;color:var(--text3,#8a8172);font-style:italic;padding:4px 0;}
+</style>
+<script id="rcdn-js">
+(function(){
+  "use strict";
+  var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function g(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function midnight(d){ var x=new Date(d); x.setHours(0,0,0,0); return x; }
+  function today0(){ return midnight(new Date()); }
+  function parseDate(s){ if(!/^\d{4}-\d{2}-\d{2}/.test(String(s||''))) return null; var p=String(s).slice(0,10).split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+  function fmtDate(d,time){ var s=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear(); return time?(s+' · '+time):s; }
+
+  function collect(){
+    var items=[];
+    var rical=g('rical_data_v1')||{};
+    (rical.appts||rical.appointments||[]).forEach(function(a){
+      if(!a) return; var d=parseDate(a.date); if(!d) return;
+      items.push({date:d, raw:a.date, time:a.time||'', title:a.title||a.name||a.category||a.desc||'Appointment', icon:'📅', kind:'Appointment'});
+    });
+    (rical.tasks||[]).forEach(function(t){
+      if(!t||t.done) return; var d=parseDate(t.date); if(!d) return;
+      items.push({date:d, raw:t.date, time:'', title:t.title||'Task', icon:'✅', kind:'Task'});
+    });
+    var diary=g('royal_diary_v1');
+    if(Array.isArray(diary)) diary.forEach(function(e){
+      if(!e) return; var d=parseDate(e.date); if(!d) return;
+      items.push({date:d, raw:e.date, time:e.time||'', title:e.title||(String(e.text||'').split('\n')[0])||'Diary entry', icon:(e.mood&&/⚖/.test(e.mood)?'⚖️':'📔'), kind:'Legacy Daily'});
+    });
+    var t0=today0();
+    items=items.filter(function(it){ return it.date>=t0; });
+    items.sort(function(a,b){ return a.date-b.date || String(a.time).localeCompare(String(b.time)); });
+    // de-dup by title+date
+    var seen={}, out=[];
+    items.forEach(function(it){ var k=it.raw+'|'+it.title; if(!seen[k]){ seen[k]=1; out.push(it); } });
+    return out.slice(0,5);
+  }
+
+  function countdown(d){
+    var days=Math.round((midnight(d)-today0())/86400000);
+    if(days<=0) return {big:'Today', sm:'', cls:'today'};
+    if(days===1) return {big:'1', sm:'day', cls:'soon'};
+    if(days<=6) return {big:String(days), sm:'days', cls:'soon'};
+    if(days<=27){ var w=Math.round(days/7); return {big:String(days), sm:'days', cls:''}; }
+    var m=Math.round(days/30); return {big:String(days), sm:'days', cls:''};
+  }
+
+  function render(){
+    var home=document.getElementById('s-home'); if(!home) return;
+    var card=document.getElementById('rcdn-home-card');
+    if(!card){
+      card=document.createElement('div'); card.id='rcdn-home-card';
+      var after=document.getElementById('rcol-home-card') || home.querySelector('.home-hero');
+      if(after && after.parentNode){ after.parentNode.insertBefore(card, after.nextSibling); }
+      else { home.insertBefore(card, home.firstChild); }
+    }
+    var items=collect();
+    var rows;
+    if(!items.length){
+      rows='<div class="rcdn-empty">Nothing coming up. Add an appointment or dated entry in Royal iCalender or Legacy Daily and it will appear here with a countdown.</div>';
+    } else {
+      rows=items.map(function(it){
+        var c=countdown(it.date);
+        return '<div class="rcdn-item"><div class="rcdn-ic">'+it.icon+'</div>'+
+          '<div class="rcdn-mid"><div class="rcdn-nm">'+esc(it.title)+'</div><div class="rcdn-dt">'+it.kind+' · '+fmtDate(it.date,it.time)+'</div></div>'+
+          '<div class="rcdn-cd '+c.cls+'"><div class="big">'+c.big+'</div>'+(c.sm?'<div class="sm">'+c.sm+'</div>':'<div class="sm">to go</div>')+'</div></div>';
+      }).join('');
+    }
+    card.innerHTML='<div class="rcdn-head"><span class="rcdn-eyebrow">🔔 Upcoming · Royal iCalender & Legacy Daily</span></div>'+
+      '<div class="rcdn-title">What’s coming up</div>'+rows;
+  }
+
+  function tick(){ try{ render(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', tick); else tick();
+  setInterval(tick, 5000);
+})();
+</script>
+<!-- ════════ END RCDN ════════ -->
 
 </body>
 </html>
