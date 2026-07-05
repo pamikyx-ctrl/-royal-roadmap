@@ -13369,7 +13369,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.4.0 · 5 Jul 2026 · pray-sort+fx+search';
+window.ROYAL_APP_VERSION='v4.5.0 · 5 Jul 2026 · colour-of-day';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -20764,6 +20764,107 @@ setInterval(loop,1200);
 })();
 </script>
 <!-- ════════ END RFXF ════════ -->
+
+
+<!-- ════════ RCOL · Royal Colours — Colour-of-the-Day + Prayers "🎨 Colour" tab ════════
+     Vedic (Navagraha) daily colour guide from Elias's note "The planet's Positive
+     colors". Adds: (1) a 🎨 Colour tab to the Prayers page seeded with a day-by-day
+     guide (editable & reorderable like prayers); (2) a "Colour of the Day to wear"
+     card at the top of the Home screen that updates automatically each weekday, with
+     colour swatches, the ruling planet, what to wear and what to avoid. Namespaced rcol. -->
+<style id="rcol-css">
+#rcol-home-card{margin:0 0 16px;border:1.5px solid rgba(201,168,76,.34);border-radius:16px;padding:16px 18px;background:linear-gradient(135deg,rgba(201,168,76,.10),rgba(201,168,76,.03));}
+.rcol-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
+.rcol-eyebrow{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim,#9a8748);}
+.rcol-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--gold-light,#E8C96A);line-height:1.1;margin:2px 0 2px;}
+.rcol-planet{font-size:12px;color:var(--text3,#8a8172);margin-bottom:10px;font-style:italic;}
+.rcol-swatches{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:8px 0 10px;}
+.rcol-sw{display:flex;flex-direction:column;align-items:center;gap:4px;width:60px;}
+.rcol-dot{width:34px;height:34px;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.4);border:1.5px solid rgba(255,255,255,.25);}
+.rcol-dot-lbl{font-size:9.5px;color:var(--text2,#C4BAA8);text-align:center;line-height:1.15;}
+.rcol-row{font-size:13px;color:var(--text2,#C4BAA8);line-height:1.6;margin:3px 0;}
+.rcol-row b{color:var(--gold-light,#E8C96A);font-weight:700;}
+.rcol-avoid b{color:#E07a7a;}
+.rcol-note{font-size:11.5px;color:var(--text3,#8a8172);margin-top:8px;font-style:italic;}
+.rcol-link{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;color:var(--gold-light,#E8C96A);cursor:pointer;border:1px solid rgba(201,168,76,.4);border-radius:20px;padding:5px 14px;}
+.rcol-link:hover{background:rgba(201,168,76,.14);}
+.pray-tab[data-panel="colour"].active{}
+</style>
+<script id="rcol-js">
+(function(){
+  "use strict";
+  // index 0 = Sunday ... 6 = Saturday  (JS getDay())
+  var COLOURS=[
+    {day:'Sunday',   emoji:'☀️', planet:'Sun (Surya)',     meaning:'soul, health, authority & power',      wear:['Ruby red','Saffron orange','Bright yellow'], avoid:['Navy blue','Black']},
+    {day:'Monday',   emoji:'🌙', planet:'Moon (Chandra)',   meaning:'emotions, mind & peace',                wear:['White','Light blue','Silver','Sea green'],   avoid:['Red','Black']},
+    {day:'Tuesday',  emoji:'🔴', planet:'Mars (Mangal)',    meaning:'energy, courage & action',              wear:['Red','Orange','Bright pink'],                avoid:['Yellow','White','Black']},
+    {day:'Wednesday',emoji:'💚', planet:'Mercury (Budha)',  meaning:'intellect, communication & business',   wear:['Green','Light blue','Grey','Brown'],         avoid:['Dark pink','Purple'],
+       night:{ruler:'Rahu (after sunset)', wear:['Grey','Charcoal','Smoky tones'], avoid:['Red','Orange','Bright yellow'], note:'Wear grey nightwear to calm Rahu — ideal for sleepwear.'}},
+    {day:'Thursday', emoji:'🟡', planet:'Jupiter (Guru)',   meaning:'wisdom, wealth, spirituality & luck',   wear:['Yellow','Gold','Dark orange'],               avoid:['Purple','Dark blue']},
+    {day:'Friday',   emoji:'🤍', planet:'Venus (Shukra)',   meaning:'luxury, relationships, beauty & art',   wear:['Off-white','Bright white','Light pink','Light blue'], avoid:['Black','Dark blue','Dark green']},
+    {day:'Saturday', emoji:'🖤', planet:'Saturn (Shani)',   meaning:'discipline, hard work, justice & patience', wear:['Black','Dark blue','Dark grey'],         avoid:['Bright green','Red','Yellow']}
+  ];
+  var HEX={'ruby red':'#9B111E','saffron orange':'#F4A300','bright yellow':'#F6D42B','navy blue':'#12233F','black':'#111111','white':'#FFFFFF','light blue':'#AED6F1','silver':'#C7C7CF','sea green':'#2E8B77','red':'#E03A3A','orange':'#F39C12','bright pink':'#FF5FA2','yellow':'#F4D03F','green':'#27AE60','grey':'#8A8A8A','brown':'#8B5A2B','dark pink':'#C2185B','purple':'#7D3C98','charcoal':'#36454F','smoky tones':'#6E6E6E','gold':'#D4AF37','dark orange':'#E67E22','dark blue':'#1F3A5F','off-white':'#FAF6EE','bright white':'#FFFFFF','light pink':'#F7B7CE','dark green':'#1E5631','dark grey':'#4A4A4A','bright green':'#39B54A'};
+  function hex(name){ return HEX[String(name).toLowerCase()]||'#B8A867'; }
+
+  window.royalColourNav=function(){ try{ if(typeof navTo==='function') navTo('pray'); }catch(e){} setTimeout(function(){ try{ if(typeof switchPrayPanel==='function') switchPrayPanel('colour'); }catch(e){} },120); };
+
+  /* ---------- Home "Colour of the Day" card ---------- */
+  function renderHomeCard(){
+    var home=document.getElementById('s-home'); if(!home) return;
+    var hero=home.querySelector('.home-hero'); if(!hero) return;
+    var card=document.getElementById('rcol-home-card');
+    if(!card){ card=document.createElement('div'); card.id='rcol-home-card'; hero.parentNode.insertBefore(card, hero.nextSibling); }
+    var c=COLOURS[new Date().getDay()];
+    var sw=c.wear.map(function(w){ return '<div class="rcol-sw"><div class="rcol-dot" style="background:'+hex(w)+'"></div><div class="rcol-dot-lbl">'+w+'</div></div>'; }).join('');
+    var nightHtml='';
+    if(c.night){ nightHtml='<div class="rcol-note">🌙 '+c.night.ruler+': wear '+c.night.wear.join(', ')+'. '+c.night.note+'</div>'; }
+    card.innerHTML=
+      '<div class="rcol-top"><span class="rcol-eyebrow">🎨 Colour of the Day · to wear</span></div>'+
+      '<div class="rcol-title">'+c.emoji+' '+c.day+' — '+c.wear[0]+'</div>'+
+      '<div class="rcol-planet">Ruled by '+c.planet+' · '+c.meaning+'</div>'+
+      '<div class="rcol-swatches">'+sw+'</div>'+
+      '<div class="rcol-row"><b>Wear:</b> '+c.wear.join(', ')+'</div>'+
+      '<div class="rcol-row rcol-avoid"><b>Avoid:</b> '+c.avoid.join(', ')+'</div>'+
+      nightHtml+
+      '<div class="rcol-link" onclick="royalColourNav()">Full colour guide →</div>';
+  }
+
+  /* ---------- Prayers: 🎨 Colour tab ---------- */
+  function addTab(){
+    var bar=document.querySelector('.pray-toggle'); if(!bar) return;
+    if(bar.querySelector('.pray-tab[data-panel="colour"]')) return;
+    var b=document.createElement('button');
+    b.type='button'; b.className='pray-tab'; b.setAttribute('data-panel','colour');
+    b.textContent='🎨 Colour';
+    b.addEventListener('click', function(){ if(typeof switchPrayPanel==='function') switchPrayPanel('colour'); });
+    bar.appendChild(b);
+  }
+  function blockBody(c){
+    var s='Ruled by '+c.planet+' — '+c.meaning+'.\n\n✅ Wear (positive): '+c.wear.join(', ')+'.\n❌ Avoid (negative): '+c.avoid.join(', ')+'.';
+    if(c.night){ s+='\n\n🌙 '+c.night.ruler+': wear '+c.night.wear.join(', ')+'; avoid '+c.night.avoid.join(', ')+'. '+c.night.note; }
+    return s;
+  }
+  function seedBlocks(){
+    try{ if(localStorage.getItem('royal_pray_colour_seeded_v2')) return; }catch(e){ return; }
+    if(typeof window.loadPray==='function' && (!Array.isArray(window.prayData)||!window.prayData.length)){ try{ window.loadPray(); }catch(e){} }
+    if(!Array.isArray(window.prayData)) return;
+    var has=window.prayData.some(function(p){return p&&p.panel==='colour';});
+    if(!has){
+      COLOURS.forEach(function(c,idx){
+        window.prayData.push({id:'colr'+idx, panel:'colour', title:c.emoji+' '+c.day+' — '+c.planet, body:blockBody(c), isDecl:false});
+      });
+      if(typeof window.savePray==='function'){ try{ window.savePray(); }catch(e){} }
+    }
+    try{ localStorage.setItem('royal_pray_colour_seeded_v2','1'); }catch(e){}
+  }
+
+  function tick(){ try{ renderHomeCard(); }catch(e){} try{ addTab(); }catch(e){} try{ seedBlocks(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', tick); else tick();
+  setInterval(tick, 1500);
+})();
+</script>
+<!-- ════════ END RCOL ════════ -->
 
 </body>
 </html>
