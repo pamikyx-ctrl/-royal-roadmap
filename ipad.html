@@ -13435,7 +13435,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.1 · 5 Jul 2026 · home-collapse-fix';
+window.ROYAL_APP_VERSION='v4.9.2 · 5 Jul 2026 · debt-smart-fields';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -20538,9 +20538,13 @@ var RDBT={
  council:[['Council name','text','council'],['Account year','text','year']],
  mobile:[['Network / provider','text','provider'],['Contract end date','date','contractEnd']],
  vehicle:[['Vehicle (make / model)','text','vehicle'],['Finance type (HP / PCP / Lease)','text','finType'],['Final / balloon payment (£)','number','balloon']],
- bnpl:[['Provider (Klarna / Clearpay…)','text','provider'],['Number of instalments','number','instalments']]
+ bnpl:[['Provider (Klarna / Clearpay…)','text','provider'],['Number of instalments','number','instalments']],
+ catalogue:[['Catalogue provider','text','provider'],['Account number','text','acctNo'],['Balance / value (£)','number','subValue'],['Monthly repayment (£)','number','monthly'],['Terms & conditions','area','terms']],
+ subscriptions:[['Subscription / provider','text','provider'],['Start date','date','startDate'],['End date','date','endDate'],['Duration / how long (e.g. 12 months)','text','duration'],['Subscription value (£)','number','subValue'],['Monthly repayment (£)','number','monthly'],['Contract terms & conditions','area','terms']],
+ applecare:[['Device','text','device'],['Plan / cover','text','plan'],['Start date','date','startDate'],['Coverage end date','date','endDate'],['Monthly payment (£)','number','monthly'],['Terms & conditions','area','terms']],
+ insurance:[['Insurer / provider','text','provider'],['Policy type','text','policyType'],['Start date','date','startDate'],['Renewal / end date','date','endDate'],['Duration / term','text','duration'],['Cover value (£)','number','subValue'],['Monthly premium (£)','number','monthly'],["Beneficiaries' names",'text','beneficiaries'],['Contract terms & conditions','area','terms']]
 };
-var RDBT_LBL={credit:'💳 Credit Card Details',biz:'💳 Company Card Details',hmrc:'🏛️ HMRC Details',loan:'🏦 Loan Details',ploan:'💰 Loan Details',private:'🤝 Private Loan Details',legal:'⚖️ Legal Matter Details',bills:'🏠 Rent Details',utils:'⚡ Utility Details',council:'🏘️ Council Tax Details',mobile:'📱 Contract Details',vehicle:'🚗 Vehicle Finance Details',bnpl:'🛍️ BNPL Details'};
+var RDBT_LBL={credit:'💳 Credit Card Details',biz:'💳 Company Card Details',hmrc:'🏛️ HMRC Details',loan:'🏦 Loan Details',ploan:'💰 Loan Details',private:'🤝 Private Loan Details',legal:'⚖️ Legal Matter Details',bills:'🏠 Rent Details',utils:'⚡ Utility Details',council:'🏘️ Council Tax Details',mobile:'📱 Contract Details',vehicle:'🚗 Vehicle Finance Details',bnpl:'🛍️ BNPL Details',catalogue:'🛒 Catalogue Details',subscriptions:'🔁 Subscription Details',applecare:'🍎 Apple Care+ Details',insurance:'🛡️ Insurance Details'};
 function esc2(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function rdbtRender(){
   var cat=(document.getElementById('nd-cat')||{}).value||'';
@@ -20548,11 +20552,14 @@ function rdbtRender(){
   var fields=RDBT[cat];
   if(!fields){box.style.display='none';box.innerHTML='';return;}
   box.style.display='block';
+  var _insB=document.getElementById('nd-ins-fields'); if(_insB&&cat==='insurance') _insB.style.display='none';
   var h='<div class="rdbt-t">'+(RDBT_LBL[cat]||'Details')+' <span style="font-weight:400;color:#8a8578;">(smart fields for this type)</span></div><div class="rdbt-grid">';
   fields.forEach(function(f,i){
     var id='rdbt-f'+i;
-    h+='<div'+(fields.length%2===1&&i===fields.length-1?' style="grid-column:1/-1;"':'')+'><label>'+esc2(f[0])+'</label>';
-    if(f[1].indexOf('sel:')===0){
+    h+='<div'+((f[1]==='area'||(fields.length%2===1&&i===fields.length-1))?' style="grid-column:1/-1;"':'')+'><label>'+esc2(f[0])+'</label>';
+    if(f[1]==='area'){
+      h+='<textarea id="'+id+'" data-k="'+f[2]+'" rows="3" style="width:100%;resize:vertical;"></textarea>';
+    }else if(f[1].indexOf('sel:')===0){
       h+='<select id="'+id+'" data-k="'+f[2]+'">'+f[1].slice(4).split(',').map(function(o){return '<option>'+o+'</option>';}).join('')+'</select>';
     }else{
       h+='<input type="'+f[1]+'" id="'+id+'" data-k="'+f[2]+'"'+(f[1]==='number'?' step="0.01"':'')+'>';
@@ -20606,6 +20613,16 @@ function rdbtSummary(x){
   if(x.finType)bits.push(x.finType);
   if(x.balloon)bits.push('Balloon £'+x.balloon);
   if(x.instalments)bits.push(x.instalments+' instalments');
+  if(x.startDate)bits.push('From '+x.startDate);
+  if(x.endDate)bits.push('to '+x.endDate);
+  if(x.duration)bits.push(x.duration);
+  if(x.subValue)bits.push('Value £'+x.subValue);
+  if(x.monthly)bits.push('£'+x.monthly+'/mo');
+  if(x.device)bits.push(x.device);
+  if(x.plan)bits.push(x.plan);
+  if(x.policyType)bits.push(x.policyType);
+  if(x.beneficiaries)bits.push('Beneficiaries: '+x.beneficiaries);
+  if(x.terms)bits.push(String(x.terms).slice(0,50));
   return bits.join(' · ');
 }
 function hookSaveDebt(){
