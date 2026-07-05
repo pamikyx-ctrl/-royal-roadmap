@@ -13895,7 +13895,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.0 · 5 Jul 2026 · cc-mobile+collapse';
+window.ROYAL_APP_VERSION='v4.9.1 · 5 Jul 2026 · home-collapse-fix';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21788,13 +21788,16 @@ setInterval(loop,1200);
 </script>
 <!-- ════════ END RCCT ════════ -->
 
-<!-- ════════ RNCOL · Home notification cards — collapse / expand ════════
-     Adds a ▾/▸ toggle to each home notification card (Colour of the Day, Upcoming, Rota).
-     Collapsed = only the top line shows. State saved per card. Namespaced rncol. -->
+<!-- ════════ RNCOL · Home notification cards — collapse / expand (re-render proof) ════════
+     Colour of the Day, Upcoming, Rota cards get a ▾/▸ header toggle. Uses a persistent CSS class
+     on the card element (survives the cards' innerHTML refreshes) so the collapsed state holds.
+     Click the card's top line to toggle. State saved per card. Namespaced rncol. -->
 <style id="rncol-css">
-.rncol-chev{position:absolute;top:12px;right:14px;width:26px;height:26px;border-radius:8px;border:1px solid rgba(201,168,76,.35);background:rgba(201,168,76,.10);color:#E8C96A;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;padding:0;}
-.rncol-chev:hover{background:rgba(201,168,76,.22);}
 #rcol-home-card,#rcdn-home-card,#rrcd-home-card{position:relative;}
+#rcol-home-card>*:first-child,#rcdn-home-card>*:first-child,#rrcd-home-card>*:first-child{cursor:pointer;padding-right:28px;}
+#rcol-home-card::after,#rcdn-home-card::after,#rrcd-home-card::after{content:'▾';position:absolute;top:14px;right:15px;color:#E8C96A;font-size:12px;font-weight:800;pointer-events:none;opacity:.9;}
+#rcol-home-card.rncol-collapsed::after,#rcdn-home-card.rncol-collapsed::after,#rrcd-home-card.rncol-collapsed::after{content:'▸';}
+#rcol-home-card.rncol-collapsed>*:not(:first-child),#rcdn-home-card.rncol-collapsed>*:not(:first-child),#rrcd-home-card.rncol-collapsed>*:not(:first-child){display:none!important;}
 </style>
 <script id="rncol-js">
 (function(){
@@ -21803,34 +21806,26 @@ setInterval(loop,1200);
   var CARDS=['rcol-home-card','rcdn-home-card','rrcd-home-card'];
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ return {}; } }
   function save(o){ try{ localStorage.setItem(KEY, JSON.stringify(o)); }catch(e){} }
-  function apply(card, collapsed){
-    var kids=Array.prototype.slice.call(card.children).filter(function(el){ return !el.classList.contains('rncol-chev'); });
-    kids.forEach(function(el, idx){
-      if(idx===0) return; /* keep the header/eyebrow line visible */
-      el.style.display = collapsed ? 'none' : '';
-    });
-  }
-  function tick(){
+
+  /* toggle when the card's top line (first child = header) is clicked */
+  document.addEventListener('click', function(e){
+    var card=e.target.closest && e.target.closest('#rcol-home-card,#rcdn-home-card,#rrcd-home-card');
+    if(!card) return;
+    var first=card.firstElementChild;
+    if(!first || !first.contains(e.target)) return;   /* only the header toggles, not inner buttons */
+    var id=card.id, st=load(), now=!card.classList.contains('rncol-collapsed');
+    card.classList.toggle('rncol-collapsed', now);
+    st[id]=now; save(st);
+    e.stopPropagation();
+  }, true);
+
+  /* apply saved state (class lives on the card element, so it survives innerHTML refreshes) */
+  function apply(){
     var st=load();
-    CARDS.forEach(function(id){
-      var card=document.getElementById(id); if(!card) return;
-      var collapsed=!!st[id];
-      var chev=card.querySelector('.rncol-chev');
-      if(!chev){
-        chev=document.createElement('button'); chev.type='button'; chev.className='rncol-chev';
-        chev.addEventListener('click', function(e){
-          e.stopPropagation(); e.preventDefault();
-          var s=load(); s[id]=!s[id]; save(s);
-          chev.textContent=s[id]?'▸':'▾'; apply(card, !!s[id]);
-        });
-        card.appendChild(chev);
-      }
-      chev.textContent=collapsed?'▸':'▾';
-      apply(card, collapsed);
-    });
+    CARDS.forEach(function(id){ var c=document.getElementById(id); if(c) c.classList.toggle('rncol-collapsed', !!st[id]); });
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', tick); else tick();
-  setInterval(tick, 1200);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', apply); else apply();
+  setInterval(apply, 1500);
 })();
 </script>
 <!-- ════════ END RNCOL ════════ -->
