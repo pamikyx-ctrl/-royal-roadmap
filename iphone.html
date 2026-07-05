@@ -13369,7 +13369,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.6.1 · 5 Jul 2026 · period-dropdown-tidy';
+window.ROYAL_APP_VERSION='v4.7.0 · 5 Jul 2026 · alltime-net+refile-legal';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -17907,7 +17907,7 @@ window.rrUniversalSearch=function(raw, saidHtml){
     var lk=lm.getFullYear()+'-'+String(lm.getMonth()+1).padStart(2,'0');
     function mIn(k){ return all.filter(function(t){return t.type==='income'&&mk(t.date)===k;}).reduce(function(s,t){return s+num(t.amount);},0); }
     function mOut(k){ return all.filter(function(t){return t.type!=='income'&&mk(t.date)===k;}).reduce(function(s,t){return s+num(t.amount);},0); }
-    var mIncome=mIn(cm), mOutNow=mOut(cm), lOut=mOut(lk);
+    var mIncome=inAll, mOutNow=out, lOut=mOut(lk);
     return { all:all, inAll:inAll, out:out, balance:balance, invest:invest, ghana:ghana, netWorth:netWorth, mIncome:mIncome, mOut:mOutNow, lOut:lOut, cash:mIncome-mOutNow };
   }
 
@@ -20974,8 +20974,8 @@ setInterval(loop,1200);
     var all=fic.querySelectorAll('*');
     for(var j=0;j<all.length;j++){
       var e=all[j]; if(e.children.length) continue;
-      if(/cash flow (this month|·)/i.test(e.textContent)){
-        e.textContent = active ? ('cash flow · '+lbl) : 'cash flow this month';
+      if(/cash flow (this month|·)|net · all time/i.test(e.textContent)){
+        e.textContent = active ? ('cash flow · '+lbl) : 'net · all time';
       }
     }
   }
@@ -21095,6 +21095,59 @@ setInterval(loop,1200);
 })();
 </script>
 <!-- ════════ END RCDN ════════ -->
+
+
+<!-- ════════ RLEG · Re-file legal cases into the Chieftaincy register ════════
+     The Case Progress Monitor (royal_legal_v1.cases) still holds the court cases, but the
+     Chieftaincy "Legal Matters" register (royal_chief_v1.legal) was emptied. This copies the
+     cases from the monitor back into the register — reading ONLY the user's own on-device data
+     (nothing hardcoded, privacy-safe). Runs once; won't fight a deliberate deletion. Namespaced rleg. -->
+<script id="rleg-js">
+(function(){
+  "use strict";
+  var FLAG='royal_chief_legal_refiled_v2';
+  function run(){
+    try{
+      if(localStorage.getItem(FLAG)) return true; /* already handled */
+      var chief; try{ chief=JSON.parse(localStorage.getItem('royal_chief_v1')||'null'); }catch(e){ chief=null; }
+      if(!chief) chief={_v:1,legal:[],coronation:[],stake:[]};
+      chief.legal=chief.legal||[]; chief.coronation=chief.coronation||[]; chief.stake=chief.stake||[];
+      if(chief.legal.length>0){ localStorage.setItem(FLAG,'1'); return true; } /* register already populated — leave it */
+      var legal; try{ legal=JSON.parse(localStorage.getItem('royal_legal_v1')||'null'); }catch(e){ legal=null; }
+      var cases = (legal && Array.isArray(legal.cases)) ? legal.cases : (Array.isArray(legal)?legal:[]);
+      if(!cases.length) return false; /* nothing to copy yet — try again on a later load */
+      cases.forEach(function(c){
+        if(!c) return;
+        var parts=[];
+        if(c.court) parts.push(c.court);
+        if(c.stage) parts.push(c.stage);
+        if(c.claims) parts.push(c.claims);
+        if(c.lawyerAction) parts.push(c.lawyerAction);
+        else if(c.summary) parts.push(String(c.summary).split('\n')[0].slice(0,240));
+        chief.legal.push({
+          id:'chleg-'+(c.id||Math.random().toString(36).slice(2,8)),
+          title:c.title||c.name||'Court Case',
+          date:c.nextDate||c.actionDue||'',
+          status:c.status||'Active',
+          kind:'Court Case',
+          court:c.court||'',
+          rep:(c.lawyerAction? (String(c.lawyerAction).match(/[A-Z][a-z]+ [A-Z][a-z]+(?:[- ][A-Z][a-z]+)*,? Esq\.?/)||[''])[0] : ''),
+          notes:parts.join(' · ')
+        });
+      });
+      localStorage.setItem('royal_chief_v1', JSON.stringify(chief));
+      localStorage.setItem(FLAG,'1');
+      if(typeof window.buildChief==='function'){ try{ window.buildChief(); }catch(e){} }
+      return true;
+    }catch(e){ return false; }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 600); });
+  else setTimeout(run, 600);
+  /* a couple of retries in case royal_legal_v1 loads slightly later */
+  var tries=0; var iv=setInterval(function(){ tries++; if(run()||tries>8){ clearInterval(iv); } }, 1500);
+})();
+</script>
+<!-- ════════ END RLEG ════════ -->
 
 </body>
 </html>
