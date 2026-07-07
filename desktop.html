@@ -8861,6 +8861,10 @@ function renderRotaForm(id){
     +'<div class="rota-form-grid">'
       +'<div><div class="rota-field-label">Client Name</div><input class="rota-input" id="rf-client" value="'+rotaEsc(r.clientName||"")+'" placeholder="Client full name"></div>'
       +'<div><div class="rota-field-label">Client Phone</div><input class="rota-input" id="rf-clientphone" value="'+rotaEsc(r.clientPhone||"")+'" placeholder="+44..."></div>'
+      +'<div><div class="rota-field-label">Date of Birth</div><input class="rota-input" type="date" id="rf-client-dob" value="'+rotaEsc((typeof rotaDobISO==="function"?rotaDobISO(r.clientDOB||""):(r.clientDOB||"")))+'" onchange="if(typeof rotaDobChanged===\'function\')rotaDobChanged()"></div>'
+      +'<div><div class="rota-field-label">Age (auto)</div><input class="rota-input" type="text" id="rf-client-age" value="'+rotaEsc(r.clientAge||"")+'" readonly placeholder="&mdash;"></div>'
+      +'<div><div class="rota-field-label">Reason for Care</div><input class="rota-input" type="text" id="rf-care-reason" value="'+rotaEsc(r.careReason||"")+'" placeholder="e.g. Limited mobility, post-op recovery"></div>'
+      +'<div><div class="rota-field-label">Medical Diagnosis</div><input class="rota-input" type="text" id="rf-diagnosis" value="'+rotaEsc(r.medicalDiagnosis||"")+'" placeholder="e.g. Dementia, Parkinson&#39;s"></div>'
       +'<div class="rota-form-full"><div class="rota-field-label">Location / Place of Work</div><input class="rota-input" id="rf-address" value="'+rotaEsc(r.clientAddress||r.placeOfWork||"")+'" placeholder="Address of care delivery"></div>'
     +'</div>'
   +'</div>';
@@ -22246,6 +22250,12 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
   "use strict";
   function heal(){
     try{
+      /* GLOBAL: remove any duplicate filter bars anywhere in the page (keep the first) */
+      var allBars=document.querySelectorAll('#rota-filter-bar');
+      for(var q=1;q<allBars.length;q++){ if(allBars[q].parentNode) allBars[q].parentNode.removeChild(allBars[q]); }
+      /* GLOBAL: remove stray Sort dropdowns (carry a 'smart' option) beyond the first, with their bar row */
+      var allSorts=[].slice.call(document.querySelectorAll('select.rota-select')).filter(function(s){return s.querySelector&&s.querySelector('option[value="smart"]');});
+      for(var z=1;z<allSorts.length;z++){ var ss=allSorts[z], row=ss; for(var up=0; up<6 && row.parentElement; up++){ if(row.parentElement.id==='rota-filter-bar' || (row.parentElement.querySelectorAll && row.parentElement.querySelectorAll('.ftab').length>=5)){ row=row.parentElement; break; } row=row.parentElement; } if(row && row.parentNode && row.id!=='rota-filter-bar' && row!==document.body) row.parentNode.removeChild(row); }
       var la=document.getElementById('rota-list-area'); if(!la) return;
       var canonical=document.getElementById('rota-filter-bar');
       /* remove any EXTRA elements that share the filter-bar id */
