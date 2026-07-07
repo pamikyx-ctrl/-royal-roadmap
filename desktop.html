@@ -5,6 +5,9 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="rr-build" content="24jun-voicefab">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta charset="UTF-8">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
@@ -22237,5 +22240,46 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 })();
 </script>
 <!-- ════════ END ROTA UPGRADES ════════ -->
+<!-- ════════ ROTA FILTER-BAR SELF-HEAL (added by Claude) — strips any duplicate Sort/tab bars ════════ -->
+<script>
+(function(){
+  "use strict";
+  function heal(){
+    try{
+      var la=document.getElementById('rota-list-area'); if(!la) return;
+      var canonical=document.getElementById('rota-filter-bar');
+      /* remove any EXTRA elements that share the filter-bar id */
+      var dups=la.querySelectorAll('#rota-filter-bar');
+      for(var i=0;i<dups.length;i++){ if(canonical && dups[i]!==canonical) dups[i].parentNode.removeChild(dups[i]); }
+      if(!canonical) return;
+      /* remove stray Sort dropdowns (they carry a 'smart' option) that live outside the one real bar */
+      var sorts=la.querySelectorAll('select.rota-select');
+      for(var j=0;j<sorts.length;j++){
+        var s=sorts[j];
+        if(s.querySelector && s.querySelector('option[value="smart"]') && !canonical.contains(s)){
+          var w=s.parentElement; if(w && w!==la && !canonical.contains(w)) w.parentNode.removeChild(w); else if(!canonical.contains(s)) s.parentNode.removeChild(s);
+        }
+      }
+      /* remove stray status tabs left outside the one real bar */
+      var tabs=la.querySelectorAll('.ftab');
+      for(var k=0;k<tabs.length;k++){
+        var b=tabs[k];
+        if(!canonical.contains(b)){
+          var row=b.parentElement;
+          if(row && row!==la && !canonical.contains(row)) { if(row.parentNode) row.parentNode.removeChild(row); }
+          else if(b.parentNode) b.parentNode.removeChild(b);
+        }
+      }
+    }catch(e){}
+  }
+  var _bfb=window.buildRotaFilterBar;
+  if(typeof _bfb==='function'){ window.buildRotaFilterBar=function(){ var r=_bfb.apply(this,arguments); heal(); return r; }; }
+  var _bl=window.buildRotaList;
+  if(typeof _bl==='function'){ window.buildRotaList=function(){ var r=_bl.apply(this,arguments); heal(); return r; }; }
+  if(document.readyState!=='loading') heal(); else document.addEventListener('DOMContentLoaded',heal);
+  setInterval(heal,1500);
+})();
+</script>
+<!-- ════════ END SELF-HEAL ════════ -->
 </body>
 </html>
