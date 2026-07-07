@@ -22168,5 +22168,74 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 })();
 </script>
 <!-- ════════ END RBIZP ════════ -->
+<!-- ════════ ROTA UPGRADES (added by Claude) — status-aware live monitor + provisional payslip ════════ -->
+<script>
+(function(){
+  "use strict";
+  var TERMINAL={decline:1,complete:1,donepaid:1,paid:1};
+
+  /* When a job is Declined / Complete / Paid / Done & Paid, the LIVE monitor stops. */
+  var _prog = window.rotaProgressHTML;
+  window.rotaProgressHTML = function(r){
+    try{
+      var st=(r&&r.status)||'';
+      if(TERMINAL[st]){
+        var map={
+          decline:{t:'🚫 Job Declined — live monitor stopped',c:'#8E8E93',fill:'rgba(142,142,147,0.5)'},
+          complete:{t:'✅ Assignment Complete — monitor stopped',c:'#30D158',fill:'linear-gradient(90deg,#30D158,#7CE38B)'},
+          paid:{t:'💷 Paid — monitor stopped',c:'#30D158',fill:'linear-gradient(90deg,#30D158,#7CE38B)'},
+          donepaid:{t:'🎉 Done & Paid — monitor stopped',c:'#30D158',fill:'linear-gradient(90deg,#30D158,#7CE38B)'}
+        };
+        var m=map[st];
+        return '<div class="rota-liveprog" style="margin:2px 0 12px;">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;margin-bottom:5px;">'
+            +'<span style="color:'+m.c+';">'+m.t+'</span>'
+            +'<span style="color:var(--text4,#777);font-weight:600;">⏹ stopped</span></div>'
+          +'<div style="height:8px;background:rgba(255,255,255,0.07);border-radius:5px;overflow:hidden;">'
+            +'<div style="height:100%;width:100%;border-radius:5px;background:'+m.fill+';"></div></div></div>';
+      }
+    }catch(e){}
+    return (typeof _prog==='function') ? _prog(r) : '';
+  };
+
+  /* Provisional payslip inside Quick View — days/hours × rate, auto-calculated. */
+  function payslipHTML(r){
+    var t=rotaTotals(r);
+    var daily = r.rateType==='daily';
+    var rate = daily ? (parseFloat(r.dailyRate)||0) : (parseFloat(r.hourlyRate)||0);
+    var qtyLbl = daily ? (t.activeDays+' day'+(t.activeDays===1?'':'s')) : (t.totalHours.toFixed(1)+' hrs');
+    var rateLbl = daily ? ('£'+rate.toFixed(2)+' / day') : ('£'+rate.toFixed(2)+' / hour');
+    var line=function(l,v,strong){return '<div style="display:flex;justify-content:space-between;padding:5px 0;'+(strong?'border-top:1px solid rgba(201,168,76,0.25);margin-top:4px;':'')+'"><span style="color:var(--text3,#aaa);font-size:12px;">'+l+'</span><span style="color:'+(strong?'var(--gold)':'var(--text)')+';font-size:13px;font-weight:'+(strong?'800':'600')+';">'+v+'</span></div>';};
+    var esc=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+    var who = esc(r.carerName||'Carer');
+    var period = esc((r.weekStart||'?')+'  →  '+(r.weekEnd||'?'));
+    return '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin:14px 0 4px;padding-top:10px;border-top:1px solid rgba(201,168,76,0.15);">🧾 Provisional Payslip — auto-calculated</div>'
+      +'<div style="background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.18);border-radius:10px;padding:12px 14px;">'
+      +'<div style="font-size:11px;color:var(--text4,#888);margin-bottom:6px;">'+who+' · '+period+'</div>'
+      +line('Worked', qtyLbl)
+      +line('Rate', rateLbl)
+      +line('Calculation', qtyLbl+' × '+rateLbl)
+      +line('Base pay', '£'+t.baseAmount.toFixed(2))
+      +(t.extras>0?line('Extras & expenses','£'+t.extras.toFixed(2)):'')
+      +line('Provisional total','£'+t.total.toFixed(2),true)
+      +'<div style="font-size:10px;color:var(--text4,#888);margin-top:8px;font-style:italic;">Provisional estimate (days × rate). Use the 🧾 Invoice button for the formal document.</div>'
+      +'</div>';
+  }
+  var _qv = window.rotaQuickView;
+  window.rotaQuickView = function(id){
+    if(typeof _qv==='function') _qv(id);
+    try{
+      var rotas=rotaSGet(LS_ROTA,[]); var r=rotas.find(function(x){return x.id===id;}); if(!r) return;
+      var ov=document.body.lastElementChild; if(!ov) return;
+      var card=ov.querySelector('div[style*="max-width:600px"]')||ov.firstElementChild; if(!card) return;
+      if(card.querySelector('.rota-payslip-added')) return;
+      var actions=card.querySelector('div[style*="margin-top:18px"]');
+      var wrap=document.createElement('div'); wrap.className='rota-payslip-added'; wrap.innerHTML=payslipHTML(r);
+      if(actions) card.insertBefore(wrap, actions); else card.appendChild(wrap);
+    }catch(e){}
+  };
+})();
+</script>
+<!-- ════════ END ROTA UPGRADES ════════ -->
 </body>
 </html>
