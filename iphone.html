@@ -3250,8 +3250,7 @@ html.app-light .mh-kpi,html.app-light .mh-panel{box-shadow:0 1px 2px rgba(0,0,0,
         LM._ai={};
         LM.ai=function(id){var d=load();var c=null,arr=d.cases||[];for(var i=0;i<arr.length;i++){if(arr[i].id===id)c=arr[i];}var box=document.getElementById('lm-ai-'+id);if(!c||!box)return;function v(x){return x&&String(x).trim();}var si=STAGES.indexOf(c.stage);var pct=si<0?(c.stage?'—':'0'):Math.round(si/(STAGES.length-1)*100);var datePhrase='not set';if(c.nextDate){var t=new Date(c.nextDate+'T00:00:00');var days=Math.ceil((t-new Date())/864e5);datePhrase=fmt(c.nextDate)+(days<0?' (passed)':(days===0?' (today)':' (in '+days+' day'+(days===1?'':'s')+')'));}var costs=c.costs||[];var ctot=0;costs.forEach(function(x){ctot+=(+x.amount||0);});var parties='';if(v(c.plaintiff))parties+=c.plaintiff.split(',')[0].trim();if(v(c.defendants)){var dd=c.defendants.split('\n').map(function(l){return l.replace(/^[0-9]\)\s*/,'').trim();}).filter(Boolean).join(' and ');parties+=(parties?' against ':'')+dd;}var overview=(v(c.title)||'This matter');overview+=v(c.caseType)?(' is a '+c.caseType.toLowerCase()+' matter'):' is a legal matter';overview+=v(c.court)?(' before the '+c.court):'';overview+='.';if(parties)overview+=' It is '+parties+'.';if(v(c.land))overview+=' The dispute concerns '+c.land+'.';else if(v(c.claims))overview+=' The claims are: '+c.claims+'.';if(v(c.suitNo))overview+=' Suit number '+c.suitNo+'.';var standing='The case is at the "'+(v(c.stage)||'—')+'" stage'+(pct!=='—'?(' (about '+pct+'% of the way to completion)'):'')+'. ';if(v(c.status))standing+='Status: '+c.status+'. ';standing+='Next court date: '+datePhrase+'.';var notes=[];[['Summary','summary'],['Why it matters','why'],['Follow-up','followUp'],['Action','action'],['Lawyer follow-up / action','lawyerAction']].forEach(function(r){if(v(c[r[1]]))notes.push([r[0],c[r[1]]]);});var docs=(c.attachments||[]).map(function(a){return a.name;});var outcome;if(v(c.judgement)||v(c.outcome)){outcome=(v(c.judgement)?c.judgement:'')+(v(c.judge)?(' (Judge: '+c.judge+(v(c.judgementDate)?(', '+fmt(c.judgementDate)):'')+')'):'')+(v(c.outcome)?(' '+c.outcome):'');}else{outcome='Not yet decided. The case is ongoing — currently at the "'+(v(c.stage)||'—')+'" stage, with the next court date '+datePhrase+'.';}var html='';html+='<div style="border:1px solid var(--sep);border-radius:12px;padding:13px;background:rgba(201,168,76,0.06);">';html+='<div style="font-weight:800;color:var(--gold);margin-bottom:8px;">🤖 AI Case Summary</div>';html+='<div style="font-size:12.5px;line-height:1.55;color:var(--text);">';html+='<b>Overview.</b> '+esc(overview)+'<br><br>';html+='<b>Where it stands.</b> '+esc(standing)+'<br><br>';html+='<b>Reports &amp; notes on file.</b>'+(notes.length?('<ul style="margin:6px 0 8px;padding-left:18px;">'+notes.map(function(n){return '<li><b>'+esc(n[0])+':</b> '+esc(n[1])+'</li>';}).join('')+'</ul>'):' None recorded yet.<br><br>');html+='<b>Documents on file.</b> '+(docs.length?esc(docs.join('; ')):'None attached.')+'<br><br>';html+='<b>Costs.</b> '+(ctot>0?('£'+ctot.toLocaleString()+' recorded across '+costs.length+' item'+(costs.length===1?'':'s')+'.'):'None recorded.')+'<br><br>';html+='<b>Outcome.</b> '+esc(outcome);html+='</div>';html+='<div style="display:flex;gap:8px;margin-top:12px;"><button type="button" class="lm-btn" onclick="LM.copyAI(\''+id+'\')">📋 Copy</button><button type="button" class="lm-btn" onclick="LM.printAI(\''+id+'\')">🖨 Print</button></div>';html+='<div style="font-size:10.5px;color:var(--text3);margin-top:8px;">Generated on-device from what you have recorded in this case. Update the case and regenerate to refresh.</div>';html+='</div>';box.innerHTML=html;var txt=[];txt.push('AI CASE SUMMARY — '+(v(c.title)||'Matter'));txt.push('');txt.push('OVERVIEW');txt.push(overview);txt.push('');txt.push('WHERE IT STANDS');txt.push(standing);txt.push('');txt.push('REPORTS & NOTES ON FILE');if(notes.length){notes.forEach(function(n){txt.push('- '+n[0]+': '+n[1]);});}else{txt.push('None recorded yet.');}txt.push('');txt.push('DOCUMENTS ON FILE');txt.push(docs.length?docs.join('; '):'None attached.');txt.push('');txt.push('COSTS');txt.push(ctot>0?('£'+ctot.toLocaleString()+' across '+costs.length+' item(s)'):'None recorded.');txt.push('');txt.push('OUTCOME');txt.push(outcome);LM._ai[id]=txt.join('\n');};
         LM.copyAI=function(id){var t=LM._ai[id]||'';if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){alert('Summary copied.');},function(){alert('Could not copy.');});}else{try{var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert('Summary copied.');}catch(e){alert('Could not copy.');}}};
-        LM.printAI=function(id){var t=LM._ai[id]||'';var w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print.');return;}w.document.write('<html><head><title>AI Case Summary</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:28px;white-space:pre-wrap;line-height:1.5;">'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</body><!-- rebuild v4.0.2r2 -->
-</html>');w.document.close();w.focus();setTimeout(function(){try{w.print();}catch(e){}},300);};
+        LM.printAI=function(id){var t=LM._ai[id]||'';var w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print.');return;}w.document.write('<html><head><title>AI Case Summary</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:28px;white-space:pre-wrap;line-height:1.5;">'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</body><!-- rebuild v4.0.2r2 --></html>');w.document.close();w.focus();setTimeout(function(){try{w.print();}catch(e){}},300);};
         LM.addFiles=function(inp){var fs=inp.files;if(!fs||!fs.length)return;var n=fs.length,done=0;
           function fin(){done++;if(done===n){inp.value='';LM.renderAtts();}}
           for(var i=0;i<n;i++){(function(f){var r=new FileReader();r.onload=function(){var data=r.result;if(f.type.indexOf('image/')===0){var img=new Image();img.onload=function(){var mx=1400,w=img.width,h=img.height;if(w>mx||h>mx){if(w>h){h=Math.round(h*mx/w);w=mx;}else{w=Math.round(w*mx/h);h=mx;}}var cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);LM._draft.attachments.push({name:f.name,type:'image/jpeg',data:cv.toDataURL('image/jpeg',0.72)});fin();};img.onerror=function(){LM._draft.attachments.push({name:f.name,type:f.type,data:data});fin();};img.src=data;}else{LM._draft.attachments.push({name:f.name,type:f.type,data:data});fin();}};r.onerror=fin;r.readAsDataURL(f);})(fs[i]);}
@@ -6373,6 +6372,28 @@ function rotaView(view, btn){
   }
 }
 
+/* ── SMART AUTO-ARRANGE ENGINE (added by Claude) ──
+   Works out a live urgency state for each rota from its dates/times and
+   its status, so the list can arrange itself: Due now → Overdue → Upcoming → Done. */
+window.rotaLiveState=function(r){
+  var DONE={donepaid:1,complete:1,paid:1,invoiced:1,decline:1};
+  var st=(r&&r.status)||"draft";
+  if(DONE[st]){
+    var isDecline=(st==="decline");
+    return {key:"done",label:isDecline?"Declined":"Done",emoji:isDecline?"🚫":"✅",
+            color:isDecline?"#8E8E93":"#30D158",rank:3,sortTime:-((r&&r.createdAt)||0)};
+  }
+  var rg=(typeof rotaRange==="function")?rotaRange(r):null;
+  var now=Date.now();
+  if(rg&&rg.start&&rg.end){
+    var s=rg.start.getTime(), e=rg.end.getTime();
+    if(now<s)  return {key:"upcoming",label:"Upcoming",emoji:"🕐",color:"#8E8E93",rank:2,sortTime:s};
+    if(now<=e) return {key:"due",     label:"Due now", emoji:"🔵",color:"#5B8DD9",rank:0,sortTime:s};
+    return              {key:"overdue", label:"Overdue", emoji:"🔴",color:"#E0524F",rank:1,sortTime:e};
+  }
+  return {key:"upcoming",label:"Upcoming",emoji:"🕐",color:"#8E8E93",rank:2,sortTime:((r&&r.createdAt)||now)};
+};
+
 /* ── BUILD ROTA LIST ── */
 function buildRotaList(){
   buildRotaFilterBar();
@@ -6387,8 +6408,9 @@ function buildRotaList(){
   }
   // Sort newest first
   filtered.sort(function(a,b){
-    var mode=window.rotaSortMode||"newest";
+    var mode=window.rotaSortMode||"smart";
     function rdate(r){ var ws=(r.weeks&&r.weeks.length)?r.weeks[0].weekStart:r.weekStart; var t=ws?Date.parse(ws):NaN; return isNaN(t)?(r.createdAt||0):t; }
+    if(mode==="smart"){ var la=window.rotaLiveState(a), lb=window.rotaLiveState(b); if(la.rank!==lb.rank) return la.rank-lb.rank; return la.sortTime-lb.sortTime; }
     if(mode==="oldest") return rdate(a)-rdate(b);
     if(mode==="status"){ var ord={donepaid:0,complete:1,paid:2,invoiced:3,inprogress:4,confirmed:5,draft:6,offer:7,decline:8}; var av=(ord[a.status]!==undefined?ord[a.status]:9),bv=(ord[b.status]!==undefined?ord[b.status]:9); return (av-bv)||(rdate(b)-rdate(a)); }
     return rdate(b)-rdate(a);
@@ -6418,6 +6440,7 @@ function buildRotaList(){
           +"</div>"
         +"</div>"
         +'<span class="rota-status-badge '+st.cls+'">'+st.label+"</span>"
+        +(function(){var ls=window.rotaLiveState?window.rotaLiveState(rota):null;return ls?'<span class="rota-live-badge" title="Live status — updates on its own by time" style="background:'+ls.color+'22;border:1px solid '+ls.color+'66;color:'+ls.color+';border-radius:10px;font-size:10px;font-weight:800;padding:2px 8px;margin-left:6px;flex-shrink:0;white-space:nowrap;">'+ls.emoji+' '+ls.label+'</span>':'';})()
         +(rota.attachments&&rota.attachments.length?'<span style="background:rgba(91,141,217,0.15);border:1px solid rgba(91,141,217,0.3);border-radius:10px;font-size:10px;font-weight:700;color:#5B8DD9;padding:2px 8px;margin-left:6px;flex-shrink:0;">📎 '+rota.attachments.length+' doc'+(rota.attachments.length>1?'s':'')+'</span>':"")
         +'<span class="rota-chev" style="font-size:11px;color:var(--text4);margin-left:6px;flex-shrink:0;">&#x25BE;</span>'
       +"</div>"
@@ -6483,7 +6506,8 @@ function buildRotaFilterBar(){
   sw.style.cssText="display:flex;align-items:center;gap:6px;margin-left:auto;";
   sw.innerHTML='<span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text4);">Sort</span>'
     +'<select class="rota-select" style="width:auto;padding:6px 10px;font-size:12px;" onchange="rotaSetSort(this.value)">'
-    +'<option value="newest"'+((window.rotaSortMode||"newest")==="newest"?" selected":"")+'>📅 Date — newest first</option>'
+    +'<option value="smart"'+((window.rotaSortMode||"smart")==="smart"?" selected":"")+'>🤖 Smart — by time &amp; urgency</option>'
+    +'<option value="newest"'+(window.rotaSortMode==="newest"?" selected":"")+'>📅 Date — newest first</option>'
     +'<option value="oldest"'+(window.rotaSortMode==="oldest"?" selected":"")+'>📅 Date — oldest first</option>'
     +'<option value="status"'+(window.rotaSortMode==="status"?" selected":"")+'>✅ Job done first</option>'
     +'</select>';
@@ -12922,7 +12946,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(smartSyncChec
 
 <!-- ═══ ROTA SORT, ARCHIVE & ROYAL CONTACTS — added by Claude ═══ -->
 <script>
-window.rotaSortMode = (function(){try{return localStorage.getItem('rotaSortMode')||'newest';}catch(e){return 'newest';}})();
+window.rotaSortMode = (function(){try{return localStorage.getItem('rotaSortMode')||'smart';}catch(e){return 'smart';}})();
 window.rotaArchiveMode = false;
 
 function rotaSetSort(v){ window.rotaSortMode=v; try{localStorage.setItem('rotaSortMode',v);}catch(e){} if(typeof buildRotaList==='function') buildRotaList(); }
@@ -13525,8 +13549,23 @@ function rotaAutoFlow(){
     setTimeout(function(){t.remove();},10000);
   }
 }
+/* Smart auto-arrange refresh (added by Claude): if a rota's live urgency
+   has changed since last paint, rebuild the list so it re-sorts itself.
+   Only rebuilds when something actually changed, so it never disturbs you. */
+window.__rotaLastSig=window.__rotaLastSig||"";
+window.rotaSmartTick=function(){
+  try{
+    var la=document.getElementById("rota-list-area");
+    if(!la||la.style.display==="none") return;
+    if((window.rotaSortMode||"smart")!=="smart") return;
+    var rotas=rotaSGet(LS_ROTA,[]).filter(function(r){return (!!r.archived)===(!!window.rotaArchiveMode);});
+    var sig=rotas.map(function(r){var s=window.rotaLiveState?window.rotaLiveState(r):{key:""};return r.id+":"+s.key;}).join("|");
+    if(sig!==window.__rotaLastSig){ window.__rotaLastSig=sig; if(typeof buildRotaList==="function") buildRotaList(); }
+  }catch(e){}
+};
 /* live ticking: refresh bars every minute, full flow check every 10 minutes */
 function tick(){
+  if(typeof window.rotaSmartTick==="function") window.rotaSmartTick();
   document.querySelectorAll('.rota-liveprog').forEach(function(el){
     var f=el.querySelector('.rlp-fill'); if(!f) return;
     var ds=el.getAttribute('data-rpdates');
@@ -18889,11 +18928,35 @@ window.rrUniversalSearch=function(raw, saidHtml){
     return '<div class="'+cls+'" style="'+selStyle+'" onclick="ricPick(\''+dI+'\')"><div class="dn">'+d+'</div><div class="ric-dots">'+dots+'</div></div>';
   }
 
+  function copyText(t){
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t);return;} }catch(e){}
+    try{ var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();document.execCommand('copy');ta.remove(); }catch(e){}
+  }
+  function bookingMsg(link){
+    var L=link||'your booking link';
+    return 'Hi,\n\nThank you for getting in touch about care support. You can book a time to speak with me using the link below. Pick whatever slot suits you and it is confirmed right away.\n\n'+L+'\n\nIf none of the times work, reply to this message and I will find another that does.\n\nWarm regards,\nElias Nettey\nPamikyx Ltd';
+  }
+  function bookingCard(d){
+    var link=(d&&d.booking)?d.booking:'';
+    return '<div class="ric-card" style="margin-bottom:14px">'+
+      '<h3>Share with clients</h3>'+
+      '<div class="ric-sub" style="margin-bottom:10px">Paste your booking link once. The message below fills in with it, ready to send to a client.</div>'+
+      '<div class="ric-form">'+
+        '<div class="full"><label>Your booking link</label><input id="ric-booking-link" value="'+esc(link)+'" placeholder="e.g. cal.com/elias"></div>'+
+        '<div class="full"><label>Message to send</label><textarea id="ric-booking-msg" rows="8">'+esc(bookingMsg(link))+'</textarea></div>'+
+        '<div class="full" style="display:flex;gap:8px;flex-wrap:wrap">'+
+          '<button class="ric-btn" onclick="ricSaveBooking()">Save link</button>'+
+          '<button class="ric-btn ghost" onclick="ricCopyBooking(\'link\')">Copy link</button>'+
+          '<button class="ric-btn ghost" onclick="ricCopyBooking(\'msg\')">Copy message</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }
   function viewAppts(){
     var d=db();var t=todayIso();
     var future=d.appts.filter(function(a){return (a.rec&&a.rec!=='none')||a.date>=t;}).sort(function(a,b){return (a.date+a.time).localeCompare(b.date+b.time);});
     var past=d.appts.filter(function(a){return (!a.rec||a.rec==='none')&&a.date<t;}).sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,12);
-    return '<div class="ric-grid"><div>'+
+    return bookingCard(d)+'<div class="ric-grid"><div>'+
       '<div class="ric-card"><h3>Upcoming &amp; recurring</h3>'+(future.length?future.map(apptRow).join(''):empty('No upcoming appointments.'))+'</div>'+
       (past.length?'<div class="ric-card"><h3>Recent (history)</h3>'+past.map(apptRow).join('')+'</div>':'')+
     '</div><div>'+
@@ -19006,6 +19069,23 @@ window.rrUniversalSearch=function(raw, saidHtml){
   window.ricAddTask=function(){var t=el('ric-t-title');if(!t||!t.value.trim())return;var d=db();d.tasks.push({id:uid(),title:t.value.trim(),date:el('ric-t-date').value||'',pri:el('ric-t-pri').value,done:false});commit(d);toast('Task added');renderView();refreshSummary();};
   window.ricToggleTask=function(id){var d=db();d.tasks=d.tasks.map(function(x){return x.id===id?Object.assign(x,{done:!x.done}):x;});commit(d);renderView();refreshSummary();};
   window.ricDelTask=function(id){var d=db();d.tasks=d.tasks.filter(function(x){return x.id!==id;});commit(d);toast('Task removed');renderView();refreshSummary();};
+  window.ricSaveBooking=function(){
+    var inp=el('ric-booking-link');if(!inp)return;
+    var d=db();d.booking=inp.value.trim();commit(d);
+    var m=el('ric-booking-msg');if(m)m.value=bookingMsg(d.booking);
+    toast('Booking link saved');
+  };
+  window.ricCopyBooking=function(which){
+    if(which==='msg'){
+      var m=el('ric-booking-msg');var text=m?m.value:'';
+      if(!text.trim()){toast('Nothing to copy');return;}
+      copyText(text);toast('Message copied');
+    }else{
+      var i=el('ric-booking-link');var link=i?i.value.trim():'';
+      if(!link){toast('Add your booking link first');return;}
+      copyText(link);toast('Link copied');
+    }
+  };
   window.RICAL={render:render};
 
   /* ════ BOOTSTRAP: add a 3rd "Royal iCalender" button to the Legacy Daily hub ════
