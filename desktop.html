@@ -15,7 +15,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Royal Roadmap — HRH Prince Kwame Nkrabea · build 08jul-rotafix</title>
+<title>Royal Roadmap — HRH Prince Kwame Nkrabea · build 08jul-repeat</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13926,7 +13926,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.5 · 8 Jul 2026 · profile-docs-email';
+window.ROYAL_APP_VERSION='v4.9.6 · 8 Jul 2026 · profile-docs-email';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -22307,7 +22307,7 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 <script>
 (function(){
 "use strict";
-window.RR_BUILD='v4.9.5-08jul';
+window.RR_BUILD='v4.9.6-08jul';
 
 /* ---- 1. section id sync (the Save fix) ---- */
 window.rotaSectionIdSync=function(){
@@ -22409,5 +22409,86 @@ setTimeout(function(){
 })();
 </script>
 <!-- ==================== END RRFIX ==================== -->
+
+<!-- ==================== RRDUP v4.9.6 (8 Jul 2026, by Claude) ====================
+     "Repeat Placement" — every rota card (including archived ones) gets a
+     button that clones the job as a FRESH placement: same client, rates and
+     weekly shift pattern; new dates starting next Monday; status Draft;
+     lands in the Active list and opens straight in the editor. -->
+<script>
+(function(){
+"use strict";
+function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function nextMonday(){
+  var d=new Date(); d.setDate(d.getDate()+1);
+  var dow=d.getDay(); var toMon=dow===1?0:(dow===0?1:8-dow);
+  d.setDate(d.getDate()+toMon); return d;
+}
+window.rotaRepeatPlacement=function(id){
+  try{
+    var rotas=rotaSGet(LS_ROTA,[]);
+    var r=rotas.find(function(x){return x.id===id;});
+    if(!r){ alert('Could not find that rota.'); return; }
+    var clone=JSON.parse(JSON.stringify(r));
+    clone.id=rotaUid();
+    clone.status='draft';
+    clone.archived=false;
+    clone.createdAt=Date.now();
+    /* fresh dates: same weekly pattern, week 1 starts next Monday */
+    var nm=nextMonday();
+    var srcWeeks=(clone.weeks&&clone.weeks.length)?clone.weeks:[{shifts:clone.shifts||[]}];
+    clone.weeks=srcWeeks.map(function(w,i){
+      var ws=new Date(nm); ws.setDate(nm.getDate()+i*7);
+      var we=new Date(ws); we.setDate(ws.getDate()+6);
+      var shifts=(w.shifts||[]).map(function(sh,j){
+        var d=new Date(ws); d.setDate(ws.getDate()+j);
+        var c=JSON.parse(JSON.stringify(sh)); c.date=fmt(d); return c;
+      });
+      return {id:'wk'+(i+1), weekStart:fmt(ws), weekEnd:fmt(we), shifts:shifts};
+    });
+    clone.shifts=clone.weeks[0].shifts;
+    clone.weekStart=clone.weeks[0].weekStart;
+    clone.weekEnd=clone.weeks[clone.weeks.length-1].weekEnd;
+    rotas.push(clone);
+    rotaSSet(LS_ROTA,rotas);
+    /* land on the Active list so the new placement is visible, then open it to edit dates */
+    window.rotaArchiveMode=false;
+    try{ if(typeof rotaArchiveBtnPaint==='function') rotaArchiveBtnPaint(false); }catch(e){}
+    try{ if(typeof buildRotaList==='function') buildRotaList(); }catch(e){}
+    try{ if(typeof rotaEditRota==='function') rotaEditRota(clone.id); }catch(e){}
+    setTimeout(function(){ try{ alert('🔁 New placement created for '+(clone.clientName||'this client')+'.\n\nDates start next Monday ('+clone.weekStart+') — adjust them here if needed, then press Save Rota. The live monitor starts fresh.'); }catch(e){} }, 400);
+  }catch(e){ alert('Repeat Placement hit a problem: '+e.message); }
+};
+/* inject the button into every rota card after each list render */
+function inject(){
+  try{
+    document.querySelectorAll('#rota-cards .rota-card').forEach(function(card){
+      if(card.querySelector('.rr-repeat')) return;
+      var editBtn=card.querySelector('[data-edit]');
+      var archBtn=card.querySelector('[data-arch]');
+      if(!editBtn||!archBtn) return;
+      var id=editBtn.getAttribute('data-edit');
+      var b=document.createElement('button');
+      b.className='btn btn-outline btn-sm rr-repeat';
+      b.style.cssText='border-color:rgba(48,209,88,0.45);color:#30D158;';
+      b.innerHTML='🔁 Repeat Placement';
+      b.addEventListener('click',function(e){ e.stopPropagation(); window.rotaRepeatPlacement(id); });
+      archBtn.parentNode.insertBefore(b,archBtn);
+    });
+  }catch(e){}
+}
+function hook(){
+  if(typeof window.buildRotaList==='function'&&!window.buildRotaList._rrdup){
+    var _b=window.buildRotaList;
+    window.buildRotaList=function(){ var r=_b.apply(this,arguments); inject(); return r; };
+    window.buildRotaList._rrdup=true;
+  }
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hook); else hook();
+setTimeout(hook,1500);
+setInterval(inject,2000);
+})();
+</script>
+<!-- ==================== END RRDUP ==================== -->
 </body>
 </html>
