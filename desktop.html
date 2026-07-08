@@ -13926,7 +13926,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.6 · 8 Jul 2026 · profile-docs-email';
+window.ROYAL_APP_VERSION='v4.9.7 · 8 Jul 2026 · profile-docs-email';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -22307,7 +22307,7 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 <script>
 (function(){
 "use strict";
-window.RR_BUILD='v4.9.6-08jul';
+window.RR_BUILD='v4.9.7-08jul';
 
 /* ---- 1. section id sync (the Save fix) ---- */
 window.rotaSectionIdSync=function(){
@@ -22456,7 +22456,13 @@ window.rotaRepeatPlacement=function(id){
     try{ if(typeof rotaArchiveBtnPaint==='function') rotaArchiveBtnPaint(false); }catch(e){}
     try{ if(typeof buildRotaList==='function') buildRotaList(); }catch(e){}
     try{ if(typeof rotaEditRota==='function') rotaEditRota(clone.id); }catch(e){}
-    setTimeout(function(){ try{ alert('🔁 New placement created for '+(clone.clientName||'this client')+'.\n\nDates start next Monday ('+clone.weekStart+') — adjust them here if needed, then press Save Rota. The live monitor starts fresh.'); }catch(e){} }, 400);
+    setTimeout(function(){ try{
+      var t=document.createElement('div');
+      t.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:99999;background:rgba(20,20,28,0.96);border:1.5px solid rgba(48,209,88,0.55);color:#E8F8EC;border-radius:14px;padding:14px 20px;font-size:14px;font-weight:600;max-width:86%;box-shadow:0 8px 30px rgba(0,0,0,0.5);text-align:center;';
+      t.innerHTML='\ud83d\udd01 New placement created for <strong>'+String(clone.clientName||'this client').replace(/</g,'&lt;')+'</strong>.<br>Dates start next Monday ('+clone.weekStart+') \u2014 adjust if needed, then press <strong>Save Rota</strong>. The live monitor starts fresh.';
+      document.body.appendChild(t);
+      setTimeout(function(){ t.style.transition='opacity 0.6s'; t.style.opacity='0'; setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); },700); },6000);
+    }catch(e){} }, 400);
   }catch(e){ alert('Repeat Placement hit a problem: '+e.message); }
 };
 /* inject the button into every rota card after each list render */
