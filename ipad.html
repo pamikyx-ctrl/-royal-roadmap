@@ -13466,7 +13466,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.7 · 8 Jul 2026 · profile-docs-email';
+window.ROYAL_APP_VERSION='v4.9.8 · 8 Jul 2026 · profile-docs-email';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21883,7 +21883,7 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 <script>
 (function(){
 "use strict";
-window.RR_BUILD='v4.9.7-08jul';
+window.RR_BUILD='v4.9.8-08jul';
 
 /* ---- 1. section id sync (the Save fix) ---- */
 window.rotaSectionIdSync=function(){
@@ -22072,5 +22072,138 @@ setInterval(inject,2000);
 })();
 </script>
 <!-- ==================== END RRDUP ==================== -->
+
+<!-- ==================== RRPLC v4.9.8 (8 Jul 2026, by Claude) ====================
+     Placement start / end dates with automatic duration.
+     - A gold "Placement Dates" panel appears in the rota form above the weeks.
+     - Auto-fills from the week dates when empty; fully editable.
+     - Duration (days + weeks) works itself out live.
+     - Saved with the rota (placementStart / placementEnd / placementDays)
+       and shown on the rota card. -->
+<script>
+(function(){
+"use strict";
+function parseD(s){ if(!s) return null; var d=new Date(String(s).slice(0,10)+'T00:00:00'); return isNaN(d.getTime())?null:d; }
+function fmtNice(s){ var d=parseD(s); if(!d) return s||''; var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return d.getDate()+' '+M[d.getMonth()]+' '+d.getFullYear(); }
+function durText(a,b){
+  var d1=parseD(a), d2=parseD(b); if(!d1||!d2) return '';
+  var days=Math.round((d2-d1)/86400000)+1;
+  if(days<1) return '⚠️ end date is before the start date';
+  var w=Math.floor(days/7), r=days%7;
+  var t=days+' day'+(days===1?'':'s');
+  if(w>0) t+=' ('+w+' week'+(w===1?'':'s')+(r?' '+r+' day'+(r===1?'':'s'):'')+')';
+  return t;
+}
+function updateDur(){
+  var s=document.getElementById('rr-plc-start'), e=document.getElementById('rr-plc-end'), o=document.getElementById('rr-plc-dur');
+  if(!s||!e||!o) return;
+  var t=durText(s.value,e.value);
+  o.textContent=t?('⏱ Duration: '+t):'⏱ Duration: — (pick both dates)';
+  o.style.color = (t&&t.indexOf('⚠️')===0) ? '#E0524F' : 'var(--gold-light,#E8C96A)';
+}
+function weekAutoDates(){
+  var ws=document.getElementById('wk-start-0');
+  var out={start:ws&&ws.value?ws.value:''};
+  var ends=[].slice.call(document.querySelectorAll('[id^="wk-end-"]')).filter(function(x){return x.value;});
+  out.end=ends.length?ends[ends.length-1].value:'';
+  return out;
+}
+window.rrPlcInject=function(){
+  try{
+    var wc=document.getElementById('weeks-container');
+    if(!wc||document.getElementById('rr-plc-panel')) return;
+    var panel=document.createElement('div');
+    panel.id='rr-plc-panel';
+    panel.style.cssText='border:1.5px solid rgba(201,168,76,0.4);background:rgba(201,168,76,0.06);border-radius:14px;padding:14px 16px;margin:0 0 16px;';
+    panel.innerHTML=
+      '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gold,#C9A84C);margin-bottom:10px;">📌 Placement Dates</div>'
+      +'<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">'
+      +'<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text4,#8a8172);margin-bottom:4px;">Placement starts</div>'
+      +'<input type="date" id="rr-plc-start" class="rota-input" min="2000-01-01" max="2099-12-31" style="width:auto;"></div>'
+      +'<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text4,#8a8172);margin-bottom:4px;">Placement ends</div>'
+      +'<input type="date" id="rr-plc-end" class="rota-input" min="2000-01-01" max="2099-12-31" style="width:auto;"></div>'
+      +'<button type="button" id="rr-plc-auto" class="btn btn-outline btn-sm" style="border-color:rgba(201,168,76,0.4);color:var(--gold,#C9A84C);">📅 Use week dates</button>'
+      +'</div>'
+      +'<div id="rr-plc-dur" style="margin-top:10px;font-size:13px;font-weight:700;color:var(--gold-light,#E8C96A);">⏱ Duration: — (pick both dates)</div>';
+    wc.parentNode.insertBefore(panel,wc);
+    var s=document.getElementById('rr-plc-start'), e=document.getElementById('rr-plc-end');
+    s.addEventListener('input',updateDur); s.addEventListener('change',updateDur);
+    e.addEventListener('input',updateDur); e.addEventListener('change',updateDur);
+    document.getElementById('rr-plc-auto').addEventListener('click',function(){
+      var a=weekAutoDates();
+      if(a.start) s.value=a.start;
+      if(a.end) e.value=a.end;
+      updateDur();
+    });
+    /* prefill: saved values when editing, otherwise from the week dates */
+    var cur=(typeof rotaEditId!=='undefined'&&rotaEditId)?rotaEditId:null;
+    var r=cur?(rotaSGet(LS_ROTA,[]).find(function(x){return x.id===cur;})||null):null;
+    if(r&&(r.placementStart||r.placementEnd)){
+      if(r.placementStart) s.value=r.placementStart;
+      if(r.placementEnd) e.value=r.placementEnd;
+    } else {
+      setTimeout(function(){
+        if(!s.value&&!e.value){ var a=weekAutoDates(); if(a.start) s.value=a.start; if(a.end) e.value=a.end; updateDur(); }
+      }, 300); /* wait for the auto 4-week build */
+    }
+    updateDur();
+  }catch(e){}
+};
+/* save the fields with the rota */
+function hook(){
+  try{
+    if(typeof window.renderRotaForm==='function'&&!window.renderRotaForm._rrplc){
+      var _f=window.renderRotaForm;
+      window.renderRotaForm=function(){ var r=_f.apply(this,arguments); setTimeout(window.rrPlcInject,200); return r; };
+      window.renderRotaForm._rrplc=true;
+    }
+    if(typeof window.rotaSaveForm==='function'&&!window.rotaSaveForm._rrplc){
+      var _s=window.rotaSaveForm;
+      window.rotaSaveForm=function(editId){
+        var ps=(document.getElementById('rr-plc-start')||{}).value||'';
+        var pe=(document.getElementById('rr-plc-end')||{}).value||'';
+        var out=_s.apply(this,arguments);
+        try{
+          var rotas=rotaSGet(LS_ROTA,[]);
+          var target=null;
+          if(editId){ target=rotas.find(function(x){return x.id===editId;}); }
+          else { target=rotas.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);})[0]; }
+          if(target){
+            target.placementStart=ps; target.placementEnd=pe;
+            var d1=parseD(ps), d2=parseD(pe);
+            target.placementDays=(d1&&d2&&d2>=d1)?Math.round((d2-d1)/86400000)+1:null;
+            rotaSSet(LS_ROTA,rotas);
+          }
+        }catch(e){}
+        return out;
+      };
+      window.rotaSaveForm._rrplc=true;
+    }
+  }catch(e){}
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hook); else hook();
+setTimeout(hook,1500);
+/* show placement on the rota cards */
+function cardLine(){
+  try{
+    var rotas=rotaSGet(LS_ROTA,[]);
+    document.querySelectorAll('#rota-cards .rota-card').forEach(function(card){
+      if(card.querySelector('.rr-plc-line')) return;
+      var eb=card.querySelector('[data-edit]'); if(!eb) return;
+      var r=rotas.find(function(x){return x.id===eb.getAttribute('data-edit');});
+      if(!r||!r.placementStart||!r.placementEnd) return;
+      var sub=card.querySelector('.rota-card-sub'); if(!sub) return;
+      var div=document.createElement('div');
+      div.className='rr-plc-line';
+      div.style.cssText='font-size:11px;color:var(--gold-light,#E8C96A);margin-top:3px;font-weight:700;';
+      div.innerHTML='📌 Placement: '+fmtNice(r.placementStart)+' → '+fmtNice(r.placementEnd)+(r.placementDays?' · '+r.placementDays+' days':'');
+      sub.parentNode.insertBefore(div,sub.nextSibling);
+    });
+  }catch(e){}
+}
+setInterval(cardLine,2000);
+})();
+</script>
+<!-- ==================== END RRPLC ==================== -->
 </body>
 </html>
