@@ -13402,7 +13402,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.8 · 8 Jul 2026 · profile-docs-email';
+window.ROYAL_APP_VERSION='v4.9.9 · 8 Jul 2026 · profile-docs-email';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21819,7 +21819,7 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 <script>
 (function(){
 "use strict";
-window.RR_BUILD='v4.9.8-08jul';
+window.RR_BUILD='v4.9.9-08jul';
 
 /* ---- 1. section id sync (the Save fix) ---- */
 window.rotaSectionIdSync=function(){
@@ -22141,5 +22141,112 @@ setInterval(cardLine,2000);
 })();
 </script>
 <!-- ==================== END RRPLC ==================== -->
+
+<!-- ==================== RRPAY v4.9.9 (8 Jul 2026, by Claude) ====================
+     Live money preview under the Placement Dates panel.
+     Employment -> Expected Payslip preview. Self-Employment -> Invoice preview.
+     Appears when both placement dates are set; updates live as the form changes.
+     Uses the app's own rotaTotals() so figures always match the real invoice. -->
+<script>
+(function(){
+"use strict";
+function gv(id){ var el=document.getElementById(id); return el?String(el.value||'').trim():''; }
+function gbp(n){ return '£'+(Math.round((n||0)*100)/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function nice(s){ if(!s) return ''; var d=new Date(String(s).slice(0,10)+'T00:00:00'); if(isNaN(d)) return s; var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return d.getDate()+' '+M[d.getMonth()]+' '+d.getFullYear(); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function collectFormRota(){
+  var weeks=[];
+  document.querySelectorAll('.week-block').forEach(function(block,wkIdx){
+    var shifts=ROTA_DAYS.map(function(day,i){
+      var q=function(p){ return block.querySelector('[id="'+p+i+'"][data-wk="'+wkIdx+'"]') || (wkIdx===0?block.querySelector('[id="'+p+i+'"]'):null); };
+      var a=q('sh-active-'), s=q('sh-start-'), e=q('sh-end-'), b=q('sh-break-');
+      var paid=document.querySelector('input[name="btype-'+wkIdx+'-'+i+'"]:checked');
+      return {day:day, active:a?a.checked:false, start:(s?s.value:'')||'09:00', end:(e?e.value:'')||'17:00',
+              breakMins:parseInt(b?b.value:30)||30, breakType:(paid?paid.value:'unpaid')};
+    });
+    weeks.push({shifts:shifts});
+  });
+  return {
+    weeks:weeks,
+    rateType:gv('rf-ratetype'), hourlyRate:parseFloat(gv('rf-hourly'))||0, dailyRate:parseFloat(gv('rf-daily'))||0,
+    travelAllowance:parseFloat(gv('rf-travel'))||0, nightCare:parseFloat(gv('rf-night'))||0,
+    overtime:parseFloat(gv('rf-overtime'))||0, emergencyCover:parseFloat(gv('rf-emergency'))||0,
+    otherCharge:parseFloat(gv('rf-other'))||0, otherLabel:gv('rf-otherlabel')||'Other',
+    travelExp:parseFloat(gv('rf-travelexp'))||0, foodExp:parseFloat(gv('rf-foodexp'))||0,
+    otherExp:parseFloat(gv('rf-otherexp'))||0
+  };
+}
+function row(l,v,strong){
+  return '<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);'
+    +(strong?'font-weight:800;':'')+'"><span style="color:'+(strong?'var(--gold-light,#E8C96A)':'var(--text3,#8a8172)')+';font-size:12px;">'+l
+    +'</span><span style="font-size:13px;color:'+(strong?'var(--gold-light,#E8C96A)':'var(--text,#F0EBE0)')+';">'+v+'</span></div>';
+}
+window.rrPayRender=function(){
+  try{
+    var panel=document.getElementById('rr-plc-panel'); if(!panel) return;
+    var ps=gv('rr-plc-start'), pe=gv('rr-plc-end');
+    var box=document.getElementById('rr-pay-box');
+    if(!ps||!pe){ if(box) box.style.display='none'; return; }
+    if(!box){
+      box=document.createElement('div'); box.id='rr-pay-box';
+      box.style.cssText='border:1.5px solid rgba(91,141,217,0.4);background:rgba(91,141,217,0.06);border-radius:14px;padding:14px 16px;margin:0 0 16px;';
+      panel.parentNode.insertBefore(box,panel.nextSibling);
+    }
+    box.style.display='';
+    var d1=new Date(ps+'T00:00:00'), d2=new Date(pe+'T00:00:00');
+    var days=(isNaN(d1)||isNaN(d2))?null:Math.round((d2-d1)/86400000)+1;
+    var period=nice(ps)+' → '+nice(pe)+(days?' · '+days+' days':'');
+    var r=collectFormRota();
+    var t=rotaTotals(r);
+    var selfEmp = gv('rf-emptype')==='self-employment';
+    var rateLine = r.rateType==='daily' ? (t.activeDays+' days × '+gbp(r.dailyRate)+'/day') : (t.totalHours.toFixed(1)+' hrs × '+gbp(r.hourlyRate)+'/hr');
+    var extraRows='';
+    [['Travel allowance',r.travelAllowance],['Night care',r.nightCare],['Overtime',r.overtime],['Emergency cover',r.emergencyCover],[esc(r.otherLabel),r.otherCharge],['Travel expenses',r.travelExp],['Food expenses',r.foodExp],['Other expenses',r.otherExp]]
+      .forEach(function(p){ if(p[1]>0) extraRows+=row(p[0],gbp(p[1])); });
+    if(selfEmp){
+      var toName=gv('rf-agencyname')||gv('rf-clientrepname')||gv('rf-client')||'Client';
+      box.innerHTML='<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#5B8DD9;margin-bottom:8px;">🧾 Invoice — Preview (Self-Employment)</div>'
+        +row('From', esc(gv('rf-carer')||'Elias Nettey'))
+        +row('To', esc(toName))
+        +row('Service','Care services — '+esc(gv('rf-client')||'client'))
+        +row('Placement period', period)
+        +row('Work', rateLine)
+        +row('Base amount', gbp(t.baseAmount))
+        +extraRows
+        +row('TOTAL DUE', gbp(t.total), true)
+        +'<div style="font-size:10.5px;color:var(--text4,#8a8172);margin-top:8px;">Live preview — updates as you edit. The final invoice comes from the 🧾 Invoice button after saving.</div>';
+    } else {
+      box.innerHTML='<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#30D158;margin-bottom:8px;">💷 Expected Payslip — Preview (Employment)</div>'
+        +row('Employer', esc(gv('rf-company')||'—'))
+        +row('Employee', esc(gv('rf-carer')||'Elias Nettey'))
+        +row('Placement period', period)
+        +row('Days worked', String(t.activeDays))
+        +row('Hours', t.totalHours.toFixed(1))
+        +row('Pay', rateLine)
+        +row('Base pay', gbp(t.baseAmount))
+        +extraRows
+        +row('ESTIMATED GROSS PAY', gbp(t.total), true)
+        +'<div style="font-size:10.5px;color:var(--text4,#8a8172);margin-top:8px;">Before tax &amp; National Insurance — live preview, updates as you edit.</div>';
+    }
+  }catch(e){}
+};
+var deb=null;
+document.addEventListener('input',function(e){
+  var fa=document.getElementById('rota-form-area');
+  if(!fa||!fa.contains(e.target)) return;
+  clearTimeout(deb); deb=setTimeout(window.rrPayRender,350);
+},true);
+document.addEventListener('change',function(e){
+  var fa=document.getElementById('rota-form-area');
+  if(!fa||!fa.contains(e.target)) return;
+  clearTimeout(deb); deb=setTimeout(window.rrPayRender,250);
+},true);
+setInterval(function(){
+  var fa=document.getElementById('rota-form-area');
+  if(fa&&fa.style.display!=='none') window.rrPayRender();
+},2500);
+})();
+</script>
+<!-- ==================== END RRPAY ==================== -->
 </body>
 </html>
