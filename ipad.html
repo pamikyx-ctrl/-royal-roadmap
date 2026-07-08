@@ -13466,7 +13466,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.9 · 8 Jul 2026 · profile-docs-email';
+window.ROYAL_APP_VERSION='v4.9.10 · 8 Jul 2026 · profile-docs-email';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21883,7 +21883,7 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 <script>
 (function(){
 "use strict";
-window.RR_BUILD='v4.9.9-08jul';
+window.RR_BUILD='v4.9.10-08jul';
 
 /* ---- 1. section id sync (the Save fix) ---- */
 window.rotaSectionIdSync=function(){
@@ -22312,5 +22312,53 @@ setInterval(function(){
 })();
 </script>
 <!-- ==================== END RRPAY ==================== -->
+
+<!-- ==================== RRSEED-DL v4.9.10 (8 Jul 2026, by Claude) ====================
+     One-time records, guarded by entry id (same pattern as earlier diary seeds):
+     1. Royal Diary — driving lesson of 8 Jul 2026 (Farid Golsherifi, Royal Pass Drivers).
+     2. Money Hub — the two expenses: GBP 70 lesson + GBP 15 day travel card. -->
+<script>
+(function(){
+"use strict";
+function run(){
+  try{
+    /* 1. Royal Diary entry */
+    var dv=[]; try{ var v=localStorage.getItem('royal_diary_v1'); if(v) dv=JSON.parse(v); }catch(e){}
+    if(!dv.some(function(e){ return e && e.id==='dr_driving_080726'; })){
+      dv.unshift({
+        id:'dr_driving_080726',
+        date:'2026-07-08',
+        time:'',
+        mood:'🚗 Determined',
+        title:'Driving Lesson — Royal Pass Drivers (90 minutes, £85 total)',
+        text:DIARY_TEXT
+      });
+      localStorage.setItem('royal_diary_v1', JSON.stringify(dv));
+    }
+    /* 2. Money Hub expenses */
+    var mh=[]; try{ mh=(typeof mhData==='function')?mhData():JSON.parse(localStorage.getItem('royal_moneyhub_v1')||'[]'); }catch(e){}
+    if(!Array.isArray(mh)) mh=[];
+    var ch=false;
+    if(!mh.some(function(t){ return t && t.id==='rr_dl_lesson_080726'; })){
+      mh.push({id:'rr_dl_lesson_080726',type:'expense',amount:70,date:'2026-07-08',
+        desc:'Driving lesson (90 min) — Farid Golsherifi, Royal Pass Drivers',
+        cat:'other-ex',extra:'Royal Pass Drivers',recipient:'',beneficiary:'',method:'',source:''});
+      ch=true;
+    }
+    if(!mh.some(function(t){ return t && t.id==='rr_dl_travel_080726'; })){
+      mh.push({id:'rr_dl_travel_080726',type:'expense',amount:15,date:'2026-07-08',
+        desc:'Day travel card — to/from driving lesson',
+        cat:'transport',extra:'Day travel card',recipient:'',beneficiary:'',method:'',source:''});
+      ch=true;
+    }
+    if(ch){ if(typeof mhSave_data==='function') mhSave_data(mh); else localStorage.setItem('royal_moneyhub_v1',JSON.stringify(mh)); }
+  }catch(e){}
+}
+var DIARY_TEXT="DRIVING LESSON \u2014 ROYAL PASS DRIVERS\n\nDate: Wednesday, 8 July 2026\nInstructor: Farid Golsherifi (Royal Pass Drivers)\nDuration: 90 minutes\n\nPurpose: preparation for the upcoming driving test.\n\nCOSTS:\n- Lesson (90 min): \u00a370.00 \u2014 paid to instructor\n- Transport: \u00a315.00 \u2014 day travel card\n- TOTAL: \u00a385.00\n\nBoth costs are recorded in the Money Hub (8 July 2026):\n- \u00a370 under Other Expense \u2014 \"Driving lesson (90 min) \u2014 Farid Golsherifi, Royal Pass Drivers\"\n- \u00a315 under Transport \u2014 \"Day travel card \u2014 to/from driving lesson\"\n\nNext step: continue lessons with Farid ahead of the driving test date.";
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ setTimeout(run,700); });
+else setTimeout(run,700);
+})();
+</script>
+<!-- ==================== END RRSEED-DL ==================== -->
 </body>
 </html>
