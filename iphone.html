@@ -13402,7 +13402,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.4 · 5 Jul 2026 · profile-docs-email';
+window.ROYAL_APP_VERSION='v4.9.5 · 8 Jul 2026 · profile-docs-email';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21437,7 +21437,10 @@ setInterval(loop,1200);
     var card=e.target.closest && e.target.closest('#rcol-home-card,#rcdn-home-card,#rrcd-home-card');
     if(!card) return;
     var first=card.firstElementChild;
-    if(!first || !first.contains(e.target)) return;   /* only the header toggles, not inner buttons */
+    if(!first) return;
+    var rrRect=card.getBoundingClientRect();
+    var rrHeaderHit=first.contains(e.target) || e.target===card && (e.clientY-rrRect.top)<=56;
+    if(!rrHeaderHit) return;   /* header line, chevron or card top strip toggles */
     var id=card.id, st=load(), now=!card.classList.contains('rncol-collapsed');
     card.classList.toggle('rncol-collapsed', now);
     st[id]=now; save(st);
@@ -21803,5 +21806,120 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 })();
 </script>
 <!-- ════════ END SELF-HEAL ════════ -->
+
+<!-- ==================== RRFIX v4.9.5 (8 Jul 2026, by Claude) ====================
+     1. Rota Save fix: the Employment / Self-Employment sections shared the same
+        field ids, so Save read the HIDDEN empty copy and lost the client's name.
+        rotaSectionIdSync strips ids from whichever section is hidden.
+     2. After saving a NEW rota, always land on the Active list (not Archive).
+     3. Home card collapse: chevron / card frame now toggles, not just the top line.
+     4. Date sanity: fixes stored years like 20023 and cleans future saves.
+     5. Build self-update: if the published build differs, reload once.
+     6. Mobile filter-bar layout hardening. -->
+<script>
+(function(){
+"use strict";
+window.RR_BUILD='v4.9.5-08jul';
+
+/* ---- 1. section id sync (the Save fix) ---- */
+window.rotaSectionIdSync=function(){
+  try{
+    var emp=document.getElementById('emp-only-fields');
+    var se=document.getElementById('self-emp-fields');
+    if(!emp&&!se) return;
+    function strip(sec){ if(!sec) return; sec.querySelectorAll('[id]').forEach(function(el){ el.setAttribute('data-rr-id',el.id); el.removeAttribute('id'); }); }
+    function restore(sec){ if(!sec) return; sec.querySelectorAll('[data-rr-id]').forEach(function(el){ el.id=el.getAttribute('data-rr-id'); el.removeAttribute('data-rr-id'); }); }
+    var empVis=emp&&getComputedStyle(emp).display!=='none';
+    var seVis=se&&getComputedStyle(se).display!=='none';
+    if(empVis){ restore(emp); strip(se); }
+    else if(seVis){ restore(se); strip(emp); }
+  }catch(e){}
+};
+
+/* ---- 4. date sanity ---- */
+function rrFixDate(s,fy){
+  s=String(s||''); var m=/^(\d{4,6})-(\d{2})-(\d{2})$/.exec(s); if(!m) return s;
+  var y=m[1];
+  if(y.length>4) y=y.slice(0,2)+y.slice(-2);           /* 20023 -> 2023 */
+  var yi=parseInt(y,10);
+  if(yi<2000||yi>2099) yi=(fy&&fy>=2000&&fy<=2099)?fy:(new Date()).getFullYear();
+  return String(yi)+'-'+m[2]+'-'+m[3];
+}
+window.rrMigrateRotaDates=function(){
+  try{
+    var raw=localStorage.getItem('royal_rota_v1'); if(!raw) return;
+    var rot=JSON.parse(raw); if(!Array.isArray(rot)) return;
+    var ch=false;
+    rot.forEach(function(r){
+      var fy=r.createdAt?new Date(r.createdAt).getFullYear():null;
+      ['weekStart','weekEnd'].forEach(function(k){ var f=rrFixDate(r[k],fy); if(f!==r[k]){r[k]=f;ch=true;} });
+      (r.weeks||[]).forEach(function(w){
+        ['weekStart','weekEnd'].forEach(function(k){ var f=rrFixDate(w[k],fy); if(f!==w[k]){w[k]=f;ch=true;} });
+        (w.shifts||[]).forEach(function(sh){ var f=rrFixDate(sh.date,fy); if(f!==sh.date){sh.date=f;ch=true;} });
+      });
+      (r.shifts||[]).forEach(function(sh){ var f=rrFixDate(sh.date,fy); if(f!==sh.date){sh.date=f;ch=true;} });
+    });
+    if(ch){ localStorage.setItem('royal_rota_v1',JSON.stringify(rot)); if(typeof buildRotaList==='function') buildRotaList(); }
+  }catch(e){}
+};
+
+/* ---- hook the rota functions ---- */
+function hook(){
+  try{
+    if(typeof window.rotaEmpTypeSelect==='function'&&!window.rotaEmpTypeSelect._rr){
+      var _t=window.rotaEmpTypeSelect;
+      window.rotaEmpTypeSelect=function(){ var r=_t.apply(this,arguments); try{window.rotaSectionIdSync();}catch(e){} return r; };
+      window.rotaEmpTypeSelect._rr=true;
+    }
+    if(typeof window.renderRotaForm==='function'&&!window.renderRotaForm._rr){
+      var _f=window.renderRotaForm;
+      window.renderRotaForm=function(){ var r=_f.apply(this,arguments); setTimeout(window.rotaSectionIdSync,150); return r; };
+      window.renderRotaForm._rr=true;
+    }
+    if(typeof window.rotaSaveForm==='function'&&!window.rotaSaveForm._rr){
+      var _s=window.rotaSaveForm;
+      window.rotaSaveForm=function(editId){
+        try{ window.rotaSectionIdSync(); }catch(e){}
+        var isNew=!editId;
+        if(isNew){ window.rotaArchiveMode=false; try{ if(typeof rotaArchiveBtnPaint==='function') rotaArchiveBtnPaint(false); }catch(e){} }
+        var out=_s.apply(this,arguments);
+        try{ window.rrMigrateRotaDates(); }catch(e){}
+        return out;
+      };
+      window.rotaSaveForm._rr=true;
+    }
+  }catch(e){}
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hook); else hook();
+setTimeout(hook,1500);
+setInterval(function(){ try{window.rotaSectionIdSync();}catch(e){} },1200);
+
+/* ---- run the stored-date clean-up once at start ---- */
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',window.rrMigrateRotaDates); else window.rrMigrateRotaDates();
+
+/* ---- 6. mobile filter-bar hardening ---- */
+try{
+  var st=document.createElement('style');
+  st.textContent='#rota-filter-bar{display:flex!important;flex-wrap:wrap!important;row-gap:6px;max-width:100%;}'
+    +'#rota-filter-bar .ftab{flex:0 0 auto;white-space:nowrap;}'
+    +'#rota-filter-bar>div{max-width:100%;}';
+  document.head.appendChild(st);
+}catch(e){}
+
+/* ---- 5. build self-update: reload once if the published build is newer ---- */
+setTimeout(function(){
+  try{
+    fetch(location.pathname+'?rrupd='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){
+      var m=t.match(/RR_BUILD='(v[\d.]+-\w+)'/);
+      if(m&&m[1]!==window.RR_BUILD&&!sessionStorage.getItem('rrupd_'+m[1])){
+        sessionStorage.setItem('rrupd_'+m[1],'1');
+        location.reload();
+      }
+    }).catch(function(){});
+  }catch(e){}
+},4000);
+})();
+</script>
+<!-- ==================== END RRFIX ==================== -->
 </body>
 </html>
