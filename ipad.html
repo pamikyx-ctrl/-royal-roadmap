@@ -13466,7 +13466,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.15.0 · 9 Jul 2026 · prayer-room-preview';
+window.ROYAL_APP_VERSION='v4.16.0 · 9 Jul 2026 · previews-readaloud-ledger';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -24219,13 +24219,36 @@ function pages(){
 }
 var SYMS='☯ ✝️ 🕉️ ☪️ ✡️ 🌍 ✨';
 var curIdx=0, atCover=true;
-window.rpbGo=function(t){if(typeof window.go==='function')window.go(t);else if(typeof window.royalTab==='function')window.royalTab(t,null);};
+window.rpbGo=function(t){rpbQuiet();if(typeof window.go==='function')window.go(t);else if(typeof window.royalTab==='function')window.royalTab(t,null);};
 window.rpbOpen=function(){atCover=false;renderToc();};
-window.rpbToc=function(){renderToc();};
-window.rpbPage=function(i){curIdx=i;renderPage();};
-window.rpbTurn=function(d){var n=pages().length;if(!n)return;
+window.rpbToc=function(){rpbQuiet();renderToc();};
+window.rpbPage=function(i){rpbQuiet();curIdx=i;renderPage();};
+window.rpbTurn=function(d){var n=pages().length;if(!n)return;rpbQuiet();
   var pg=document.querySelector('#rpbk-root .rpbk-page');if(pg)pg.classList.add(d>0?'turn-r':'turn-l');
   setTimeout(function(){curIdx=((curIdx+d)%n+n)%n;renderPage();},180);};
+/* — read aloud: the page reads itself — */
+var speaking=false;
+function rpbQuiet(){try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}speaking=false;rpbMark();}
+function rpbMark(){var b=document.getElementById('rpbk-speak');if(b)b.textContent=speaking?'⏹ Stop reading':'🔊 Read to me';}
+window.rpbSpeak=function(){
+  if(!('speechSynthesis' in window)){alert('The reading voice is not available on this device.');return;}
+  var synth=window.speechSynthesis;
+  if(speaking){rpbQuiet();return;}
+  var ps=pages();var x=ps[curIdx];if(!x)return;
+  var text=(x.p.title||'')+'. '+String(x.p.body||'').replace(/[“”"]/g,'');
+  var u=new SpeechSynthesisUtterance(text);
+  u.rate=0.92;u.pitch=1;
+  try{
+    var vs=synth.getVoices()||[];
+    var v=vs.find(function(vv){return /en-GB/i.test(vv.lang)&&/(Daniel|Serena|Kate|Stephanie|Sonia)/i.test(vv.name);})
+        ||vs.find(function(vv){return /en-GB/i.test(vv.lang);})
+        ||vs.find(function(vv){return /^en/i.test(vv.lang);});
+    if(v)u.voice=v;
+  }catch(e){}
+  u.onend=function(){speaking=false;rpbMark();};
+  u.onerror=function(){speaking=false;rpbMark();};
+  synth.cancel();speaking=true;rpbMark();synth.speak(u);
+};
 function ensureScreen(){
   var sc=document.getElementById('s-prayerbook');
   if(!sc){var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
@@ -24278,7 +24301,7 @@ function renderPage(){
   h+='<div class="rpbk-body">'+esc(p.body||'')+'</div>';
   h+='<div class="rpbk-pageno">— PAGE '+(curIdx+1)+' OF '+ps.length+' —</div>';
   h+='</div>';
-  h+='<div class="rg2-arrows" style="margin-top:12px;"><span class="rg2-chip" onclick="rpbTurn(-1)">⬅ Previous</span><span class="rg2-chip" onclick="rpbToc()">🕊️ Prayer Room</span><span class="rg2-chip" onclick="rpbGo(\'home\')">🏠 Home</span><span class="rg2-chip" onclick="rpbTurn(1)">Next ➡</span></div>';
+  h+='<div class="rg2-arrows" style="margin-top:12px;"><span class="rg2-chip" onclick="rpbTurn(-1)">⬅ Previous</span><span class="rg2-chip" id="rpbk-speak" onclick="rpbSpeak()">🔊 Read to me</span><span class="rg2-chip" onclick="rpbToc()">🕊️ Prayer Room</span><span class="rg2-chip" onclick="rpbGo(\'home\')">🏠 Home</span><span class="rg2-chip" onclick="rpbTurn(1)">Next ➡</span></div>';
   h+='</div>';
   r.innerHTML=h;
   var page=r.querySelector('.rpbk-page');var x0=null;
@@ -24428,6 +24451,275 @@ function injectBar(){
 function boot(){injectBar();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 setInterval(injectBar,2000);
+})();
+</script>
+
+<style id="rprv-css">
+/* ═══════════ ROYAL PROJECT PREVIEWS (rprv) — instant paper snapshots + shared report engine ═══════════ */
+.rprv-bar{max-width:980px;margin:8px auto 4px;background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(212,175,55,.4);border-radius:16px;padding:11px 13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;box-shadow:0 6px 16px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06);}
+.rprv-bar .lbl{font-size:.72rem;font-weight:800;letter-spacing:1.5px;color:var(--gold,#C9A84C);text-transform:uppercase;margin-right:2px;}
+.rprv-chip{background:rgba(212,175,55,.13);border:1px solid rgba(212,175,55,.4);color:var(--gold,#C9A84C);border-radius:999px;padding:7px 13px;font-size:.78rem;font-weight:700;cursor:pointer;user-select:none;}
+.rprv-chip:hover{background:rgba(212,175,55,.26);}
+.rprv-go{background:linear-gradient(135deg,#d4af37,#b8912a)!important;color:#241d0d!important;border:none!important;}
+html.app-light .rprv-bar{background:#fff;border-color:#dccf9f;}
+#rprv-modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;display:none;align-items:center;justify-content:center;padding:14px;}
+#rprv-modal.open{display:flex;}
+#rprv-paper{background:#fff;color:#111;border-radius:14px;max-width:760px;width:100%;max-height:88vh;overflow-y:auto;padding:26px 26px 20px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+#rprv-paper h2{margin:0 0 2px;font-size:1.18rem;}
+#rprv-paper .rng{color:#777;font-size:.82rem;margin-bottom:14px;}
+#rprv-paper h3{font-size:.76rem;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a45;border-bottom:1px solid #eee5cc;padding-bottom:5px;margin:16px 0 8px;}
+#rprv-paper table{width:100%;border-collapse:collapse;font-size:.82rem;}
+#rprv-paper th{text-align:left;color:#999;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;padding:5px 7px;border-bottom:1px solid #eee;}
+#rprv-paper td{padding:6px 7px;border-bottom:1px solid #f2eede;}
+#rprv-paper td.amt{text-align:right;font-weight:700;white-space:nowrap;color:#b03a2e;}
+#rprv-paper td.amt.in{color:#1f7a3a;}
+.rprv-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-bottom:14px;}
+.rprv-kpi{background:#f6f3ea;border:1px solid #e5decb;border-radius:11px;padding:10px;text-align:center;}
+.rprv-kpi .v{font-size:1.02rem;font-weight:800;}
+.rprv-kpi .l{font-size:.63rem;letter-spacing:1px;color:#8a8272;text-transform:uppercase;margin-top:2px;}
+.rprv-btns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.rprv-btns button{flex:1;min-width:100px;border:none;border-radius:11px;padding:12px 8px;font-weight:800;font-size:.82rem;cursor:pointer;background:#eee7d2;color:#4a3f22;}
+.rprv-btns button.gold{background:linear-gradient(135deg,#d4af37,#b8912a);color:#241d0d;}
+</style>
+<script id="rprv-js">
+/* ═══════════ ROYAL PROJECT PREVIEWS (rprv) — shared report engine; read-only ═══════════ */
+(function(){
+'use strict';
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function money(n){n=+n||0;return '£'+n.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtD(s){try{var p=String(s).slice(0,10).split('-');return p[2]+'/'+p[1]+'/'+p[0];}catch(e){return s;}}
+function mh(){return lsGet('royal_moneyhub_v1',[])||[];}
+var FILTERS={
+  family:{icon:'🏘️',title:'Royal Family Support',f:function(t){return t.type==='ghana'||t.type==='family';}},
+  residence:{icon:'🏰',title:'Royal Residence Development',f:function(t){return /home-construction|land|throne-build|residence/i.test((t.cat||'')+' '+(t.purpose||''));}},
+  spending:{icon:'💳',title:'Spending',f:function(t){return t.type==='expense'||t.type==='personal';}}
+};
+var lastHtml='', lastCsv='', lastTitle='Report';
+window.rprvRange=function(kind){
+  var now=new Date();var a,b=iso(now);
+  if(kind==='week'){var d=new Date(now);d.setDate(now.getDate()-((now.getDay()+6)%7));a=iso(d);}
+  else if(kind==='month'){a=iso(new Date(now.getFullYear(),now.getMonth(),1));}
+  else if(kind==='3mo'){a=iso(new Date(now.getFullYear(),now.getMonth()-2,1));}
+  else if(kind==='quarter'){var q=Math.floor(now.getMonth()/3)*3;a=iso(new Date(now.getFullYear(),q,1));}
+  else if(kind==='half'){a=iso(new Date(now.getFullYear(),now.getMonth()-5,1));}
+  else if(kind==='year'){a=iso(new Date(now.getFullYear(),0,1));}
+  else {a='2000-01-01';}
+  return [a,b];
+};
+function ensureModal(){
+  if(document.getElementById('rprv-modal'))return;
+  var m=document.createElement('div');m.id='rprv-modal';
+  m.innerHTML='<div id="rprv-paper"></div>';
+  m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});
+  document.body.appendChild(m);
+}
+window.rprvShow=function(key,kind,a,b){
+  ensureModal();
+  var cfg=FILTERS[key];if(!cfg)return;
+  if(kind){var r=window.rprvRange(kind);a=r[0];b=r[1];}
+  if(!a)a='2000-01-01'; if(!b)b=iso(new Date());
+  var tx=mh().filter(function(t){var d=(t.date||'').slice(0,10);return cfg.f(t)&&d>=a&&d<=b;});
+  tx.sort(function(p,q){return String(p.date).localeCompare(String(q.date));});
+  var out=0,inn=0,byCat={};
+  tx.forEach(function(t){var amt=+t.amount||0;
+    if(t.type==='income'){inn+=amt;}else{out+=amt;}
+    var k=t.cat||t.purpose||t.type||'other';byCat[k]=(byCat[k]||0)+amt;});
+  var days=Math.max(1,Math.round((new Date(b)-new Date(a))/86400000)+1);
+  lastTitle=cfg.title;
+  var h='<h2>'+cfg.icon+' '+esc(cfg.title)+' — Snapshot</h2>'+
+    '<div class="rng">'+fmtD(a)+' → '+fmtD(b)+' · '+tx.length+' entr'+(tx.length===1?'y':'ies')+' · HRH Prince Kwame Nkrabea</div>';
+  h+='<div class="rprv-kpis">'+
+    '<div class="rprv-kpi"><div class="v" style="color:#b03a2e">'+money(out)+'</div><div class="l">Invested / sent</div></div>'+
+    (inn?'<div class="rprv-kpi"><div class="v" style="color:#1f7a3a">'+money(inn)+'</div><div class="l">Received</div></div>':'')+
+    '<div class="rprv-kpi"><div class="v">'+tx.length+'</div><div class="l">Entries</div></div>'+
+    '<div class="rprv-kpi"><div class="v">'+money(out/days)+'</div><div class="l">Avg / day</div></div></div>';
+  var keys=Object.keys(byCat).sort(function(p,q){return byCat[q]-byCat[p];});
+  if(keys.length){h+='<h3>Where it went</h3><table><tr><th>Category / purpose</th><th style="text-align:right">Total</th></tr>';
+    keys.forEach(function(k){h+='<tr><td>'+esc(k)+'</td><td class="amt">'+money(byCat[k])+'</td></tr>';});h+='</table>';}
+  h+='<h3>Every entry</h3>';
+  if(!tx.length)h+='<div style="color:#999;font-style:italic;padding:8px;">Nothing recorded between these dates.</div>';
+  else{h+='<table><tr><th>Date</th><th>Description</th><th>Category</th><th style="text-align:right">£</th></tr>';
+    tx.forEach(function(t){var isin=t.type==='income';
+      h+='<tr><td>'+fmtD(t.date)+'</td><td>'+esc((t.desc||'').slice(0,58))+'</td><td>'+esc(t.cat||t.purpose||t.type||'')+'</td><td class="amt'+(isin?' in':'')+'">'+(isin?'+':'−')+money(t.amount)+'</td></tr>';});
+    h+='</table>';}
+  lastHtml=h;
+  /* CSV for Apple Numbers */
+  var rows=[['Date','Description','Category','Type','Amount £']];
+  tx.forEach(function(t){rows.push([t.date||'',(t.desc||'').replace(/"/g,"'"),t.cat||t.purpose||'',t.type||'',(+t.amount||0).toFixed(2)]);});
+  rows.push([]);rows.push(['Total out','','','',out.toFixed(2)]);if(inn)rows.push(['Total in','','','',inn.toFixed(2)]);
+  lastCsv=rows.map(function(r){return r.map(function(c){return '"'+String(c)+'"';}).join(',');}).join('\n');
+  h+='<div class="rprv-btns">'+
+    '<button onclick="rprvNumbers()">📄 Numbers</button>'+
+    '<button onclick="rprvExcel()">📊 Excel</button>'+
+    '<button onclick="rprvPrint()">🖨 Print / Save</button>'+
+    '<button onclick="rprvEmail()">✉️ Email</button>'+
+    '<button class="gold" onclick="document.getElementById(\'rprv-modal\').classList.remove(\'open\')">✕ Close</button></div>'+
+    '<div style="font-size:.68rem;color:#999;margin-top:8px;">📄 Numbers downloads a CSV file that opens directly in Apple Numbers · 🖨 Print lets you Save as PDF · ✉️ Email downloads the file first, then opens a ready-written email — attach the downloaded file.</div>';
+  document.getElementById('rprv-paper').innerHTML=h;
+  document.getElementById('rprv-modal').classList.add('open');
+};
+function dl(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();}
+window.rprvNumbers=function(){dl(new Blob(['﻿'+lastCsv],{type:'text/csv;charset=utf-8'}),lastTitle.replace(/\s+/g,'-')+'-Snapshot.csv');};
+window.rprvExcel=function(){dl(new Blob(['<html><head><meta charset="utf-8"></head><body>'+lastHtml+'</body></html>'],{type:'application/vnd.ms-excel'}),lastTitle.replace(/\s+/g,'-')+'-Snapshot.xls');};
+window.rprvPrint=function(){
+  var f=document.createElement('iframe');f.style.cssText='position:fixed;width:0;height:0;border:0;';
+  document.body.appendChild(f);
+  f.contentDocument.write('<html><head><title>'+esc(lastTitle)+' Snapshot</title><style>body{font-family:-apple-system,Segoe UI,Arial,sans-serif;padding:28px;color:#111;}h2{margin:0 0 4px;}table{width:100%;border-collapse:collapse;font-size:12px;}th,td{text-align:left;padding:5px 7px;border-bottom:1px solid #eee;}td.amt{text-align:right;font-weight:700;}.rng{color:#777;font-size:12px;margin-bottom:12px;}.rprv-kpis{display:flex;gap:10px;margin-bottom:14px;}.rprv-kpi{border:1px solid #ddd;border-radius:8px;padding:8px 12px;text-align:center;}.rprv-kpi .l{font-size:9px;color:#999;text-transform:uppercase;}h3{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8a7a45;border-bottom:1px solid #eee;padding-bottom:4px;}</style></head><body>'+lastHtml+'</body></html>');
+  f.contentDocument.close();
+  setTimeout(function(){try{f.contentWindow.print();}catch(e){}setTimeout(function(){f.remove();},2000);},250);
+};
+window.rprvEmail=function(){
+  window.rprvNumbers();
+  var sub=encodeURIComponent(lastTitle+' — snapshot from my Royal Roadmap');
+  var body=encodeURIComponent('Please find attached the '+lastTitle+' snapshot (the CSV file has just downloaded — attach it here).\n\nWith royal regards,\nNana Kwame Nkrabea');
+  location.href='mailto:?subject='+sub+'&body='+body;
+};
+/* — inject preview bars on the two Royal project screens — */
+function bar(key,quick){
+  var chips=quick.map(function(q){return '<span class="rprv-chip" onclick="rprvShow(\''+key+'\',\''+q[0]+'\')">'+q[1]+'</span>';}).join('');
+  return '<span class="lbl">🔎 Instant preview</span>'+chips+
+    '<span class="rprv-chip rprv-go" onclick="rprvShow(\''+key+'\',\'all\')">👑 Everything so far</span>';
+}
+function inject(){
+  [['s-family','family'],['s-residence','residence']].forEach(function(pair){
+    var sc=document.getElementById(pair[0]);if(!sc)return;
+    if(sc.querySelector('.rprv-bar'))return;
+    var d=document.createElement('div');d.className='rprv-bar';
+    d.innerHTML=bar(pair[1],[['month','This month'],['3mo','3 months'],['half','6 months'],['year','This year']]);
+    sc.insertBefore(d,sc.firstChild);
+  });
+}
+function boot(){inject();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(inject,2000);
+})();
+</script>
+
+<style id="rspl-css">
+/* ═══════════ SPENDING LEDGER (rspl) — bookkeeping presentation on the Spending page ═══════════ */
+#rspl-root{max-width:980px;margin:8px auto 6px;}
+.rspl-card{background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(212,175,55,.4);border-radius:18px;padding:16px 15px;margin-bottom:12px;box-shadow:0 8px 22px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);}
+.rspl-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.rspl-hd .t{font-weight:800;font-size:1rem;color:var(--gold,#C9A84C);letter-spacing:.5px;}
+.rspl-hd .glance{font-size:.76rem;color:#a9a184;}
+.rspl-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:12px;}
+.rspl-kpi{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:10px 8px;text-align:center;box-shadow:inset 0 2px 6px rgba(0,0,0,.35);}
+.rspl-kpi .v{font-size:1rem;font-weight:800;color:#f2ead2;}
+.rspl-kpi .l{font-size:.62rem;letter-spacing:1px;color:#a9a184;text-transform:uppercase;margin-top:2px;}
+.rspl-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;}
+.rspl-f label{display:block;font-size:.66rem;letter-spacing:1px;color:#a9a184;text-transform:uppercase;margin-bottom:4px;}
+.rspl-f input,.rspl-f select{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 10px;color:#f2ead2;font-size:.9rem;box-sizing:border-box;box-shadow:inset 0 2px 6px rgba(0,0,0,.35);}
+.rspl-add{grid-column:1/-1;display:flex;justify-content:flex-end;}
+.rspl-add button{background:linear-gradient(135deg,#d4af37,#b8912a);border:none;color:#241d0d;font-weight:800;border-radius:11px;padding:11px 22px;cursor:pointer;font-size:.9rem;}
+.rspl-tbl{width:100%;border-collapse:collapse;font-size:.82rem;color:#e6dfc8;}
+.rspl-tbl th{text-align:left;color:#a9a184;font-size:.64rem;text-transform:uppercase;letter-spacing:1px;padding:6px 7px;border-bottom:1px solid rgba(255,255,255,.12);}
+.rspl-tbl td{padding:7px;border-bottom:1px solid rgba(255,255,255,.06);}
+.rspl-tbl td.amt{text-align:right;font-weight:700;color:#e8877b;white-space:nowrap;}
+.rspl-periods{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px;}
+html.app-light .rspl-card{background:#fff;border-color:#dccf9f;}
+html.app-light .rspl-kpi{background:rgba(120,95,30,.06);box-shadow:inset 0 2px 5px rgba(0,0,0,.08);}
+html.app-light .rspl-kpi .v{color:#2b2417;}
+html.app-light .rspl-f input,html.app-light .rspl-f select{background:#fff;color:#333;border-color:#ddd;box-shadow:inset 0 2px 5px rgba(0,0,0,.06);}
+html.app-light .rspl-tbl{color:#3a3222;}
+html.app-light .rspl-tbl td.amt{color:#b03a2e;}
+</style>
+<script id="rspl-js">
+/* ═══════════ SPENDING LEDGER (rspl) — single source: royal_moneyhub_v1 ═══════════ */
+(function(){
+'use strict';
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function money(n){n=+n||0;return '£'+n.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtD(s){try{var p=String(s).slice(0,10).split('-');return p[2]+'/'+p[1];}catch(e){return s;}}
+var CATK='royal_spl_cats_v1';
+var BASECATS=['🛒 Food & Groceries','🚗 Transport / Fuel','🏠 Utilities / Bills','👔 Clothing','💊 Health','🏡 Household','📱 Subscriptions','🍽️ Eating Out','🎬 Entertainment','🎁 Gifts','✂️ Self Care','✈️ Travel','🎓 Study','📦 Other'];
+function cats(){var c=lsGet(CATK,[]);return BASECATS.concat(c.filter(function(x){return BASECATS.indexOf(x)<0;}));}
+function spend(){return (lsGet('royal_moneyhub_v1',[])||[]).filter(function(t){return t.type==='expense'||t.type==='personal';});}
+function toast(m){var t=document.createElement('div');t.className='rbk-toast';t.textContent='✅ '+m;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';},2600);setTimeout(function(){t.remove();},3100);}
+window.rsplCat=function(sel){
+  if(sel.value!=='__new')return;
+  var v=prompt('New spending category:');
+  if(v){var c=lsGet(CATK,[]);if(c.indexOf(v)<0){c.push(v);lsSet(CATK,c);}
+    var o=document.createElement('option');o.textContent=v;o.selected=true;sel.insertBefore(o,sel.lastElementChild);}
+  else sel.selectedIndex=0;
+};
+window.rsplAdd=function(){
+  var amt=parseFloat(document.getElementById('rspl-amt').value)||0;
+  if(!amt){alert('Enter the £ amount.');return;}
+  var date=document.getElementById('rspl-date').value||iso(new Date());
+  var cat=document.getElementById('rspl-cat').value;
+  var who=(document.getElementById('rspl-who').value||'').trim();
+  var src=(document.getElementById('rspl-src').value||'').trim();
+  var notes=(document.getElementById('rspl-notes').value||'').trim();
+  var mh=lsGet('royal_moneyhub_v1',[])||[];
+  mh.push({id:'spl_'+Date.now(),type:'expense',amount:amt,date:date,desc:(who||cat),cat:cat,extra:'Spending Ledger',recipient:'',beneficiary:who,method:src,source:src,purpose:'',loc:'',ref:'',notes:notes});
+  lsSet('royal_moneyhub_v1',mh);
+  document.getElementById('rspl-amt').value='';document.getElementById('rspl-who').value='';document.getElementById('rspl-notes').value='';
+  render();toast(money(amt)+' recorded — the whole system sees it');
+};
+function kpis(){
+  var now=new Date();var m0=iso(new Date(now.getFullYear(),now.getMonth(),1));
+  var wk=new Date(now);wk.setDate(now.getDate()-((now.getDay()+6)%7));var w0=iso(wk);
+  var t=iso(now);var sT=0,sW=0,sM=0,n=0;
+  spend().forEach(function(x){var d=(x.date||'').slice(0,10);var a=+x.amount||0;
+    if(d===t)sT+=a; if(d>=w0)sW+=a; if(d>=m0){sM+=a;n++;}});
+  return {t:sT,w:sW,m:sM,n:n};
+}
+function render(){
+  var root=document.getElementById('rspl-root');if(!root)return;
+  var k=kpis();
+  var catOpts=cats().map(function(c){return '<option>'+esc(c)+'</option>';}).join('')+'<option value="__new">➕ Add your own…</option>';
+  var rows=spend().slice().sort(function(p,q){return String(q.date).localeCompare(String(p.date));}).slice(0,25);
+  var h='<div class="rspl-card"><div class="rspl-hd"><span class="t">💳 Spending Ledger — Bookkeeping</span><span class="glance">every entry saved once, into your Money Hub</span></div>';
+  h+='<div class="rspl-kpis">'+
+    '<div class="rspl-kpi"><div class="v">'+money(k.t)+'</div><div class="l">Today</div></div>'+
+    '<div class="rspl-kpi"><div class="v">'+money(k.w)+'</div><div class="l">This week</div></div>'+
+    '<div class="rspl-kpi"><div class="v">'+money(k.m)+'</div><div class="l">This month</div></div>'+
+    '<div class="rspl-kpi"><div class="v">'+k.n+'</div><div class="l">Entries this month</div></div></div>';
+  /* entry form */
+  h+='<div class="rspl-form">'+
+    '<div class="rspl-f"><label>Amount £</label><input id="rspl-amt" type="number" inputmode="decimal" placeholder="0.00"></div>'+
+    '<div class="rspl-f"><label>Date</label><input id="rspl-date" type="date" value="'+iso(new Date())+'"></div>'+
+    '<div class="rspl-f"><label>Category</label><select id="rspl-cat" onchange="rsplCat(this)">'+catOpts+'</select></div>'+
+    '<div class="rspl-f"><label>Merchant / Payee</label><input id="rspl-who" placeholder="e.g. Tesco"></div>'+
+    '<div class="rspl-f"><label>Paid from</label><input id="rspl-src" placeholder="e.g. Lloyds · Monzo · Cash"></div>'+
+    '<div class="rspl-f"><label>Notes</label><input id="rspl-notes" placeholder="optional"></div>'+
+    '<div class="rspl-add"><button onclick="rsplAdd()">＋ Add to ledger</button></div></div></div>';
+  /* preview periods */
+  h+='<div class="rspl-card"><div class="rspl-hd"><span class="t">🔎 Preview my spending</span><span class="glance">opens a paper report — Numbers · Excel · Print · Email</span></div>'+
+    '<div class="rspl-periods">'+
+    [['week','This week'],['month','This month'],['3mo','3 months'],['quarter','Quarterly'],['half','Half year'],['year','This year'],['all','All time']]
+      .map(function(q){return '<span class="rprv-chip" onclick="rprvShow(\'spending\',\''+q[0]+'\')">'+q[1]+'</span>';}).join('')+
+    '</div></div>';
+  /* ledger table */
+  h+='<div class="rspl-card"><div class="rspl-hd"><span class="t">📒 Recent ledger</span><span class="glance">last '+rows.length+' entries</span></div>';
+  if(!rows.length)h+='<div style="color:#8f886e;font-style:italic;padding:6px;">No spending recorded yet — add your first entry above.</div>';
+  else{h+='<table class="rspl-tbl"><tr><th>Date</th><th>Category</th><th>Merchant / description</th><th>Source</th><th style="text-align:right">£</th></tr>';
+    rows.forEach(function(t){
+      h+='<tr><td>'+fmtD(t.date)+'</td><td>'+esc((t.cat||t.type||'').toString().slice(0,22))+'</td><td>'+esc((t.desc||'').slice(0,34))+'</td><td>'+esc((t.method||t.source||'').toString().slice(0,16))+'</td><td class="amt">−'+money(t.amount)+'</td></tr>';});
+    h+='</table>';}
+  h+='</div>';
+  root.innerHTML=h;
+}
+function inject(){
+  var sc=document.getElementById('s-expense');if(!sc)return;
+  if(document.getElementById('rspl-root'))return;
+  var d=document.createElement('div');d.id='rspl-root';
+  sc.insertBefore(d,sc.firstChild);
+  render();
+}
+function hook(fn){
+  var o=window[fn];if(typeof o!=='function'||o._rspl)return;
+  var w=function(n){var r=o.apply(this,arguments);if(n==='expense'){setTimeout(function(){inject();render();},0);}return r;};
+  w._rspl=true;try{window[fn]=w;}catch(e){}
+}
+function boot(){hook('go');hook('royalTab');inject();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(inject,2500);
 })();
 </script>
 
