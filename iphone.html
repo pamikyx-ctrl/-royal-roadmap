@@ -13402,7 +13402,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.11.0 · 9 Jul 2026 · day-structure';
+window.ROYAL_APP_VERSION='v4.11.1 · 9 Jul 2026 · view-switch';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -22821,12 +22821,29 @@ function aiLine(dateIso){
   return s+'.';
 }
 /* ── view toggle: hide/show original schedule content ── */
+function ensureSwitch(){
+  var sc=document.getElementById('s-sched');if(!sc)return null;
+  var sw=document.getElementById('rdsb-switch');
+  if(!sw){
+    sw=document.createElement('div');sw.id='rdsb-switch';
+    sw.style.cssText='display:flex;gap:8px;justify-content:center;padding:10px 8px 4px;';
+    sw.innerHTML='<span class="rdsb-chip" id="rdsb-sw-day" onclick="rdsbDay()">🕐 Day View</span>'+
+                 '<span class="rdsb-chip" id="rdsb-sw-cl" onclick="rdsbClassic()">📋 Classic view</span>';
+    sc.insertBefore(sw,sc.firstChild);
+  }
+  return sw;
+}
 function setClassic(on){
   var sc=document.getElementById('s-sched');if(!sc)return;
+  ensureSwitch();
   Array.prototype.forEach.call(sc.children,function(ch){
+    if(ch.id==='rdsb-switch'){ch.style.display='';return;}
     if(ch.id==='rdsb-root')ch.style.display=on?'none':'';
     else ch.style.display=on?'':'none';
   });
+  var d=document.getElementById('rdsb-sw-day'),c=document.getElementById('rdsb-sw-cl');
+  if(d){d.style.opacity=on?'.55':'1';d.style.outline=on?'none':'2px solid rgba(212,175,55,.55)';}
+  if(c){c.style.opacity=on?'1':'.55';c.style.outline=on?'2px solid rgba(212,175,55,.55)':'none';}
   lsSet(VIEWK,on?'classic':'day');
 }
 window.rdsbClassic=function(){setClassic(true);};
@@ -22936,8 +22953,6 @@ function render(){
     '<span class="rdsb-chip" onclick="rdsbToday()">Today</span>'+
     '<span class="rdsb-chip dim" onclick="rdsbShift(-1)">‹</span>'+
     '<span class="rdsb-chip dim" onclick="rdsbShift(1)">›</span>'+
-    '<span style="flex:1"></span>'+
-    '<span class="rdsb-chip dim" onclick="rdsbClassic()">📋 Classic view</span>'+
   '</div>';
   h+='<div class="rdsb-title">'+d.getDate()+' '+MONL[d.getMonth()]+' <span class="yr">'+d.getFullYear()+'</span></div>';
   h+=weekStrip();
