@@ -13466,7 +13466,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.11.1 · 9 Jul 2026 · view-switch';
+window.ROYAL_APP_VERSION='v4.11.2 · 9 Jul 2026 · book-dailylife';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -22651,6 +22651,7 @@ function toast(m){var t=document.createElement('div');t.className='rbk-toast';t.
 window.rbkTick=function(id){var s=st();var d=s.byDate[cur];if(!d)return;d.tasks.forEach(function(t){if(t.id===id)t.done=!t.done;});save(s);render();};
 window.rbkDel=function(id){if(!confirm('Remove this task from the page?'))return;var s=st();var d=s.byDate[cur];if(!d)return;d.tasks=d.tasks.filter(function(t){return t.id!==id;});save(s);render();};
 window.rbkGo=function(tab){if(typeof window.go==='function'){window.go(tab);}else if(typeof window.royalTab==='function'){window.royalTab(tab,null);}};
+window.rbkDaily=function(){if(window.RRDL&&typeof window.RRDL.go==='function'){window.RRDL.go('royaldaily');}else{window.rbkGo('royaldaily');}};
 var ROUTE_NAV={money:'moneyhub',prayer:'pray',rota:'rota',info:'diary',task:''};
 window.rbkTagGo=function(route){var t=ROUTE_NAV[route];if(t)window.rbkGo(t);};
 
@@ -22674,7 +22675,7 @@ function render(){
   ensureScreen();var root=document.getElementById('rbook-root');if(!root)return;
   var s=st();
   if(!s.coverSeen){
-    root.innerHTML='<div class="rbk-wrap"><div class="rbk-topbar"><span class="rbk-chip" onclick="rbkGo(\'home\')">⬅ Home</span></div><div class="rbk-cover" onclick="rbkOpenCover()">'+
+    root.innerHTML='<div class="rbk-wrap"><div class="rbk-topbar"><span class="rbk-chip" onclick="rbkDaily()">⬅ Daily Life</span><span class="rbk-chip" onclick="rbkGo(\'home\')">🏠 Home</span></div><div class="rbk-cover" onclick="rbkOpenCover()">'+
       '<div class="crest">👑</div><div class="t1">The Royal Diary</div>'+
       '<div class="t2">HRH Prince Kwame Nkrabea · Heir Apparent, Suaman Dadiaso</div>'+
       '<div class="t3">One page for every day · '+new Date().getFullYear()+'</div>'+
@@ -22684,7 +22685,7 @@ function render(){
   var d=fromIso(cur);var ap=appts(cur);var de=diaryFor(cur);var tx=moneyFor(cur);
   var tasks=(s.byDate[cur]||{}).tasks||[];
   var h='<div class="rbk-wrap">';
-  h+='<div class="rbk-topbar"><span class="rbk-chip" onclick="rbkGo(\'home\')">⬅ Home</span>'+
+  h+='<div class="rbk-topbar"><span class="rbk-chip" onclick="rbkDaily()">⬅ Daily Life</span>'+
      '<span class="rbk-tt">📖 The Royal Diary</span>'+
      '<span class="rbk-chip" onclick="rbkToday()">Today</span>'+
      '<input type="date" value="'+cur+'" onchange="rbkPick(this.value)">'+
