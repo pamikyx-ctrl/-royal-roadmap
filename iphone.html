@@ -13402,7 +13402,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.12 · 8 Jul 2026 · profile-docs-email';
+window.ROYAL_APP_VERSION='v4.9.13 · 8 Jul 2026 · profile-docs-email';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21819,7 +21819,7 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 <script>
 (function(){
 "use strict";
-window.RR_BUILD='v4.9.12-08jul';
+window.RR_BUILD='v4.9.13-08jul';
 
 /* ---- 1. section id sync (the Save fix) ---- */
 window.rotaSectionIdSync=function(){
@@ -22398,5 +22398,44 @@ else setTimeout(run,900);
 })();
 </script>
 <!-- ==================== END RRSEED-MH ==================== -->
+
+<!-- ==================== RRSEED-APPT v4.9.13 (8 Jul 2026, by Claude) ====================
+     Books the next driving lesson as a Royal iCalender appointment so it shows in the
+     Home page "What's coming up" card with a live countdown.
+     Tue 15 Jul 2026, 11:00-12:30 (90 min), Farid Golsherifi, Royal Pass Drivers.
+     Cost when it happens: GBP 70 lesson + GBP 15 day travel pass = GBP 85. -->
+<script>
+(function(){
+"use strict";
+function run(){
+  try{
+    var d={appts:[],tasks:[]};
+    try{ var v=localStorage.getItem('rical_data_v1'); if(v){ var p=JSON.parse(v); if(p&&typeof p==='object') d=p; } }catch(e){}
+    if(!d.appts) d.appts=[];
+    if(!d.tasks) d.tasks=[];
+    if(!d.appts.some(function(a){ return a && a.id==='ric_driving_150726'; })){
+      d.appts.push({
+        id:'ric_driving_150726',
+        title:'🚗 Driving Lesson — Farid Golsherifi (11:00–12:30, £70 + £15 travel)',
+        date:'2026-07-15',
+        time:'11:00',
+        cat:'personal',
+        rec:'none',
+        dur:90,
+        loc:'Royal Pass Drivers',
+        link:'',
+        notes:'Next driving lesson ahead of the driving test.\nTuesday 15 July 2026, 11:00 am – 12:30 pm (90 minutes).\nInstructor: Farid Golsherifi — Royal Pass Drivers.\nCost on the day: £70 instructor fee + £15 day travel pass = £85 total.\nAfter the lesson: log the £85 in Money Hub → Personal (or ask Claude to record it).',
+        remind:true,
+        done:false
+      });
+      localStorage.setItem('rical_data_v1', JSON.stringify(d));
+    }
+  }catch(e){}
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ setTimeout(run,1000); });
+else setTimeout(run,1000);
+})();
+</script>
+<!-- ==================== END RRSEED-APPT ==================== -->
 </body>
 </html>
