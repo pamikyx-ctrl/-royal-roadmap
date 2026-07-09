@@ -13466,7 +13466,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.10 · 8 Jul 2026 · profile-docs-email';
+window.ROYAL_APP_VERSION='v4.9.11 · 8 Jul 2026 · profile-docs-email';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21883,7 +21883,7 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 <script>
 (function(){
 "use strict";
-window.RR_BUILD='v4.9.10-08jul';
+window.RR_BUILD='v4.9.11-08jul';
 
 /* ---- 1. section id sync (the Save fix) ---- */
 window.rotaSectionIdSync=function(){
@@ -22360,5 +22360,61 @@ else setTimeout(run,700);
 })();
 </script>
 <!-- ==================== END RRSEED-DL ==================== -->
+
+<!-- ==================== RRSEED-SUB v4.9.11 (8 Jul 2026, by Claude) ====================
+     One-time records (guarded by id):
+     1. Debt Management -> Subscriptions: Claude AI Max plan (monthly, renews 10th).
+     2. Royal Diary: full billing record with renewal date and cancellation rights. -->
+<script>
+(function(){
+"use strict";
+function run(){
+  try{
+    /* 1. Debt Management subscription record */
+    var debts=[]; try{ var v=localStorage.getItem('royal_debts_v1'); if(v) debts=JSON.parse(v); }catch(e){}
+    if(!Array.isArray(debts)) debts=[];
+    if(!debts.some(function(d){ return d && d.id==='debt_claude_max_sub'; })){
+      debts.push({
+        id:'debt_claude_max_sub',
+        category:'subscriptions',
+        creditor:'Anthropic — Claude AI (Max plan)',
+        agency:'',
+        account:'Mastercard •••• 3537',
+        total:0,
+        paid:0,
+        monthly:87.36,
+        startDate:'2026-05-14',
+        endDate:'',
+        paymentDate:'10th of each month',
+        paymentTime:'',
+        nextPayment:'2026-07-10',
+        paymentPlan:'Auto-renews monthly on the 10th — next: 10 Jul 2026 (£87.36 to Mastercard •••• 3537)',
+        status:'active',
+        notes:NOTES
+      });
+      localStorage.setItem('royal_debts_v1', JSON.stringify(debts));
+    }
+    /* 2. Royal Diary billing record */
+    var dv=[]; try{ var v2=localStorage.getItem('royal_diary_v1'); if(v2) dv=JSON.parse(v2); }catch(e){}
+    if(!dv.some(function(e){ return e && e.id==='dr_claude_billing_080726'; })){
+      dv.unshift({
+        id:'dr_claude_billing_080726',
+        date:'2026-07-08',
+        time:'',
+        mood:'💳 Organised',
+        title:'Claude AI — Max Plan subscription recorded (£87.36/month, renews 10th)',
+        text:DIARY
+      });
+      localStorage.setItem('royal_diary_v1', JSON.stringify(dv));
+    }
+  }catch(e){}
+}
+var NOTES="CLAUDE AI \u2014 MAX PLAN (Anthropic) \u2014 monthly subscription, NOT a debt balance (total set to \u00a30 so it does not distort the debt dashboard).\n\nPlan: Max (5x more usage than Pro)\nMonthly price: \u00a387.36 (charged to Mastercard ending 3537)\nRenewal: automatic, 10th of each month \u2014 next renewal 10 July 2026\nManaged at: claude.ai \u2192 Settings \u2192 Billing\n\nPAYMENT HISTORY (all Paid):\n- 14 May 2026 \u2014 \u00a318.00\n- 27 May 2026 \u2014 \u00a324.00\n- 10 Jun 2026 \u2014 \u00a387.36\nTotal paid to date: \u00a3129.36\n\nRIGHT TO CANCEL:\nCancel any time at claude.ai \u2192 Settings \u2192 Billing \u2192 Cancel plan (red button).\nCancel BEFORE the 10th of the month to avoid the next charge; access continues to the end of the paid period. No notice period, no phone call needed.\n\nRecorded by Claude on 8 July 2026 from the live Billing page.";
+var DIARY="CLAUDE AI SUBSCRIPTION \u2014 BILLING RECORD (8 JULY 2026)\n\nProvider: Anthropic \u2014 Claude AI\nPlan: MAX PLAN (5x more usage than Pro) \u2014 monthly subscription\nPayment card: Mastercard ending 3537\n\nRENEWAL: automatic on the 10th of each month.\nNEXT RENEWAL: Thursday 10 July 2026 \u2014 expect \u00a387.36.\n\nPAYMENTS TO DATE (all Paid):\n- 14 May 2026 \u2014 \u00a318.00\n- 27 May 2026 \u2014 \u00a324.00\n- 10 Jun 2026 \u2014 \u00a387.36\nTOTAL PAID: \u00a3129.36\n\nHOW TO CANCEL:\nclaude.ai \u2192 Settings \u2192 Billing \u2192 \"Cancel plan\" (red button).\nCancel before the 10th to avoid the next charge; access runs to the end of the paid period. No notice period.\n\nAlso recorded under \ud83d\udcb3 Debt Management \u2192 \ud83d\udd01 Subscriptions.";
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ setTimeout(run,800); });
+else setTimeout(run,800);
+})();
+</script>
+<!-- ==================== END RRSEED-SUB ==================== -->
 </body>
 </html>
