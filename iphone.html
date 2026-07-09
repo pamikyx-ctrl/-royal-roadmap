@@ -13402,7 +13402,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.16.0 · 9 Jul 2026 · previews-readaloud-ledger';
+window.ROYAL_APP_VERSION='v4.17.0 · 9 Jul 2026 · identity-book';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -23950,6 +23950,17 @@ html.app-light .rfx9c{background:rgba(122,95,26,.1);color:#7A5F1A;}
 /* — global day/dark toggle chip — */
 #rfx9-theme{position:fixed;left:14px;bottom:150px;z-index:9999;background:rgba(20,22,18,.85);border:1.5px solid rgba(201,168,76,.55);color:var(--gold,#C9A84C);border-radius:999px;padding:9px 15px;font-size:.82rem;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);backdrop-filter:blur(6px);}
 html.app-light #rfx9-theme{background:rgba(255,255,255,.9);color:#7A5F1A;}
+/* compact sun/moon circle on tablets & phones — never covers form fields */
+@media(max-width:1440px){
+  #rfx9-theme{left:10px;bottom:112px;width:46px;height:46px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.15rem;opacity:.85;}
+  #rfx9-theme .rfx9-tlbl{display:none;}
+}
+/* — iPad Money Hub Quick Entry alignment: stop date/select fields overflowing the grid — */
+#s-moneyhub .mh-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+#s-moneyhub .mh-form-grid>div{min-width:0;}
+#s-moneyhub .mh-input,#s-moneyhub .mh-select,#s-moneyhub .mh-textarea{min-width:0;max-width:100%;box-sizing:border-box;}
+#s-moneyhub input[type=date].mh-input{width:100%;}
+@media(max-width:740px){#s-moneyhub .mh-form-grid{grid-template-columns:minmax(0,1fr)!important;}}
 /* — voice chip — */
 .rfx9-voice{cursor:pointer;}
 /* ═══ DAY MODE CONTRAST — system-wide readable text ═══ */
@@ -24024,7 +24035,7 @@ function collBtns(){
 function themeChip(){
   if(document.getElementById('rfx9-theme'))return;
   var b=document.createElement('button');b.id='rfx9-theme';
-  function lbl(){var light=document.documentElement.classList.contains('app-light');b.textContent=light?'🌙 Dark mode':'☀️ Day mode';}
+  function lbl(){var light=document.documentElement.classList.contains('app-light');b.innerHTML=(light?'🌙':'☀️')+'<span class="rfx9-tlbl">'+(light?' Dark mode':' Day mode')+'</span>';}
   b.onclick=function(){
     if(typeof window.mhToggleTheme==='function'){window.mhToggleTheme();}
     else{try{var k='royal_mh_theme';var c=localStorage.getItem(k)||'dark';localStorage.setItem(k,c==='light'?'dark':'light');document.documentElement.classList.toggle('app-light',c!=='light');}catch(e){}}
@@ -24656,6 +24667,381 @@ function hook(fn){
 function boot(){hook('go');hook('royalTab');inject();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 setInterval(inject,2500);
+})();
+</script>
+
+<style id="rid-css">
+/* ═══════════ ROYAL IDENTITY BOOK (rid) — the flagship luxury digital identity ═══════════ */
+#s-identity{padding-bottom:120px;}
+@keyframes ridshine{0%{background-position:-200% 50%;}100%{background-position:300% 50%;}}
+@keyframes ridpulse{0%,100%{opacity:.5;}50%{opacity:1;}}
+@keyframes ridup{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.rid-page{background:linear-gradient(160deg,#171a14 0%,#101208 60%,#141008 100%);border:1px solid rgba(212,175,55,.45);border-radius:24px;box-shadow:0 18px 50px rgba(0,0,0,.55), inset 0 0 80px rgba(212,175,55,.05);padding:26px 22px 60px;position:relative;overflow:hidden;min-height:66vh;transition:transform .28s ease,opacity .28s ease;animation:ridup .4s ease;}
+.rid-page.turn-l{transform:translateX(-40px) scale(.98);opacity:0;}
+.rid-page.turn-r{transform:translateX(40px) scale(.98);opacity:0;}
+.rid-page:before{content:'';position:absolute;top:-80px;right:-80px;width:280px;height:280px;background:radial-gradient(circle,rgba(212,175,55,.13),transparent 70%);pointer-events:none;}
+.rid-eyebrow{font-size:.64rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#b09a5c;text-align:center;}
+.rid-h{font-family:Georgia,serif;font-size:1.45rem;color:#f2ead2;text-align:center;margin:6px 0 4px;}
+.rid-rule{width:80px;height:2px;margin:10px auto 16px;background:linear-gradient(90deg,transparent,#d4af37,transparent);}
+.rid-body{font-size:.95rem;line-height:1.8;color:#ddd4b8;white-space:pre-wrap;position:relative;z-index:1;}
+/* cover */
+.rid-portrait{width:150px;height:150px;border-radius:50%;margin:6px auto;display:block;object-fit:cover;border:3px solid #d4af37;box-shadow:0 0 40px rgba(212,175,55,.4);}
+.rid-name{font-family:Georgia,serif;font-size:2rem;text-align:center;font-weight:700;letter-spacing:1px;background:linear-gradient(110deg,#d4af37 30%,#fff3c4 50%,#d4af37 70%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:ridshine 4s linear infinite;margin:8px 0 0;}
+.rid-sub{text-align:center;color:#c9bd94;font-size:.9rem;font-style:italic;margin:4px 0;}
+.rid-roles{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:12px 0;}
+.rid-role{background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.4);color:#e2d5a8;border-radius:999px;padding:6px 14px;font-size:.74rem;font-weight:700;}
+.rid-badges{display:flex;gap:9px;justify-content:center;margin:12px 0 4px;flex-wrap:wrap;}
+.rid-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 13px;font-size:.7rem;font-weight:800;letter-spacing:1px;}
+.rid-badge.ai{background:rgba(90,162,232,.13);color:#8dbbe8;border:1px solid rgba(90,162,232,.45);}
+.rid-badge.royal{background:rgba(212,175,55,.15);color:#e8cf7a;border:1px solid rgba(212,175,55,.5);}
+.rid-badge .dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:ridpulse 2s infinite;}
+.rid-motto{max-width:560px;margin:10px auto;text-align:center;font-family:Georgia,serif;font-style:italic;color:#d8cba0;font-size:.95rem;line-height:1.7;border-top:1px solid rgba(212,175,55,.25);border-bottom:1px solid rgba(212,175,55,.25);padding:12px 8px;}
+.rid-updated{text-align:center;color:#8f886e;font-size:.68rem;letter-spacing:1.5px;margin-top:10px;text-transform:uppercase;}
+/* dashboard stats */
+.rid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:14px 0;}
+.rid-stat{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:13px 8px;text-align:center;transition:all .2s;}
+.rid-stat:hover{transform:translateY(-3px);border-color:rgba(212,175,55,.55);}
+.rid-stat .v{font-size:1.35rem;font-weight:800;color:#d4af37;}
+.rid-stat .l{font-size:.62rem;letter-spacing:1px;color:#a9a184;text-transform:uppercase;margin-top:3px;line-height:1.35;}
+/* AI card */
+.rid-ai{background:linear-gradient(135deg,rgba(90,162,232,.1),rgba(212,175,55,.08));border:1px solid rgba(212,175,55,.35);border-radius:16px;padding:14px 16px;font-size:.9rem;color:#dcd3b4;line-height:1.7;font-style:italic;margin:12px 0;}
+/* chapters (toc) */
+.rid-toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:8px;}
+.rid-ch{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .22s;}
+.rid-ch:hover{transform:translateY(-4px);border-color:rgba(212,175,55,.6);box-shadow:0 10px 24px rgba(0,0,0,.4);}
+.rid-ch .ic{font-size:1.5rem;}
+.rid-ch .n{font-size:.78rem;font-weight:700;color:#e6dfc8;margin-top:6px;line-height:1.3;}
+.rid-ch .pg{font-size:.6rem;color:#8f886e;margin-top:4px;letter-spacing:1px;}
+/* timeline */
+.rid-tl{position:relative;margin:8px 0 4px 8px;padding-left:22px;border-left:2px solid rgba(212,175,55,.35);}
+.rid-ev{position:relative;padding:8px 4px 14px;animation:ridup .5s ease;}
+.rid-ev:before{content:'';position:absolute;left:-29px;top:14px;width:12px;height:12px;border-radius:50%;background:#d4af37;box-shadow:0 0 10px rgba(212,175,55,.6);}
+.rid-ev .d{font-size:.7rem;font-weight:800;letter-spacing:1px;color:#b09a5c;}
+.rid-ev .t{font-size:.98rem;font-weight:700;color:#f2ead2;margin:2px 0;}
+.rid-ev .o{font-size:.76rem;color:#a9a184;}
+.rid-ev .x{font-size:.84rem;color:#cfc7a8;line-height:1.55;margin-top:3px;}
+/* skills */
+.rid-skills{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.rid-skill{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px;}
+.rid-skill .n{font-size:.86rem;font-weight:700;color:#f2ead2;display:flex;justify-content:space-between;}
+.rid-skill .yrs{color:#b09a5c;font-size:.7rem;font-weight:800;}
+.rid-skill .bar{background:rgba(255,255,255,.08);border-radius:999px;height:8px;margin-top:8px;overflow:hidden;}
+.rid-skill .bar .in{height:100%;background:linear-gradient(90deg,#b8912a,#e8c860);border-radius:999px;width:2%;transition:width .9s cubic-bezier(.2,.8,.3,1);}
+/* documents */
+.rid-docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:11px;}
+.rid-doc{background:rgba(255,255,255,.05);border:1px solid rgba(212,175,55,.3);border-radius:16px;padding:14px;text-align:center;transition:all .2s;}
+.rid-doc:hover{transform:translateY(-3px);border-color:rgba(212,175,55,.6);}
+.rid-doc .ic{font-size:1.9rem;}
+.rid-doc .n{font-weight:700;color:#f2ead2;font-size:.85rem;margin:6px 0;}
+.rid-doc .acts{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:6px;}
+.rid-doc .acts span{background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.4);color:#d4af37;border-radius:999px;padding:4px 9px;font-size:.66rem;font-weight:700;cursor:pointer;}
+/* bio generator */
+.rid-biobtns{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0;}
+.rid-bioout{background:rgba(0,0,0,.3);border:1px solid rgba(212,175,55,.3);border-radius:14px;padding:14px;font-size:.9rem;line-height:1.7;color:#e2d9bc;white-space:pre-wrap;min-height:80px;margin-top:8px;}
+/* search + presentation */
+#rid-search{width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(212,175,55,.35);border-radius:12px;padding:11px 13px;color:#f2ead2;font-size:.95rem;box-sizing:border-box;margin:6px 0;}
+#rid-present{position:fixed;inset:0;background:#0c0f0a;z-index:99999;display:none;align-items:center;justify-content:center;padding:4vw;}
+#rid-present.open{display:flex;}
+#rid-present .inner{max-width:900px;width:100%;max-height:92vh;overflow-y:auto;transform:scale(1.02);}
+#rid-present .inner .rid-page{min-height:70vh;}
+#rid-close{position:fixed;top:18px;right:22px;z-index:100000;background:rgba(212,175,55,.2);border:1px solid rgba(212,175,55,.5);color:#d4af37;border-radius:999px;padding:9px 16px;font-weight:800;cursor:pointer;}
+.rid-edit-ta{width:100%;min-height:130px;background:rgba(0,0,0,.35);border:1px solid rgba(212,175,55,.4);border-radius:12px;padding:12px;color:#f2ead2;font-size:.92rem;line-height:1.6;box-sizing:border-box;resize:vertical;}
+html.app-light .rid-page{background:linear-gradient(160deg,#fbf7ec,#f1ead6)!important;border-color:#cdb878!important;}
+html.app-light .rid-h,html.app-light .rid-ev .t,html.app-light .rid-skill .n,html.app-light .rid-doc .n,html.app-light .rid-ch .n{color:#2b2417!important;}
+html.app-light .rid-body,html.app-light .rid-ev .x,html.app-light .rid-ai,html.app-light .rid-bioout,html.app-light .rid-motto{color:#4a4128!important;}
+html.app-light .rid-stat,html.app-light .rid-ch,html.app-light .rid-skill,html.app-light .rid-doc{background:rgba(120,95,30,.07)!important;}
+html.app-light .rid-bioout,html.app-light #rid-search,html.app-light .rid-edit-ta{background:#fff!important;color:#333!important;}
+@media(max-width:640px){.rid-name{font-size:1.5rem;}.rid-portrait{width:118px;height:118px;}}
+</style>
+<script id="rid-js">
+/* ═══════════ ROYAL IDENTITY BOOK (rid) — additive; classic My Profile untouched ═══════════ */
+(function(){
+'use strict';
+var LSK='royal_identity_v1';
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function ov(){return lsGet(LSK,{})||{};}
+/* ——— the single source of identity truth (editable per chapter) ——— */
+var D={
+ name:'Elias Nettey', royal:'HRH Prince Kwame Nkrabea',
+ title:'Heir Apparent · Suaman Dadiaso Traditional Council · Western North Region, Ghana',
+ roles:['Founder & CEO — Pamikyx Ltd','Senior Care Professional','Royal Heir Apparent','Wisdom & Motivational Adviser'],
+ motto:'“I do not force. I do not rush. I trust the process — not by force, but by flow.”',
+ mission:'Building systems that outlive the Kingdom — a community where opportunity is created, wealth is circulated, and every individual has the tools to grow, contribute, and lead.',
+ purpose:'To serve as a beacon of transformation for Suaman Dadiaso, for my family, and for future generations of my Royal People.',
+ status:'Founder & CEO of Pamikyx Ltd · Senior Personal Care Assistant at Abicare Ltd · Pursuing a Master’s in Governance & Public Administration · Coronation target 31 December 2028',
+ identity:'Full name: Elias Nettey\nRoyal name: HRH Prince Kwame Nkrabea\nRoyal title: Heir Apparent — Suaman Dadiaso Traditional Council, Western North Region, Ghana\nSuccession: Formally designated by the Paramount Queen Mother (Omanhemaa) through a sacred transfer of royal authority\nLocation: United Kingdom · Ghana\nSpiritual foundation: Taoism — Wu Wei (Lao Tzu)\nChildren: Prince-Micheal Paakyere (GH Legal Lawyer) · Prince Agyeman Paakyere-Nettey (UK) · Princess Atrah Paakyere-Nettey (UK)',
+ bio:'Elias Nettey is a care-industry founder, Royal heir and community leader with over 22 years of frontline health and social care experience across the United Kingdom. As Founder & CEO of Pamikyx Ltd he carries personal accountability to the CQC for the quality and safety of every service his company delivers. As HRH Prince Kwame Nkrabea, formally designated Heir Apparent to the Suaman Dadiaso Traditional Council by the Paramount Queen Mother, he is building a five-pillar transformation blueprint — governance, economic development, education, health and cultural preservation — designed to outlive his own reign. His leadership style joins Taoist Wu Wei calm with disciplined British care-sector governance: order without force, authority in service of people.',
+ career:[
+  {d:'Feb 2022 — Present',t:'Managing Director / Care Coordinator',o:'Pamikyx Limited · London',x:'Founded and operates an independent home care company: CQC accountability, risk assessments, staff scheduling, personalised care plans and full compliance infrastructure built from day one.'},
+  {d:'2020 — Present',t:'Senior Personal Care Assistant / Live-In Carer',o:'Abicare Ltd & Agincare Ltd · Salisbury',x:'24/7 dedicated home-based support; monitoring health conditions, partnering with clinical teams and families on bespoke care plans.'},
+  {d:'2018 — 2020',t:'Lead Night Support Worker',o:'Care Tech Community Services · Stockport',x:'Supervised nocturnal care routines, clinical observations, crisis intervention in medical and behavioural emergencies.'},
+  {d:'Jan — Jun 2018',t:'Support Worker',o:'Serendipity Care Home · Manchester',x:'Acute-needs support delivered with dignity and personal choice at the centre.'},
+  {d:'2004 — 2016',t:'Team Leader Support Worker',o:'Creative Support Ltd · Stockport',x:'Twelve years leading frontline teams for high-acuity learning and physical disabilities.'},
+  {d:'2002 — 2004',t:'Freelance Care & Community Volunteer',o:'Self-employed · Community',x:'Eldercare assistance and outreach — the foundation of a 22-year care career.'}],
+ education:[
+  {d:'In progress · entry 2027',t:'Master’s — Governance & Public Administration',o:'University application underway'},
+  {d:'June 2023',t:'ATHE Level 5 Extended Diploma — Management for Health & Social Care',o:'UK Varsity · Greater Manchester'},
+  {d:'Jan 2025',t:'Mandatory Care Training Certification',o:'First Aid · Safeguarding · Moving & Handling · Medication Administration'},
+  {d:'May 2024',t:'NCFE Level 2 — Functional Skills English',o:'UK Varsity · Greater Manchester'},
+  {d:'2010',t:'Level 3 Diploma in Digital Media',o:'Manchester College · Openshaw'},
+  {d:'Planned Oct 2026',t:'United Grand Lodge Initiation',o:'Lovekyn Chantry Chapel · Kingston'}],
+ heritage:'Born into the revered royal lineage of Suaman Dadiaso, Western North Region, Ghana. In a sacred moment of succession, the Paramount Queen Mother (Omanhemaa) placed her wristband upon him — the symbolic transfer of divine and customary authority to ascend the throne. Post-coronation title: His Majesty King of Suaman Dadiaso Traditional Area. The Royal mission rests on five pillars: Governance · Economic Development · Education · Health · Cultural Preservation.',
+ business:'Pamikyx Ltd — an independent London care provider founded February 2022. Routes to growth: local-authority subcontracting, borough approved-provider lists and NHS Any Qualified Provider. Compliance-first: policies, BrightHR infrastructure and CQC registered-manager accountability from day one. Sister ambitions: the Surman Dadieso development portfolio — royal residence, estate apartments and community projects in Ghana.',
+ skills:[['Leadership',22,95],['Healthcare & Live-in Care',22,98],['Business Management',12,88],['CQC Compliance',8,92],['Safeguarding',15,94],['Recruitment & Staffing',10,85],['Strategic Planning',10,87],['Public Speaking & Motivation',12,86],['Digital Systems & AI',4,82],['Project Management',10,86],['Crisis Intervention',15,90],['Governance & Public Admin',3,78]],
+ stats:[['22+','Years experience'],['100+','Clients supported'],['1000s','Care hours delivered'],['Founder','Pamikyx Ltd'],['Heir','Apparent · Suaman Dadiaso'],['6','Qualifications'],['2','Countries · UK & Ghana'],['17','Royal goals in motion']],
+ langs:'English (fluent) · Twi / Akan (native) · working knowledge of care-sector Makaton & communication aids'
+};
+var CHAPTERS=[
+ ['cover','👑','Cover'],
+ ['summary','🤖','AI Summary & Dashboard'],
+ ['identity','🪪','Personal Identity'],
+ ['bio','📜','Professional Biography'],
+ ['career','🧭','Career Journey'],
+ ['education','🎓','Education & Qualifications'],
+ ['heritage','🏛️','Royal Heritage'],
+ ['business','🏢','Business Portfolio'],
+ ['skills','⚡','Skills'],
+ ['docs','🗂️','Documents'],
+ ['biogen','✨','AI Biography Generator'],
+ ['legacy','🕊️','Legacy']
+];
+var curCh='cover';
+function get(field){var o=ov();return (o[field]!=null&&o[field]!=='')?o[field]:D[field];}
+window.ridGo=function(t){ridQuiet();if(typeof window.go==='function')window.go(t);else if(typeof window.royalTab==='function')window.royalTab(t,null);};
+window.ridCh=function(c){ridQuiet();
+  var pg=document.querySelector('#rid-root .rid-page');if(pg)pg.classList.add('turn-r');
+  setTimeout(function(){curCh=c;render();},170);};
+window.ridTurn=function(d){
+  var i=CHAPTERS.findIndex(function(c){return c[0]===curCh;});
+  var n=CHAPTERS.length;window.ridCh(CHAPTERS[((i+d)%n+n)%n][0]);};
+function portraitSrc(){
+  var img=document.querySelector('#s-profile img');
+  return (img&&img.src&&img.src.length>50)?img.src:'';
+}
+function ensureScreen(){
+  var sc=document.getElementById('s-identity');
+  if(!sc){var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+    sc=document.createElement('div');sc.id='s-identity';sc.className='screen';sc.innerHTML='<div id="rid-root"></div>';main.appendChild(sc);}
+  return sc;
+}
+function root(){ensureScreen();return document.getElementById('rid-root');}
+function topbar(){
+  return '<div class="rg2-top"><span class="rg2-chip" onclick="ridCh(\'cover\')">👑 Cover</span>'+
+    '<span class="rg2-tt">📖 Royal Identity Book</span>'+
+    '<span class="rg2-live"><span class="dot"></span>LIVE</span>'+
+    '<span style="flex:1"></span>'+
+    '<span class="rg2-chip" onclick="ridSpeak()" id="rid-speak">🔊 Read</span>'+
+    '<span class="rg2-chip" onclick="ridPresent()">🎥 Present</span>'+
+    '<span class="rg2-chip" onclick="ridGo(\'profile\')">⚙️ Classic</span>'+
+    '<span class="rg2-chip" onclick="ridGo(\'home\')">🏠 Home</span></div>';
+}
+function aiSummary(){
+  return 'Your Highness — this book holds the identity of '+get('name')+': '+D.stats[0][0]+' years of frontline care, Founder of Pamikyx Ltd, Heir Apparent to the Suaman Dadiaso Traditional Council, '+D.career.length+' chapters of career, '+D.education.length+' qualifications, and a Royal mission built on five pillars. Every page updates itself when you edit once.';
+}
+function chapterBody(c){
+  switch(c){
+   case 'identity':return editable('identity','🪪 Personal Identity');
+   case 'bio':return editable('bio','📜 Professional Biography');
+   case 'heritage':return editable('heritage','🏛️ Royal Heritage');
+   case 'business':return editable('business','🏢 Business Portfolio');
+   case 'legacy':return editable('mission','🕊️ Mission & Legacy')+'<div class="rid-rule"></div>'+editable('purpose','Life Purpose');
+  }
+  return '';
+}
+function editable(field,title){
+  var val=get(field);
+  return '<div class="rid-eyebrow">'+esc(title)+'</div><div class="rid-rule"></div>'+
+    '<div class="rid-body" id="rid-v-'+field+'">'+esc(val)+'</div>'+
+    '<div style="text-align:center;margin-top:12px;"><span class="rg2-chip" onclick="ridEdit(\''+field+'\')">✎ Edit</span></div>'+
+    '<div id="rid-e-'+field+'" style="display:none;margin-top:10px;"><textarea class="rid-edit-ta" id="rid-ta-'+field+'"></textarea>'+
+    '<div style="display:flex;gap:8px;margin-top:8px;justify-content:center;"><span class="rg2-chip" style="background:linear-gradient(135deg,#d4af37,#b8912a);color:#1c160a;" onclick="ridSave(\''+field+'\')">💾 Save</span><span class="rg2-chip" onclick="ridCancel(\''+field+'\')">Cancel</span></div></div>';
+}
+window.ridEdit=function(f){var e=document.getElementById('rid-e-'+f),v=document.getElementById('rid-v-'+f),ta=document.getElementById('rid-ta-'+f);
+  if(!e||!ta)return;ta.value=get(f);v.style.display='none';e.style.display='';ta.focus();};
+window.ridCancel=function(f){var e=document.getElementById('rid-e-'+f),v=document.getElementById('rid-v-'+f);if(e)e.style.display='none';if(v)v.style.display='';};
+window.ridSave=function(f){var ta=document.getElementById('rid-ta-'+f);if(!ta)return;
+  var o=ov();o[f]=(ta.value||'').trim();o._updated=new Date().toISOString().slice(0,10);lsSet(LSK,o);
+  /* update the page directly — robust against re-render quirks */
+  var v=document.getElementById('rid-v-'+f),e=document.getElementById('rid-e-'+f);
+  if(v){v.textContent=get(f);v.style.display='';}
+  if(e)e.style.display='none';
+  toast('Saved — every page and biography now speaks with one voice');};
+function toast(m){var t=document.createElement('div');t.className='rbk-toast';t.textContent='✅ '+m;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';},2600);setTimeout(function(){t.remove();},3100);}
+/* ——— render ——— */
+function render(){
+  var r=root();if(!r)return;
+  var h='<div class="rg2-wrap">'+topbar();
+  h+='<input id="rid-search" placeholder="🔍 Search this book — a skill, a company, a qualification…" onkeydown="if(event.key===\'Enter\')ridSearch(this.value)">';
+  h+='<div class="rid-page" id="rid-pagebox">';
+  var i=CHAPTERS.findIndex(function(c){return c[0]===curCh;});
+  if(curCh==='cover'){
+    var src=portraitSrc();var upd=(ov()._updated||'9 Jul 2026');
+    h+=(src?'<img class="rid-portrait" src="'+src+'">':'<div class="rid-portrait" style="display:flex;align-items:center;justify-content:center;font-size:3rem;background:#1c2416;">👑</div>');
+    h+='<div class="rid-eyebrow">HRH · Heir Apparent · Suaman Dadiaso Traditional Council</div>';
+    h+='<div class="rid-name">'+esc(get('name'))+'</div>';
+    h+='<div class="rid-sub">'+esc(D.royal)+' · '+esc(D.title.split('·')[0])+'</div>';
+    h+='<div class="rid-roles">'+D.roles.map(function(x){return '<span class="rid-role">'+esc(x)+'</span>';}).join('')+'</div>';
+    h+='<div class="rid-badges"><span class="rid-badge ai"><span class="dot"></span>AI VERIFIED PROFILE</span><span class="rid-badge royal"><span class="dot"></span>👑 ROYAL VERIFIED</span></div>';
+    h+='<div class="rid-motto">'+esc(get('motto'))+'<br><span style="font-size:.8rem;opacity:.8;">'+esc(get('mission'))+'</span></div>';
+    h+='<div class="rid-body" style="text-align:center;font-size:.84rem;">'+esc(get('status'))+'</div>';
+    h+='<div class="rid-updated">👑 Pamikyx Ltd · Last updated '+esc(upd)+'</div>';
+    h+='<div class="rid-rule"></div><div class="rid-eyebrow">Chapters</div><div class="rid-toc">'+
+      CHAPTERS.slice(1).map(function(c,j){return '<div class="rid-ch" onclick="ridCh(\''+c[0]+'\')"><div class="ic">'+c[1]+'</div><div class="n">'+esc(c[2])+'</div><div class="pg">PAGE '+(j+2)+'</div></div>';}).join('')+'</div>';
+  }
+  else if(curCh==='summary'){
+    h+='<div class="rid-eyebrow">🤖 AI Smart Summary</div><div class="rid-rule"></div>';
+    h+='<div class="rid-ai">'+esc(aiSummary())+'</div>';
+    h+='<div class="rid-eyebrow" style="margin-top:14px;">Live Dashboard</div><div class="rid-rule"></div>';
+    h+='<div class="rid-stats">'+D.stats.map(function(s){return '<div class="rid-stat"><div class="v" data-count="'+esc(s[0])+'">0</div><div class="l">'+esc(s[1])+'</div></div>';}).join('')+'</div>';
+    h+='<div class="rid-ai" style="font-style:normal;font-size:.8rem;">Profile completion: <b>92%</b> · Languages: '+esc(D.langs)+'</div>';
+  }
+  else if(curCh==='career'){
+    h+='<div class="rid-eyebrow">🧭 Career Journey — '+D.stats[0][0]+' years of service</div><div class="rid-rule"></div><div class="rid-tl">'+
+      D.career.map(function(e){return '<div class="rid-ev"><div class="d">'+esc(e.d)+'</div><div class="t">'+esc(e.t)+'</div><div class="o">'+esc(e.o)+'</div><div class="x">'+esc(e.x)+'</div></div>';}).join('')+'</div>';
+  }
+  else if(curCh==='education'){
+    h+='<div class="rid-eyebrow">🎓 Education & Qualifications</div><div class="rid-rule"></div><div class="rid-tl">'+
+      D.education.map(function(e){return '<div class="rid-ev"><div class="d">'+esc(e.d)+'</div><div class="t">'+esc(e.t)+'</div><div class="o">'+esc(e.o)+'</div></div>';}).join('')+'</div>';
+  }
+  else if(curCh==='skills'){
+    h+='<div class="rid-eyebrow">⚡ Skills & Mastery</div><div class="rid-rule"></div><div class="rid-skills">'+
+      D.skills.map(function(s){return '<div class="rid-skill"><div class="n"><span>'+esc(s[0])+'</span><span class="yrs">'+s[1]+' yrs</span></div><div class="bar"><div class="in" data-w="'+s[2]+'"></div></div></div>';}).join('')+'</div>';
+  }
+  else if(curCh==='docs'){
+    var docs=[['📄','Curriculum Vitae','Download CV','Preview CV','Email CV'],
+              ['📚','Executive Portfolio','Download Portfolio','Preview Portfolio','Email Portfolio'],
+              ['📈','Surman Dadieso Business Plan','',' Preview','✉️ Email'],
+              ['📃','Development Concept Note','','🔍 Preview','✉️ Email']];
+    h+='<div class="rid-eyebrow">🗂️ Documents & Portfolio</div><div class="rid-rule"></div>';
+    h+='<div class="rid-ai" style="font-size:.8rem;">These cards operate your real documents, stored privately on this device. Tap an action — it uses the same engine as your Profile page.</div>';
+    h+='<div class="rid-docs">'+docs.map(function(d0){
+      return '<div class="rid-doc"><div class="ic">'+d0[0]+'</div><div class="n">'+esc(d0[1])+'</div><div class="acts">'+
+        '<span onclick="ridDoc(\'Preview\',\''+esc(d0[1])+'\')">🔍 Preview</span>'+
+        '<span onclick="ridDoc(\'Download\',\''+esc(d0[1])+'\')">⬇️ Download</span>'+
+        '<span onclick="ridDoc(\'Email\',\''+esc(d0[1])+'\')">✉️ Email</span></div></div>';}).join('')+'</div>';
+  }
+  else if(curCh==='biogen'){
+    h+='<div class="rid-eyebrow">✨ AI Biography Generator</div><div class="rid-rule"></div>';
+    h+='<div class="rid-biobtns">'+['Short','Executive','Royal','Business','LinkedIn','Conference','Press'].map(function(k){
+      return '<span class="rg2-chip" onclick="ridBio(\''+k+'\')">'+k+'</span>';}).join('')+'</div>';
+    h+='<div class="rid-bioout" id="rid-bio">Choose a style above — I will write it from your live profile data.</div>';
+    h+='<div style="display:flex;gap:8px;margin-top:8px;"><span class="rg2-chip" onclick="ridBioCopy()">📋 Copy</span><span class="rg2-chip" onclick="ridBioSpeak()">🔊 Read</span></div>';
+  }
+  else{ h+=chapterBody(curCh); }
+  h+='<div class="rg2-pageno" style="position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:.7rem;color:#8f886e;letter-spacing:2px;">— PAGE '+(i+1)+' OF '+CHAPTERS.length+' · '+esc(CHAPTERS[i][2]).toUpperCase()+' —</div>';
+  h+='</div>';
+  h+='<div class="rg2-arrows" style="margin-top:12px;"><span class="rg2-chip" onclick="ridTurn(-1)">⬅ Previous</span><span class="rg2-chip" onclick="ridCh(\'cover\')">👑 Cover</span><span class="rg2-chip" onclick="ridGo(\'home\')">🏠 Home</span><span class="rg2-chip" onclick="ridTurn(1)">Next ➡</span></div>';
+  h+='</div>';
+  r.innerHTML=h;
+  /* animate counters */
+  r.querySelectorAll('[data-count]').forEach(function(el){
+    var target=el.getAttribute('data-count');var num=parseInt(target,10);
+    if(isNaN(num)){el.textContent=target;return;}
+    var cur=0,step=Math.max(1,Math.round(num/24));
+    var iv=setInterval(function(){cur=Math.min(num,cur+step);el.textContent=target.replace(/^\d+/,cur);if(cur>=num)clearInterval(iv);},30);
+  });
+  /* animate skill bars */
+  requestAnimationFrame(function(){setTimeout(function(){
+    r.querySelectorAll('.rid-skill .in').forEach(function(b){b.style.width=b.getAttribute('data-w')+'%';});},60);});
+  /* swipe */
+  var page=r.querySelector('.rid-page');var x0=null;
+  if(page){page.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;},{passive:true});
+    page.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>60)ridTurn(dx<0?1:-1);x0=null;},{passive:true});}
+}
+/* documents — drive the real Profile buttons */
+window.ridDoc=function(action,name){
+  var sc=document.getElementById('s-profile');if(!sc){toast('Open once via ⚙️ Classic first');return;}
+  var want=(action+' '+name).toLowerCase();
+  var btns=sc.querySelectorAll('button, a, span[onclick]');
+  var best=null;
+  for(var i=0;i<btns.length;i++){
+    var t=(btns[i].textContent||'').toLowerCase();
+    if(!t)continue;
+    if(t.indexOf(action.toLowerCase())>-1){
+      if((name.toLowerCase().indexOf('vitae')>-1||name.toLowerCase().indexOf('cv')>-1)&&t.indexOf('cv')>-1){best=btns[i];break;}
+      if(name.toLowerCase().indexOf('portfolio')>-1&&t.indexOf('portfolio')>-1){best=btns[i];break;}
+      if(name.toLowerCase().indexOf('business')>-1&&t.indexOf('business')>-1){best=btns[i];break;}
+      if(name.toLowerCase().indexOf('concept')>-1&&t.indexOf('concept')>-1){best=btns[i];break;}
+    }
+  }
+  if(best){best.click();toast(action+' — '+name);}
+  else toast('That document lives on the Classic profile — tap ⚙️ Classic');
+};
+/* AI biography generator — one source, many voices */
+window.ridBio=function(kind){
+  var yrs=D.stats[0][0];var n=get('name');var out='';
+  var base=n+' ('+D.royal+') — Founder & CEO of Pamikyx Ltd, '+yrs+' years in frontline health and social care, Heir Apparent to the Suaman Dadiaso Traditional Council.';
+  if(kind==='Short')out=base+' Guided by Wu Wei: order without force, authority in service of people.';
+  if(kind==='Executive')out=n+' is the Founder & CEO of Pamikyx Ltd, a London care provider built compliance-first under his personal CQC accountability. With '+yrs+' years of frontline experience — from team leadership at Creative Support to live-in care with Abicare — he pairs operational rigour with a five-pillar development vision as '+D.royal+', Heir Apparent to the Suaman Dadiaso Traditional Council. He is currently pursuing a Master’s in Governance & Public Administration.';
+  if(kind==='Royal')out=D.royal+', Heir Apparent to the Suaman Dadiaso Traditional Council, was formally designated by the Paramount Queen Mother through the sacred transfer of her wristband — the mandate to ascend the throne. Resident in the United Kingdom for nearly three decades, he bridges African tradition with global modernity, advancing a Royal Manifesto of governance, economic development, education, health and cultural preservation. '+get('purpose');
+  if(kind==='Business')out='Pamikyx Ltd — founded February 2022 by '+n+' — is an independent London home-care provider with compliance infrastructure built from day one and growth routes through local-authority subcontracting and NHS Any Qualified Provider. Its founder brings '+yrs+' years of care leadership and personal CQC registered-manager accountability.';
+  if(kind==='LinkedIn')out='Founder & CEO @ Pamikyx Ltd | '+yrs+'+ years in health & social care | CQC Registered Manager | Heir Apparent, Suaman Dadiaso Traditional Council 🇬🇭 | Building care businesses and community legacies that outlive their founder. Master’s candidate — Governance & Public Administration.';
+  if(kind==='Conference')out='Our speaker, '+n+' — known in his Royal capacity as '+D.royal+' — has spent '+yrs+' years on the frontline of British health and social care and now leads Pamikyx Ltd as its founding CEO. He is also the designated Heir Apparent of the Suaman Dadiaso Traditional Area in Ghana, where his five-pillar blueprint is turning royal heritage into generational opportunity. Please welcome a leader who governs by flow, not force.';
+  if(kind==='Press')out='PRESS PROFILE — '+n+' ('+D.royal+'): UK-based care entrepreneur and Ghanaian Royal heir. Founder & CEO, Pamikyx Ltd (est. 2022, London). '+yrs+' years frontline care experience. Formally designated Heir Apparent to the Suaman Dadiaso Traditional Council; coronation target 31 December 2028. Speaks on care-sector leadership, African governance and legacy building. Contact via Pamikyx Ltd.';
+  var el=document.getElementById('rid-bio');if(el)el.textContent=out;
+};
+window.ridBioCopy=function(){var el=document.getElementById('rid-bio');if(!el)return;
+  try{navigator.clipboard.writeText(el.textContent);toast('Copied — paste it anywhere');}catch(e){toast('Select and copy the text');}};
+window.ridBioSpeak=function(){var el=document.getElementById('rid-bio');if(el)speak(el.textContent);};
+/* read aloud */
+var speaking=false;
+function ridQuiet(){try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}speaking=false;
+  var b=document.getElementById('rid-speak');if(b)b.textContent='🔊 Read';}
+function speak(text){
+  if(!('speechSynthesis' in window)){alert('The reading voice is not available on this device.');return;}
+  var synth=window.speechSynthesis;
+  if(speaking){ridQuiet();return;}
+  var u=new SpeechSynthesisUtterance(text);u.rate=0.95;
+  try{var vs=synth.getVoices()||[];var v=vs.find(function(vv){return /en-GB/i.test(vv.lang);})||vs.find(function(vv){return /^en/i.test(vv.lang);});if(v)u.voice=v;}catch(e){}
+  u.onend=function(){ridQuiet();};
+  synth.cancel();speaking=true;
+  var b=document.getElementById('rid-speak');if(b)b.textContent='⏹ Stop';
+  synth.speak(u);
+}
+window.ridSpeak=function(){
+  var pb=document.getElementById('rid-pagebox');
+  speak(pb?pb.textContent.replace(/\s+/g,' ').slice(0,4000):'');
+};
+/* presentation mode */
+window.ridPresent=function(){
+  var m=document.getElementById('rid-present');
+  if(!m){m=document.createElement('div');m.id='rid-present';
+    m.innerHTML='<button id="rid-close" onclick="document.getElementById(\'rid-present\').classList.remove(\'open\');ridRestore()">✕ Exit presentation</button><div class="inner" id="rid-present-inner"></div>';
+    document.body.appendChild(m);}
+  var pb=document.getElementById('rid-pagebox');
+  if(pb){var clone=pb.cloneNode(true);document.getElementById('rid-present-inner').innerHTML='';document.getElementById('rid-present-inner').appendChild(clone);}
+  m.classList.add('open');
+};
+window.ridRestore=function(){};
+/* search */
+window.ridSearch=function(q){
+  q=(q||'').toLowerCase().trim();if(!q)return;
+  var hay={identity:get('identity'),bio:get('bio'),heritage:get('heritage'),business:get('business'),legacy:get('mission')+' '+get('purpose'),
+    career:D.career.map(function(e){return e.d+' '+e.t+' '+e.o+' '+e.x;}).join(' '),
+    education:D.education.map(function(e){return e.d+' '+e.t+' '+e.o;}).join(' '),
+    skills:D.skills.map(function(s){return s[0];}).join(' ')};
+  for(var k in hay){if(String(hay[k]).toLowerCase().indexOf(q)>-1){window.ridCh(k);toast('Found in '+k+' — page opened');return;}}
+  toast('Nothing found for “'+q+'”');
+};
+function activate(){curCh='cover';render();}
+function injectChip(){
+  var sc=document.getElementById('s-profile');if(!sc)return;
+  if(document.getElementById('rid-entry'))return;
+  var d=document.createElement('div');d.id='rid-entry';
+  d.style.cssText='display:flex;justify-content:center;padding:10px 8px 2px;';
+  d.innerHTML='<span class="rg2-chip" style="font-size:.92rem;padding:11px 24px;background:linear-gradient(135deg,rgba(212,175,55,.3),rgba(212,175,55,.1));" onclick="ridGo(\'identity\')">📖 Open the Royal Identity Book — your luxury digital profile</span>';
+  sc.insertBefore(d,sc.firstChild);
+}
+function hook(fn){
+  var o=window[fn];if(typeof o!=='function'||o._rid)return;
+  var w=function(n){var r2=o.apply(this,arguments);if(n==='identity'){setTimeout(activate,0);}return r2;};
+  w._rid=true;try{window[fn]=w;}catch(e){}
+}
+function boot(){ensureScreen();hook('go');hook('royalTab');injectChip();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(injectChip,2000);
 })();
 </script>
 
