@@ -13466,7 +13466,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.10.0 · 9 Jul 2026 · diary-book';
+window.ROYAL_APP_VERSION='v4.11.0 · 9 Jul 2026 · day-structure';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -22674,7 +22674,7 @@ function render(){
   ensureScreen();var root=document.getElementById('rbook-root');if(!root)return;
   var s=st();
   if(!s.coverSeen){
-    root.innerHTML='<div class="rbk-wrap"><div class="rbk-cover" onclick="rbkOpenCover()">'+
+    root.innerHTML='<div class="rbk-wrap"><div class="rbk-topbar"><span class="rbk-chip" onclick="rbkGo(\'home\')">⬅ Home</span></div><div class="rbk-cover" onclick="rbkOpenCover()">'+
       '<div class="crest">👑</div><div class="t1">The Royal Diary</div>'+
       '<div class="t2">HRH Prince Kwame Nkrabea · Heir Apparent, Suaman Dadiaso</div>'+
       '<div class="t3">One page for every day · '+new Date().getFullYear()+'</div>'+
@@ -22684,7 +22684,8 @@ function render(){
   var d=fromIso(cur);var ap=appts(cur);var de=diaryFor(cur);var tx=moneyFor(cur);
   var tasks=(s.byDate[cur]||{}).tasks||[];
   var h='<div class="rbk-wrap">';
-  h+='<div class="rbk-topbar"><span class="rbk-tt">📖 The Royal Diary</span>'+
+  h+='<div class="rbk-topbar"><span class="rbk-chip" onclick="rbkGo(\'home\')">⬅ Home</span>'+
+     '<span class="rbk-tt">📖 The Royal Diary</span>'+
      '<span class="rbk-chip" onclick="rbkToday()">Today</span>'+
      '<input type="date" value="'+cur+'" onchange="rbkPick(this.value)">'+
      '</div>';
@@ -22724,7 +22725,7 @@ function render(){
   h+='<div class="rbk-hint">💷 “Paid £85 driving lesson” → Money Hub &nbsp;·&nbsp; 🧑‍⚕️ “New live-in placement offer, Kent” → Rota &nbsp;·&nbsp; 🙏 “Evening prayer of gratitude…” → Prayer Book &nbsp;·&nbsp; 📔 longer notes → Diary &amp; Home</div>';
   h+='<div class="rbk-pageno">— Page '+doy(d)+' of '+daysInYear(d.getFullYear())+' —</div>';
   h+='</div></div>';
-  h+='<div class="rbk-arrows"><span class="rbk-arrow" onclick="rbkTurn(-1)">⬅ Previous day</span><span class="rbk-arrow" onclick="rbkTurn(1)">Next day ➡</span></div>';
+  h+='<div class="rbk-arrows"><span class="rbk-arrow" onclick="rbkTurn(-1)">⬅ Previous day</span><span class="rbk-arrow" onclick="rbkGo(\'home\')">🏠 Home</span><span class="rbk-arrow" onclick="rbkTurn(1)">Next day ➡</span></div>';
   h+='</div>';
   root.innerHTML=h;
   /* swipe */
@@ -22755,6 +22756,321 @@ function hook(fn){
 function boot(){ensureScreen();hook('go');hook('royalTab');injectPill();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 setInterval(injectPill,1800);
+})();
+</script>
+
+<style id="rdsb-css">
+/* ═══════════ ROYAL DAY STRUCTURE (rdsb) — Structured-style Daily Schedule ═══════════ */
+#rdsb-root{max-width:820px;margin:0 auto;padding:4px 8px 120px;}
+.rdsb-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 4px;}
+.rdsb-chip{background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.4);color:var(--gold,#d4af37);border-radius:999px;padding:7px 14px;font-size:.82rem;font-weight:700;cursor:pointer;user-select:none;}
+.rdsb-chip.dim{opacity:.75;font-weight:600;}
+.rdsb-title{font-size:1.6rem;font-weight:800;margin:6px 2px 2px;}
+.rdsb-title .yr{color:#5aa2e8;}
+.rdsb-week{display:flex;gap:4px;justify-content:space-between;margin:10px 0 4px;}
+.rdsb-day{flex:1;text-align:center;padding:7px 2px 9px;border-radius:14px;cursor:pointer;border:1px solid transparent;}
+.rdsb-day .dw{font-size:.68rem;color:#9aa;letter-spacing:.5px;}
+.rdsb-day .dn{font-size:1.05rem;font-weight:800;margin-top:3px;}
+.rdsb-day.sel{background:rgba(90,162,232,.18);border-color:rgba(90,162,232,.55);}
+.rdsb-day.sel .dn{color:#5aa2e8;}
+.rdsb-day.today .dn{text-decoration:underline;}
+.rdsb-day .dots{margin-top:4px;font-size:.5rem;letter-spacing:1px;color:#d4af37;min-height:8px;}
+.rdsb-sheet{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:16px 14px 22px;margin-top:8px;position:relative;}
+.rdsb-row{display:flex;gap:13px;align-items:flex-start;padding:9px 4px;border-radius:14px;position:relative;cursor:pointer;}
+.rdsb-row:hover{background:rgba(255,255,255,.05);}
+.rdsb-row.nowrow{background:rgba(90,162,232,.10);border:1px solid rgba(90,162,232,.35);}
+.rdsb-tcol{width:52px;min-width:52px;text-align:right;font-size:.74rem;color:#98a0ac;padding-top:10px;}
+.rdsb-ic{width:44px;height:44px;min-width:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.25rem;box-shadow:0 2px 6px rgba(0,0,0,.35);}
+.rdsb-row:not(:last-child) .rdsb-icwrap:before{content:'';position:absolute;left:73px;top:52px;bottom:-10px;width:2px;background:rgba(255,255,255,.10);}
+.rdsb-icwrap{position:static;}
+.rdsb-body{flex:1;min-width:0;}
+.rdsb-meta{font-size:.76rem;color:#98a0ac;}
+.rdsb-meta .rec{margin-left:4px;}
+.rdsb-name{font-size:1.02rem;font-weight:700;line-height:1.3;margin-top:1px;}
+.rdsb-note{font-size:.76rem;color:#8a93a0;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:95%;}
+.rdsb-ring{width:26px;height:26px;min-width:26px;border-radius:50%;border:2.5px solid #98a0ac55;margin:9px 2px 0 0;display:flex;align-items:center;justify-content:center;font-size:.8rem;cursor:pointer;color:transparent;}
+.rdsb-ring.on{border-color:#59c26e;background:rgba(89,194,110,.15);color:#59c26e;}
+.rdsb-gap{display:flex;gap:10px;align-items:center;color:#7d8794;font-size:.8rem;font-style:italic;padding:4px 4px 4px 88px;}
+.rdsb-sec{font-size:.72rem;font-weight:800;letter-spacing:2px;color:#b09a5c;text-transform:uppercase;padding:14px 4px 2px 6px;}
+.rdsb-nowline{display:flex;align-items:center;gap:6px;margin:2px 0;}
+.rdsb-nowline .t{font-size:.72rem;color:#5aa2e8;font-weight:800;min-width:52px;text-align:right;}
+.rdsb-nowline .ln{flex:1;height:2px;background:#5aa2e8;border-radius:2px;box-shadow:0 0 6px #5aa2e8;}
+.rdsb-empty{color:#8a93a0;font-style:italic;padding:14px;text-align:center;}
+.rdsb-fab{position:absolute;right:16px;bottom:16px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#5aa2e8,#3d7fc4);color:#fff;font-size:1.7rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.45);border:none;}
+.rdsb-ai{background:rgba(90,162,232,.10);border:1px solid rgba(90,162,232,.3);border-radius:12px;padding:9px 12px;font-size:.83rem;color:#b9c6d4;margin:8px 0;font-style:italic;line-height:1.45;}
+/* modal */
+#rdsb-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99998;display:none;align-items:flex-end;justify-content:center;}
+#rdsb-modal.open{display:flex;}
+.rdsb-mcard{background:#181c22;border:1px solid rgba(212,175,55,.35);border-radius:22px 22px 0 0;padding:20px 18px 30px;width:100%;max-width:560px;max-height:86vh;overflow-y:auto;}
+.rdsb-mcard h3{margin:0 0 12px;color:var(--gold,#d4af37);font-size:1.05rem;}
+.rdsb-f{margin-bottom:11px;}
+.rdsb-f label{display:block;font-size:.72rem;color:#9aa4b0;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.rdsb-f input,.rdsb-f select,.rdsb-f textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:10px 11px;color:inherit;font-size:.95rem;box-sizing:border-box;}
+.rdsb-f textarea{min-height:64px;resize:vertical;}
+.rdsb-frow{display:flex;gap:9px;}
+.rdsb-frow .rdsb-f{flex:1;}
+.rdsb-mbtns{display:flex;gap:9px;margin-top:14px;}
+.rdsb-mbtns button{flex:1;border:none;border-radius:12px;padding:12px;font-weight:800;font-size:.92rem;cursor:pointer;}
+.rdsb-msave{background:linear-gradient(135deg,#d4af37,#b8912a);color:#241d0d;}
+.rdsb-mdel{background:rgba(232,90,90,.16);color:#e88a8a;border:1px solid rgba(232,90,90,.4)!important;flex:0 0 auto!important;padding:12px 16px!important;}
+.rdsb-mcancel{background:rgba(255,255,255,.08);color:#cbd2da;}
+html.app-light .rdsb-sheet{background:#fff;border-color:#e3ddcc;}
+html.app-light .rdsb-name{color:#222;}
+html.app-light .rdsb-mcard{background:#f7f4ea;}
+html.app-light .rdsb-f input,html.app-light .rdsb-f select,html.app-light .rdsb-f textarea{background:#fff;color:#333;border-color:#ddd;}
+@media(max-width:640px){.rdsb-tcol{width:44px;min-width:44px;font-size:.68rem;}.rdsb-ic{width:38px;height:38px;min-width:38px;font-size:1.05rem;}.rdsb-title{font-size:1.25rem;}}
+</style>
+<script id="rdsb-js">
+/* ═══════════ ROYAL DAY STRUCTURE (rdsb) — additive overlay on Daily Schedule ═══════════ */
+(function(){
+'use strict';
+var VIEWK='royal_dayview_v1', DONEK='royal_daydone_v1', SLS='royal_sched_v2';
+var MONL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var DW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fromIso(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+var cur=iso(new Date());
+var COL={gold:'#d4af37',green:'#6ec46e',purple:'#b087e8',dim:'#79808c',red:'#e86a5e',blue:'#5aa2e8',orange:'#e8a44f'};
+var ICONS=[[/wake|alarm|rise|rising/i,'⏰'],[/toilet|shower|wash|dress/i,'🚿'],[/train|gym|run|exercis|physical/i,'🏃'],[/breakfast/i,'☕'],[/lunch|dinner|meal|eat/i,'🍽️'],[/email|mail/i,'＠'],[/meditat/i,'🧘'],[/pray|manifesto|reflect|gratitude|spirit/i,'🙏'],[/study|assign|write|athe|diploma|essay|learn/i,'🎓'],[/pamikyx|business|strateg|work|office/i,'💼'],[/medicat/i,'💊'],[/client|care /i,'🩺'],[/sleep|rest|bed/i,'😴'],[/review|plan/i,'📝'],[/call|phone|ghana/i,'📞'],[/shop|tesco|grocer/i,'🛒'],[/invoice|payment|money/i,'💷'],[/driv|lesson/i,'🚗']];
+function iconFor(it){if(it.icon)return it.icon;for(var i=0;i<ICONS.length;i++){if(ICONS[i][0].test(it.title||''))return ICONS[i][1];}return '📌';}
+function hm(t){var m=/^(\d{1,2}):(\d{2})$/.exec((t||'').trim());return m?(+m[1])*60+(+m[2]):null;}
+function fm(m){m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function sched(){var s=lsGet(SLS,null);if(s&&s.length)return s;if(Array.isArray(window.SCHED_DEF))return JSON.parse(JSON.stringify(window.SCHED_DEF));return (typeof schedData!=='undefined'&&schedData.length)?schedData:[];}
+function saveSchedArr(a){lsSet(SLS,a);try{if(typeof window.loadSched==='function')window.loadSched();if(typeof window.renderSched==='function')window.renderSched();}catch(e){}}
+function done(){return lsGet(DONEK,{});}
+function blocksFor(dateIso){
+  var d=fromIso(dateIso);var wd=DAYS[d.getDay()];
+  var timed=[],anchors=[];
+  sched().forEach(function(it){
+    if(it.type==='sec')return;
+    var t=hm(it.time);
+    if(t!==null){var next=null;timed.push({it:it,min:t});}
+    else{
+      var lbl=(it.time||'').toLowerCase();
+      if(lbl===wd.toLowerCase())anchors.push(it);
+      else if(lbl==='monthly'&&d.getDate()===1)anchors.push(it);
+      else if(lbl==='daily')anchors.push(it);
+    }
+  });
+  timed.sort(function(a,b){return a.min-b.min;});
+  for(var i=0;i<timed.length;i++){
+    var dur=+(timed[i].it.dur||0);
+    if(!dur){var gap=(i<timed.length-1)?(timed[i+1].min-timed[i].min):30;dur=Math.max(10,Math.min(gap,60));}
+    timed[i].dur=dur;
+  }
+  return {timed:timed,anchors:anchors};
+}
+function apptsFor(dateIso){
+  var r=lsGet('rical_data_v1',{})||{};
+  return (r.appts||[]).filter(function(x){
+    if(x.date===dateIso)return true;
+    if(x.rec==='daily')return x.date<=dateIso;
+    if(x.rec==='weekly')return x.date<=dateIso&&fromIso(x.date).getDay()===fromIso(dateIso).getDay();
+    if(x.rec==='monthly')return x.date<=dateIso&&x.date.slice(8)===dateIso.slice(8);
+    return false;});
+}
+function aiLine(dateIso){
+  var b=blocksFor(dateIso),ap=apptsFor(dateIso);
+  var dn=done()[dateIso]||{};var total=b.timed.length,ok=0;
+  b.timed.forEach(function(x){if(dn[x.it.id])ok++;});
+  var today=iso(new Date())===dateIso;
+  var s=(today?'Your Highness, ':'')+total+' blocks'+(ap.length?' + '+ap.length+' appointment'+(ap.length>1?'s':''):'')+(total?' · '+ok+'/'+total+' complete':'');
+  if(today){var now=new Date().getHours()*60+new Date().getMinutes();var nxt=null;
+    for(var i=0;i<b.timed.length;i++){if(b.timed[i].min>now){nxt=b.timed[i];break;}}
+    if(nxt)s+=' · Next: '+fm(nxt.min)+' '+(nxt.it.title||'');}
+  return s+'.';
+}
+/* ── view toggle: hide/show original schedule content ── */
+function setClassic(on){
+  var sc=document.getElementById('s-sched');if(!sc)return;
+  Array.prototype.forEach.call(sc.children,function(ch){
+    if(ch.id==='rdsb-root')ch.style.display=on?'none':'';
+    else ch.style.display=on?'':'none';
+  });
+  lsSet(VIEWK,on?'classic':'day');
+}
+window.rdsbClassic=function(){setClassic(true);};
+window.rdsbDay=function(){setClassic(false);render();};
+window.rdsbGo=function(t){if(typeof window.go==='function')window.go(t);else if(typeof window.royalTab==='function')window.royalTab(t,null);};
+window.rdsbPickDay=function(v){cur=v;render();};
+window.rdsbShift=function(n){var d=fromIso(cur);d.setDate(d.getDate()+n);cur=iso(d);render();};
+window.rdsbToday=function(){cur=iso(new Date());render();};
+window.rdsbTick=function(id){var dn=done();dn[cur]=dn[cur]||{};dn[cur][id]=!dn[cur][id];if(!dn[cur][id])delete dn[cur][id];lsSet(DONEK,dn);render();};
+/* ── edit / add modal ── */
+function ensureModal(){
+  if(document.getElementById('rdsb-modal'))return;
+  var m=document.createElement('div');m.id='rdsb-modal';
+  m.innerHTML='<div class="rdsb-mcard">'+
+    '<h3 id="rdsb-mtitle">Edit block</h3>'+
+    '<div class="rdsb-f"><label>Title</label><input id="rdsb-i-title" placeholder="e.g. Morning Meditation"></div>'+
+    '<div class="rdsb-frow">'+
+      '<div class="rdsb-f"><label>Start time</label><input id="rdsb-i-time" type="time"></div>'+
+      '<div class="rdsb-f"><label>Minutes</label><input id="rdsb-i-dur" type="number" min="5" step="5" placeholder="30"></div>'+
+    '</div>'+
+    '<div class="rdsb-frow">'+
+      '<div class="rdsb-f"><label>Colour</label><select id="rdsb-i-col"><option value="gold">👑 Gold</option><option value="green">🌿 Green</option><option value="blue">💧 Blue</option><option value="purple">🔮 Purple</option><option value="red">🔥 Red</option><option value="orange">🌅 Orange</option><option value="dim">◽ Grey</option></select></div>'+
+      '<div class="rdsb-f"><label>Icon (emoji, optional)</label><input id="rdsb-i-icon" placeholder="auto"></div>'+
+    '</div>'+
+    '<div class="rdsb-f"><label>Notes</label><textarea id="rdsb-i-body" placeholder="What happens in this block?"></textarea></div>'+
+    '<div class="rdsb-mbtns">'+
+      '<button class="rdsb-mcancel" onclick="rdsbClose()">Cancel</button>'+
+      '<button class="rdsb-mdel" id="rdsb-mdel" onclick="rdsbDelete()">🗑</button>'+
+      '<button class="rdsb-msave" onclick="rdsbSave()">Save</button>'+
+    '</div></div>';
+  m.addEventListener('click',function(e){if(e.target===m)window.rdsbClose();});
+  document.body.appendChild(m);
+}
+var editId=null;
+window.rdsbEdit=function(id){
+  ensureModal();var it=sched().find(function(x){return x.id===id;});if(!it)return;
+  editId=id;
+  document.getElementById('rdsb-mtitle').textContent='✏️ Edit block';
+  document.getElementById('rdsb-i-title').value=it.title||'';
+  document.getElementById('rdsb-i-time').value=(hm(it.time)!==null?it.time:'');
+  document.getElementById('rdsb-i-dur').value=it.dur||'';
+  document.getElementById('rdsb-i-col').value=COL[it.color]?it.color:'gold';
+  document.getElementById('rdsb-i-icon').value=it.icon||'';
+  document.getElementById('rdsb-i-body').value=it.body||'';
+  document.getElementById('rdsb-mdel').style.display='';
+  document.getElementById('rdsb-modal').classList.add('open');
+};
+window.rdsbAdd=function(){
+  ensureModal();editId=null;
+  document.getElementById('rdsb-mtitle').textContent='➕ New block';
+  ['title','dur','icon','body'].forEach(function(f){document.getElementById('rdsb-i-'+f).value='';});
+  document.getElementById('rdsb-i-time').value='09:00';
+  document.getElementById('rdsb-i-col').value='blue';
+  document.getElementById('rdsb-mdel').style.display='none';
+  document.getElementById('rdsb-modal').classList.add('open');
+};
+window.rdsbClose=function(){var m=document.getElementById('rdsb-modal');if(m)m.classList.remove('open');};
+window.rdsbDelete=function(){
+  if(editId===null)return;
+  if(!confirm('Delete this block from your Daily Schedule?'))return;
+  saveSchedArr(sched().filter(function(x){return x.id!==editId;}));
+  window.rdsbClose();render();
+};
+function toast(msg){var t=document.createElement('div');t.className='rbk-toast';t.textContent='✅ '+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';},2600);setTimeout(function(){t.remove();},3100);}
+window.rdsbSave=function(){
+  var title=document.getElementById('rdsb-i-title').value.trim();if(!title){alert('Give the block a title.');return;}
+  var time=document.getElementById('rdsb-i-time').value||'09:00';
+  var dur=parseInt(document.getElementById('rdsb-i-dur').value,10)||0;
+  var col=document.getElementById('rdsb-i-col').value;
+  var icon=document.getElementById('rdsb-i-icon').value.trim();
+  var body=document.getElementById('rdsb-i-body').value.trim();
+  var arr=sched();var extra='';
+  if(editId!==null){
+    arr.forEach(function(x){if(x.id===editId){x.title=title;x.time=time;x.color=col;x.body=body;if(dur)x.dur=dur;else delete x.dur;if(icon)x.icon=icon;else delete x.icon;}});
+  }else{
+    var it={id:'sb'+Date.now().toString(36),col:'R',time:time,title:title,body:body,color:col};
+    if(dur)it.dur=dur;if(icon)it.icon=icon;arr.push(it);
+    /* smart cross-sync, same spirit as the Diary Book */
+    var t=(title+' '+body).toLowerCase();
+    var m=t.match(/£\s*([\d,]+(?:\.\d{1,2})?)/);
+    if(m){var mh=lsGet('royal_moneyhub_v1',[])||[];mh.push({id:'rdsb_'+Date.now(),type:/received|income|refund/.test(t)?'income':'expense',amount:parseFloat(m[1].replace(/,/g,'')),date:cur,desc:title,cat:'',extra:'From Daily Schedule',recipient:'',beneficiary:'',method:'',source:'',purpose:'',loc:'',ref:'',notes:body});lsSet('royal_moneyhub_v1',mh);extra=' · £'+m[1]+' also recorded in your Money Hub';}
+    else if(/\b(rota|shift|placement|live-?in|care job|new client|agency)\b/.test(t)){var ro=lsGet('royal_rota_v1',[])||[];ro.push({id:'rota_rdsb'+Date.now().toString(36),employmentType:'',companyName:'',placeOfWork:'',carerName:'',clientName:title.slice(0,70),clientAddress:'',clientPhone:'',preferredName:'',careType:'',careReason:'',medicalDiagnosis:'',agencyName:'',agencyEmail:'',status:'offer',contactDate:cur,notes:body||title,days:[],rate:'',docs:[]});lsSet('royal_rota_v1',ro);extra=' · offer card also created in your Rota';}
+  }
+  saveSchedArr(arr);window.rdsbClose();render();
+  toast(editId!==null?'Block updated — synced everywhere':'Block added to your Daily Schedule'+extra);
+  editId=null;
+};
+/* ── render ── */
+function weekStrip(){
+  var d=fromIso(cur);var mon=new Date(d);mon.setDate(d.getDate()-((d.getDay()+6)%7));
+  var h='<div class="rdsb-week">';
+  for(var i=0;i<7;i++){
+    var dd=new Date(mon);dd.setDate(mon.getDate()+i);var di=iso(dd);
+    var dn=done()[di]||{};var dot=Object.keys(dn).length?'●':'';
+    h+='<div class="rdsb-day'+(di===cur?' sel':'')+(di===iso(new Date())?' today':'')+'" onclick="rdsbPickDay(\''+di+'\')">'+
+       '<div class="dw">'+DW[i]+'</div><div class="dn">'+dd.getDate()+'</div><div class="dots">'+dot+'</div></div>';
+  }
+  return h+'</div>';
+}
+function render(){
+  var root=document.getElementById('rdsb-root');if(!root)return;
+  var d=fromIso(cur);var b=blocksFor(cur);var ap=apptsFor(cur);
+  var dn=done()[cur]||{};
+  var isToday=iso(new Date())===cur;var nowMin=new Date().getHours()*60+new Date().getMinutes();
+  var h='<div class="rdsb-top">'+
+    '<span class="rdsb-chip" onclick="rdsbGo(\'home\')">⬅ Home</span>'+
+    '<span class="rdsb-chip" onclick="rdsbToday()">Today</span>'+
+    '<span class="rdsb-chip dim" onclick="rdsbShift(-1)">‹</span>'+
+    '<span class="rdsb-chip dim" onclick="rdsbShift(1)">›</span>'+
+    '<span style="flex:1"></span>'+
+    '<span class="rdsb-chip dim" onclick="rdsbClassic()">📋 Classic view</span>'+
+  '</div>';
+  h+='<div class="rdsb-title">'+d.getDate()+' '+MONL[d.getMonth()]+' <span class="yr">'+d.getFullYear()+'</span></div>';
+  h+=weekStrip();
+  h+='<div class="rdsb-ai">🤖 '+esc(aiLine(cur))+'</div>';
+  h+='<div class="rdsb-sheet">';
+  /* merge appts into timeline */
+  var items=b.timed.map(function(x){return {kind:'block',min:x.min,dur:x.dur,it:x.it};});
+  ap.forEach(function(a){var m2=hm(a.time);items.push({kind:'appt',min:m2===null?1439:m2,dur:+a.dur||30,it:a});});
+  items.sort(function(p,q){return p.min-q.min;});
+  if(!items.length)h+='<div class="rdsb-empty">No blocks for this day yet — tap ➕ to build your structure.</div>';
+  var nowDrawn=false;
+  items.forEach(function(x,idx){
+    if(isToday&&!nowDrawn&&nowMin<x.min){h+='<div class="rdsb-nowline"><span class="t">'+fm(nowMin)+'</span><span class="ln"></span></div>';nowDrawn=true;}
+    var it=x.it;
+    if(x.kind==='appt'){
+      var ttl=(it.title||'').replace(/^\p{Extended_Pictographic}\s*/u,'');
+      h+='<div class="rdsb-row" onclick="rdsbGo(\'icalender\')"><div class="rdsb-tcol">'+(it.time||'')+'</div>'+
+        '<div class="rdsb-icwrap"><div class="rdsb-ic" style="background:#5aa2e8">📅</div></div>'+
+        '<div class="rdsb-body"><div class="rdsb-meta">'+esc(it.time||'')+(x.dur?'–'+fm(x.min+x.dur)+' ('+x.dur+' min)':'')+' · iCalender</div>'+
+        '<div class="rdsb-name">'+esc(ttl)+'</div>'+(it.loc?'<div class="rdsb-note">📍 '+esc(it.loc)+'</div>':'')+'</div></div>';
+    }else{
+      var live=isToday&&nowMin>=x.min&&nowMin<x.min+x.dur;
+      var col=COL[it.color]||COL.gold;
+      h+='<div class="rdsb-row'+(live?' nowrow':'')+'" onclick="rdsbEdit(\''+it.id+'\')">'+
+        '<div class="rdsb-tcol">'+fm(x.min)+'</div>'+
+        '<div class="rdsb-icwrap"><div class="rdsb-ic" style="background:'+col+'">'+iconFor(it)+'</div></div>'+
+        '<div class="rdsb-body"><div class="rdsb-meta">'+fm(x.min)+'–'+fm(x.min+x.dur)+' ('+x.dur+' min) <span class="rec">↻</span></div>'+
+        '<div class="rdsb-name">'+esc(it.title||'')+'</div>'+
+        (it.body?'<div class="rdsb-note">'+esc(it.body)+'</div>':'')+'</div>'+
+        '<div class="rdsb-ring'+(dn[it.id]?' on':'')+'" onclick="event.stopPropagation();rdsbTick(\''+it.id+'\')">✔</div></div>';
+      var nx=items[idx+1];
+      if(nx&&nx.min-(x.min+x.dur)>=45)h+='<div class="rdsb-gap">☕ '+(nx.min-(x.min+x.dur))+' free minutes — breathe, Your Highness.</div>';
+    }
+  });
+  if(isToday&&!nowDrawn&&items.length)h+='<div class="rdsb-nowline"><span class="t">'+fm(nowMin)+'</span><span class="ln"></span></div>';
+  if(b.anchors.length){
+    h+='<div class="rdsb-sec">Anchors for this day</div>';
+    b.anchors.forEach(function(it){
+      h+='<div class="rdsb-row" onclick="rdsbEdit(\''+it.id+'\')"><div class="rdsb-tcol">📌</div>'+
+        '<div class="rdsb-icwrap"><div class="rdsb-ic" style="background:'+(COL[it.color]||COL.gold)+'">'+iconFor(it)+'</div></div>'+
+        '<div class="rdsb-body"><div class="rdsb-meta">'+esc(it.time||'')+'</div><div class="rdsb-name">'+esc(it.title||'')+'</div></div>'+
+        '<div class="rdsb-ring'+(dn[it.id]?' on':'')+'" onclick="event.stopPropagation();rdsbTick(\''+it.id+'\')">✔</div></div>';
+    });
+  }
+  h+='<button class="rdsb-fab" onclick="rdsbAdd()">＋</button>';
+  h+='</div>';
+  root.innerHTML=h;
+}
+/* ── mount ── */
+function ensureRoot(){
+  var sc=document.getElementById('s-sched');if(!sc)return null;
+  var r=document.getElementById('rdsb-root');
+  if(!r){r=document.createElement('div');r.id='rdsb-root';sc.insertBefore(r,sc.firstChild);}
+  return r;
+}
+function activate(){
+  if(!ensureRoot())return;
+  var pref=lsGet(VIEWK,'day');
+  if(pref==='classic'){setClassic(true);}
+  else{setClassic(false);render();}
+}
+function hook(fn){
+  var o=window[fn];if(typeof o!=='function'||o._rdsb)return;
+  var w=function(n){var r=o.apply(this,arguments);if(n==='sched'){setTimeout(activate,0);}return r;};
+  w._rdsb=true;try{window[fn]=w;}catch(e){}
+}
+function boot(){hook('go');hook('royalTab');ensureRoot();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(function(){var sc=document.getElementById('s-sched');if(sc&&sc.classList.contains('active')&&lsGet(VIEWK,'day')!=='classic'){var r=document.getElementById('rdsb-root');if(r&&r.style.display!=='none')render();}},60000);
 })();
 </script>
 
