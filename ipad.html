@@ -13466,7 +13466,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.11.2 · 9 Jul 2026 · book-dailylife';
+window.ROYAL_APP_VERSION='v4.12.0 · 9 Jul 2026 · goals-book';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -23087,6 +23087,315 @@ function hook(fn){
 function boot(){hook('go');hook('royalTab');ensureRoot();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 setInterval(function(){var sc=document.getElementById('s-sched');if(sc&&sc.classList.contains('active')&&lsGet(VIEWK,'day')!=='classic'){var r=document.getElementById('rdsb-root');if(r&&r.style.display!=='none')render();}},60000);
+})();
+</script>
+
+<style id="rgbk-css">
+/* ═══════════ ROYAL GOALS BOOK v2 (rgbk) — live interactive command pages ═══════════ */
+#s-goalbook{padding-bottom:120px;}
+.rg2-wrap{max-width:820px;margin:0 auto;padding:6px 10px;}
+.rg2-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 10px;}
+.rg2-chip{background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.45);color:var(--gold,#d4af37);border-radius:999px;padding:7px 14px;font-size:.82rem;font-weight:700;cursor:pointer;user-select:none;transition:all .2s;}
+.rg2-chip:hover{background:rgba(212,175,55,.3);transform:translateY(-1px);}
+.rg2-tt{font-weight:800;font-size:1rem;color:var(--gold,#d4af37);letter-spacing:.5px;}
+@keyframes rg2pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.45;transform:scale(.8);}}
+.rg2-live{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;font-weight:800;letter-spacing:2px;color:#59c26e;}
+.rg2-live .dot{width:9px;height:9px;border-radius:50%;background:#59c26e;box-shadow:0 0 8px #59c26e;animation:rg2pulse 1.6s infinite;}
+.rg2-page{background:linear-gradient(155deg,#151b13 0%,#0e130c 55%,#131108 100%);border:1px solid rgba(212,175,55,.4);border-radius:22px;box-shadow:0 14px 40px rgba(0,0,0,.55), inset 0 0 60px rgba(212,175,55,.05);padding:22px 20px 56px;position:relative;overflow:hidden;transition:transform .25s ease,opacity .25s ease;}
+.rg2-page.turn-l{transform:translateX(-36px) scale(.98);opacity:0;}
+.rg2-page.turn-r{transform:translateX(36px) scale(.98);opacity:0;}
+.rg2-page:before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(212,175,55,.14),transparent 70%);pointer-events:none;}
+.rg2-head{display:flex;gap:14px;align-items:center;margin-bottom:6px;}
+.rg2-gicon{width:58px;height:58px;min-width:58px;border-radius:18px;background:linear-gradient(135deg,rgba(212,175,55,.25),rgba(212,175,55,.08));border:1px solid rgba(212,175,55,.5);display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 4px 14px rgba(0,0,0,.4);}
+.rg2-head .t{flex:1;min-width:0;}
+.rg2-head .t h2{margin:0;font-size:1.22rem;line-height:1.25;color:#f2ead2;}
+.rg2-head .t .sub{font-size:.76rem;color:#a9a184;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.rg2-st{border-radius:999px;padding:2px 10px;font-size:.66rem;font-weight:800;letter-spacing:1px;}
+.rg2-st.on{background:rgba(89,194,110,.15);color:#59c26e;border:1px solid rgba(89,194,110,.5);}
+.rg2-st.off{background:rgba(232,106,94,.13);color:#e8877b;border:1px solid rgba(232,106,94,.45);}
+.rg2-count{background:rgba(90,162,232,.13);color:#7db4e8;border:1px solid rgba(90,162,232,.4);border-radius:999px;padding:2px 10px;font-size:.66rem;font-weight:800;}
+.rg2-ai{background:rgba(212,175,55,.09);border:1px solid rgba(212,175,55,.3);border-radius:14px;padding:10px 13px;font-size:.85rem;color:#d8cfae;font-style:italic;line-height:1.5;margin:12px 0;}
+/* hero: ring + kpis */
+.rg2-hero{display:flex;gap:18px;align-items:center;margin:14px 0;flex-wrap:wrap;}
+.rg2-ringwrap{position:relative;width:128px;height:128px;min-width:128px;}
+.rg2-ring{width:128px;height:128px;border-radius:50%;background:conic-gradient(#d4af37 0deg,rgba(255,255,255,.07) 0deg);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(212,175,55,.25);}
+.rg2-ring .hole{width:96px;height:96px;border-radius:50%;background:#11150e;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.rg2-ring .p{font-size:1.5rem;font-weight:800;color:#d4af37;}
+.rg2-ring .pl{font-size:.6rem;letter-spacing:1.5px;color:#a9a184;text-transform:uppercase;}
+.rg2-kpis{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:9px;min-width:220px;}
+.rg2-kpi{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:10px 8px;text-align:center;cursor:pointer;transition:all .2s;}
+.rg2-kpi:hover{background:rgba(212,175,55,.12);transform:translateY(-2px);}
+.rg2-kpi .v{font-size:1rem;font-weight:800;color:#f2ead2;}
+.rg2-kpi .l{font-size:.63rem;letter-spacing:1px;color:#a9a184;text-transform:uppercase;margin-top:2px;}
+.rg2-sec{margin:16px 0 6px;font-size:.72rem;font-weight:800;letter-spacing:2px;color:#b09a5c;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.rg2-sec:after{content:'';flex:1;height:1px;background:rgba(212,175,55,.2);}
+/* chart */
+.rg2-chart{display:flex;align-items:flex-end;gap:10px;height:120px;margin:8px 2px 2px;padding:0 2px;}
+.rg2-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:pointer;}
+.rg2-bar .b{width:100%;max-width:46px;background:linear-gradient(180deg,#e8c860,#a8842a);border-radius:8px 8px 3px 3px;height:2px;transition:height .9s cubic-bezier(.2,.8,.3,1);box-shadow:0 0 10px rgba(212,175,55,.25);}
+.rg2-bar:hover .b{filter:brightness(1.25);}
+.rg2-bar .m{font-size:.64rem;color:#a9a184;margin-top:5px;}
+.rg2-bar .a{font-size:.62rem;color:#d4af37;font-weight:700;min-height:14px;}
+/* rows */
+.rg2-row{display:flex;gap:10px;align-items:center;padding:8px 8px;border-radius:12px;font-size:.88rem;cursor:pointer;color:#e6dfc8;transition:background .15s;}
+.rg2-row:hover{background:rgba(255,255,255,.06);}
+.rg2-row .d{font-size:.68rem;color:#8f886e;min-width:74px;}
+.rg2-row .amt-out{color:#e8877b;font-weight:800;margin-left:auto;white-space:nowrap;}
+.rg2-row .amt-in{color:#59c26e;font-weight:800;margin-left:auto;white-space:nowrap;}
+.rg2-empty{color:#8f886e;font-style:italic;font-size:.84rem;padding:8px;}
+/* quick log */
+.rg2-log{background:rgba(255,255,255,.04);border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:12px;margin-top:12px;}
+.rg2-types{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px;}
+.rg2-type{border-radius:999px;padding:6px 13px;font-size:.76rem;font-weight:700;cursor:pointer;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:#cfc7a8;transition:all .15s;}
+.rg2-type.sel{background:linear-gradient(135deg,#d4af37,#b8912a);color:#1c160a;border-color:#d4af37;}
+.rg2-log .rowi{display:flex;gap:8px;}
+.rg2-log input{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 12px;color:#f2ead2;font-size:.92rem;}
+.rg2-log input.amt{width:110px;}
+.rg2-log input.txt{flex:1;min-width:0;}
+.rg2-log button{background:linear-gradient(135deg,#d4af37,#b8912a);border:none;color:#1c160a;font-weight:800;border-radius:11px;padding:0 18px;cursor:pointer;font-size:.9rem;}
+.rg2-pageno{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:.72rem;color:#8f886e;letter-spacing:1.5px;}
+.rg2-arrows{display:flex;justify-content:space-between;gap:8px;margin-top:12px;flex-wrap:wrap;}
+/* contents grid */
+.rg2-toc{background:linear-gradient(155deg,#151b13,#0e130c);border:1px solid rgba(212,175,55,.4);border-radius:22px;padding:20px 16px 30px;box-shadow:0 14px 40px rgba(0,0,0,.55);}
+.rg2-toc h2{text-align:center;margin:2px 0 2px;color:#f2ead2;font-size:1.3rem;}
+.rg2-toc .sub{text-align:center;color:#a9a184;font-style:italic;font-size:.8rem;margin-bottom:8px;}
+.rg2-phase{font-size:.7rem;font-weight:800;letter-spacing:2px;color:#b09a5c;text-transform:uppercase;padding:16px 4px 8px;display:flex;align-items:center;gap:8px;}
+.rg2-phase:after{content:'';flex:1;height:1px;background:rgba(212,175,55,.2);}
+.rg2-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px;}
+.rg2-tile{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:13px 11px;cursor:pointer;text-align:center;transition:all .22s;position:relative;overflow:hidden;}
+.rg2-tile:hover{transform:translateY(-4px);border-color:rgba(212,175,55,.6);box-shadow:0 10px 26px rgba(0,0,0,.45),0 0 18px rgba(212,175,55,.15);}
+.rg2-tile .ic{font-size:1.7rem;}
+.rg2-tile .n{font-size:.78rem;font-weight:700;color:#e6dfc8;line-height:1.3;margin:6px 0 8px;min-height:31px;}
+.rg2-mini{width:52px;height:52px;border-radius:50%;margin:0 auto;background:conic-gradient(#d4af37 0deg,rgba(255,255,255,.08) 0deg);display:flex;align-items:center;justify-content:center;}
+.rg2-mini .hole{width:38px;height:38px;border-radius:50%;background:#11150e;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#d4af37;}
+.rg2-tile .pg{font-size:.6rem;color:#8f886e;margin-top:7px;letter-spacing:1px;}
+/* cover */
+@keyframes rg2shine{0%{background-position:-200% 50%;}100%{background-position:300% 50%;}}
+.rg2-cover{background:radial-gradient(ellipse at 50% 20%,#1e2e1c 0%,#101a10 55%,#0a110a 100%);border:2px solid #d4af37;border-radius:22px;min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:30px 22px;box-shadow:0 16px 46px rgba(0,0,0,.6), inset 0 0 0 6px rgba(212,175,55,.1);cursor:pointer;}
+.rg2-cover .crest{font-size:3.4rem;filter:drop-shadow(0 0 14px rgba(212,175,55,.5));}
+.rg2-cover .t1{font-family:Georgia,serif;font-size:1.8rem;font-weight:700;letter-spacing:2px;background:linear-gradient(110deg,#d4af37 30%,#fff3c4 50%,#d4af37 70%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rg2shine 3.5s linear infinite;}
+.rg2-cover .t2{color:#c9bd94;font-size:.9rem;font-style:italic;}
+.rg2-cover .t3{color:#8fa08b;font-size:.72rem;letter-spacing:3px;text-transform:uppercase;margin-top:8px;}
+.rg2-cover .openbtn{margin-top:16px;background:linear-gradient(135deg,#d4af37,#b8912a);color:#1c160a;font-weight:800;border:none;border-radius:999px;padding:13px 28px;font-size:.95rem;cursor:pointer;box-shadow:0 6px 20px rgba(212,175,55,.3);}
+html.app-light .rg2-page,html.app-light .rg2-toc{box-shadow:0 10px 30px rgba(0,0,0,.25);}
+@media(max-width:640px){.rg2-hero{gap:12px;}.rg2-ringwrap,.rg2-ring{width:106px;height:106px;min-width:106px;}.rg2-ring .hole{width:78px;height:78px;}.rg2-ring .p{font-size:1.2rem;}.rg2-head .t h2{font-size:1.02rem;}.rg2-grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));}}
+</style>
+<script id="rgbk-js">
+/* ═══════════ ROYAL GOALS BOOK v2 (rgbk) — live, interactive, self-updating ═══════════ */
+(function(){
+'use strict';
+var LSK='royal_goalbook_v1';
+var MONS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function money(n){n=+n||0;return '£'+Math.round(n).toLocaleString();}
+function goalsArr(){var g=lsGet('royal_goals_v2',null);if(g&&g.length)return g;return (window.goals&&window.goals.length)?window.goals:[];}
+function entries(uid){return lsGet('royal_'+uid+'_entries',[])||[];}
+function totals(uid){
+  var t={expense:0,income:0,investment:0,saving:0};
+  entries(uid).forEach(function(e){var a=parseFloat(e.amount)||0;if(t[e.type]!==undefined)t[e.type]+=a;});
+  t.put=t.investment+t.expense+t.saving;return t;
+}
+var PHASES=[['urgent','🔴 Most Urgent — 2026'],['g2026','Phase I — 2026'],['g2027','Phase II — 2027'],['g2028','Phase III — 2028'],['g2029','Phase IV — 2029'],['ongoing','♾️ Ongoing Vision']];
+function phaseLbl(c){for(var i=0;i<PHASES.length;i++)if(PHASES[i][0]===c)return PHASES[i][1];return c||'';}
+var GICONS=[[/driv/i,'🚗'],[/diploma|athe|level 4/i,'🎓'],[/income|skills/i,'💼'],[/lodge/i,'🏛️'],[/address|residential/i,'🏠'],[/car — uk|family car/i,'🚙'],[/passport|citizen/i,'🛂'],[/school/i,'🏫'],[/car — ghana/i,'🚙'],[/queen mother/i,'🏡'],[/university|master/i,'🎓'],[/resident house/i,'🏰'],[/estate|apartment/i,'🏘️'],[/gold|mining/i,'⛏️'],[/phd|cambridge|oxford/i,'🎓'],[/throne|coronation/i,'👑'],[/community|transformation/i,'🌍']];
+function iconFor(g){for(var i=0;i<GICONS.length;i++)if(GICONS[i][0].test(g.t||''))return GICONS[i][1];return '🎯';}
+function pct(g){var b=+g.budget||0;if(!b)return 0;return Math.min(100,Math.round(totals(g.uid).put/b*100));}
+var view=lsGet(LSK,{coverSeen:false});
+var curIdx=0, logType='investment';
+
+window.rgbkGo=function(t){if(typeof window.go==='function')window.go(t);else if(typeof window.royalTab==='function')window.royalTab(t,null);};
+window.rgbkOpen=function(){view.coverSeen=true;lsSet(LSK,view);renderToc();};
+window.rgbkToc=function(){renderToc();};
+window.rgbkPage=function(i){curIdx=i;renderPage();};
+window.rgbkTurn=function(d){
+  var n=goalsArr().length;var pg=document.querySelector('#rgbk-root .rg2-page');
+  if(pg)pg.classList.add(d>0?'turn-r':'turn-l');
+  setTimeout(function(){curIdx=((curIdx+d)%n+n)%n;renderPage();},170);
+};
+window.rgbkType=function(t){logType=t;
+  document.querySelectorAll('.rg2-type').forEach(function(b){b.classList.toggle('sel',b.getAttribute('data-t')===t);});};
+function toast(m){var t=document.createElement('div');t.className='rbk-toast';t.textContent='✅ '+m;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';},2600);setTimeout(function(){t.remove();},3100);}
+window.rgbkLog=function(){
+  var g=goalsArr()[curIdx];if(!g)return;
+  var amtEl=document.getElementById('rg2-amt'),txtEl=document.getElementById('rg2-txt');
+  var amt=parseFloat(amtEl.value)||0;var txt=(txtEl.value||'').trim();
+  if(!txt&&!amt){alert('Write what happened, or an amount.');return;}
+  var needsAmt=(logType!=='task'&&logType!=='note');
+  if(needsAmt&&!amt){alert('Enter the £ amount.');return;}
+  var d=new Date();var dateIso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var arr=entries(g.uid);
+  arr.unshift({id:Date.now(),type:logType,amount:amt,date:dateIso,description:txt||logType});
+  lsSet('royal_'+g.uid+'_entries',arr);
+  renderPage();
+  toast((needsAmt?money(amt)+' ':'')+'logged to “'+(g.t||'').slice(0,30)+'” — the whole system sees it');
+};
+
+function ensureScreen(){
+  var sc=document.getElementById('s-goalbook');
+  if(!sc){var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+    sc=document.createElement('div');sc.id='s-goalbook';sc.className='screen';sc.innerHTML='<div id="rgbk-root"></div>';main.appendChild(sc);}
+  return sc;
+}
+function root(){ensureScreen();return document.getElementById('rgbk-root');}
+function topbar(){
+  return '<div class="rg2-top"><span class="rg2-chip" onclick="rgbkToc()">⬅ Goals Contents</span>'+
+    '<span class="rg2-tt">📕 Royal Goals Book</span>'+
+    '<span class="rg2-live"><span class="dot"></span>LIVE</span>'+
+    '<span style="flex:1"></span>'+
+    '<span class="rg2-chip" onclick="rgbkGo(\'goals\')">✏️ Monitor</span>'+
+    '<span class="rg2-chip" onclick="rgbkGo(\'home\')">🏠 Home</span></div>';
+}
+function renderCover(){
+  var r=root();if(!r)return;
+  r.innerHTML='<div class="rg2-wrap"><div class="rg2-top"><span class="rg2-chip" onclick="rgbkGo(\'goals\')">⬅ Goals</span><span class="rg2-chip" onclick="rgbkGo(\'home\')">🏠 Home</span><span class="rg2-live"><span class="dot"></span>LIVE</span></div>'+
+    '<div class="rg2-cover" onclick="rgbkOpen()">'+
+    '<div class="crest">🎯</div><div class="t1">The Royal Goals Book</div>'+
+    '<div class="t2">17 Goals on the Path to the Throne · HRH Prince Kwame Nkrabea</div>'+
+    '<div class="t3">Living pages · self-updating from your whole system</div>'+
+    '<button class="openbtn">📕 Open the book</button></div></div>';
+}
+function miniRing(p){
+  return '<div class="rg2-mini" style="background:conic-gradient(#d4af37 '+(p*3.6)+'deg,rgba(255,255,255,.08) 0deg)"><div class="hole">'+p+'%</div></div>';
+}
+function renderToc(){
+  var r=root();if(!r)return;var gs=goalsArr();
+  var totB=0,totP=0;gs.forEach(function(g){totB+=(+g.budget||0);totP+=totals(g.uid).put;});
+  var h='<div class="rg2-wrap">'+topbar()+'<div class="rg2-toc">';
+  h+='<h2>🎯 All 17 Goals — Command Pages</h2><div class="sub">'+money(totP)+' invested of '+money(totB)+' total vision · tap a goal to open its living page</div>';
+  PHASES.forEach(function(P){
+    var group=gs.filter(function(g){return g.c===P[0];});
+    if(!group.length)return;
+    h+='<div class="rg2-phase">'+esc(P[1])+'</div><div class="rg2-grid">';
+    group.forEach(function(g){
+      var i=gs.indexOf(g);var p=pct(g);
+      h+='<div class="rg2-tile" onclick="rgbkPage('+i+')"><div class="ic">'+iconFor(g)+'</div>'+
+        '<div class="n">'+g.n+'. '+esc(g.t)+'</div>'+miniRing(p)+
+        '<div class="pg">PAGE '+(i+1)+'</div></div>';
+    });
+    h+='</div>';
+  });
+  h+='</div></div>';
+  r.innerHTML=h;
+}
+function aiLine(g){
+  var t=totals(g.uid);var b=+g.budget||0;var p=pct(g);
+  var es=entries(g.uid);var last=es.length?es[0]:null;
+  var bits=[p+'% funded ('+money(t.put)+' of '+money(b)+')'];
+  if(t.income)bits.push(money(t.income)+' income linked');
+  if(b)bits.push(money(Math.max(0,b-t.put))+' still to find');
+  var s='Your Highness, this goal is '+bits.join(' · ')+'.';
+  if(last&&last.date)s+=' Last activity: '+esc(last.date)+' — '+esc((last.description||'').slice(0,60))+'.';
+  if(!es.length)s+=' No activity yet — log something below or anywhere in the system and this page updates itself.';
+  return s;
+}
+function chartData(uid){
+  var now=new Date();var buckets=[];
+  for(var i=5;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);buckets.push({k:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),m:MONS[d.getMonth()],v:0});}
+  entries(uid).forEach(function(e){
+    if(e.type==='income')return;var k=(e.date||'').slice(0,7);
+    buckets.forEach(function(b){if(b.k===k)b.v+=parseFloat(e.amount)||0;});
+  });
+  return buckets;
+}
+var TYPEIC={expense:'🛒',income:'💚',investment:'📈',saving:'🏦',task:'✅',note:'📋'};
+function daysTo(d){if(!d)return null;return Math.ceil((new Date(d)-new Date())/86400000);}
+function renderPage(){
+  var r=root();if(!r)return;var gs=goalsArr();if(!gs.length){renderCover();return;}
+  curIdx=Math.max(0,Math.min(curIdx,gs.length-1));
+  var g=gs[curIdx];var t=totals(g.uid);var b=+g.budget||0;var p=pct(g);
+  var es=entries(g.uid);var dd=daysTo(g.d);
+  var h='<div class="rg2-wrap">'+topbar()+'<div class="rg2-page">';
+  h+='<div class="rg2-head"><div class="rg2-gicon">'+iconFor(g)+'</div><div class="t">'+
+     '<h2>'+g.n+'. '+esc(g.t)+'</h2>'+
+     '<div class="sub"><span>'+esc(phaseLbl(g.c))+'</span>'+
+     '<span class="rg2-st '+(g.g==='on'?'on':'off')+'">'+(g.g==='on'?'ACTIVE':'PAUSED')+'</span>'+
+     (dd!==null?('<span class="rg2-count">'+(dd>0?'⏳ '+dd+' days left':'⚠️ deadline passed')+'</span>'):'')+
+     '</div></div></div>';
+  h+='<div class="rg2-ai">🤖 '+aiLine(g)+'</div>';
+  /* hero */
+  h+='<div class="rg2-hero"><div class="rg2-ringwrap"><div class="rg2-ring" id="rg2-ring"><div class="hole"><div class="p" id="rg2-ringp">0%</div><div class="pl">funded</div></div></div></div>'+
+    '<div class="rg2-kpis">'+
+    '<div class="rg2-kpi" onclick="rgbkGo(\'tracker\')"><div class="v">'+money(b)+'</div><div class="l">💰 Budget</div></div>'+
+    '<div class="rg2-kpi" onclick="rgbkGo(\'tracker\')"><div class="v">'+money(t.investment)+'</div><div class="l">📈 Invested</div></div>'+
+    '<div class="rg2-kpi" onclick="rgbkGo(\'moneyhub\')"><div class="v">'+money(t.expense)+'</div><div class="l">🛒 Spent</div></div>'+
+    '<div class="rg2-kpi" onclick="rgbkGo(\'moneyhub\')"><div class="v">'+money(t.income)+'</div><div class="l">💚 Income</div></div>'+
+    '<div class="rg2-kpi"><div class="v">'+money(Math.max(0,b-t.put))+'</div><div class="l">🎯 Remaining</div></div>'+
+    '</div></div>';
+  /* chart */
+  var cd=chartData(g.uid);var max=Math.max.apply(null,cd.map(function(x){return x.v;}).concat([1]));
+  h+='<div class="rg2-sec">Money into this goal — last 6 months</div><div class="rg2-chart">';
+  cd.forEach(function(bk,i){
+    h+='<div class="rg2-bar" title="'+bk.m+': '+money(bk.v)+'"><div class="a">'+(bk.v?money(bk.v):'')+'</div><div class="b" data-h="'+Math.max(2,Math.round(bk.v/max*82))+'"></div><div class="m">'+bk.m+'</div></div>';
+  });
+  h+='</div>';
+  /* action plan */
+  if(g.a)h+='<div class="rg2-sec">Royal action plan</div><div style="font-style:italic;color:#cfc7a8;font-size:.9rem;line-height:1.55;padding:2px 6px;">'+esc(g.a)+'</div>';
+  /* notes */
+  var notes=es.filter(function(e){return e.type==='task'||e.type==='note';});
+  if(notes.length){h+='<div class="rg2-sec">Notes &amp; actions</div>';
+    notes.slice(0,6).forEach(function(e){h+='<div class="rg2-row" onclick="rgbkGo(\'goals\')"><span>'+(TYPEIC[e.type]||'📋')+'</span><span>'+esc(e.description||'')+'</span><span class="d" style="margin-left:auto">'+esc(e.date||'')+'</span></div>';});}
+  /* activity */
+  h+='<div class="rg2-sec">Recent activity — live from your system</div>';
+  var fin=es.filter(function(e){return e.type!=='task'&&e.type!=='note';});
+  if(!fin.length)h+='<div class="rg2-empty">Nothing logged yet. Record anything below — or anywhere in the system — and it appears here on its own.</div>';
+  fin.slice(0,8).forEach(function(e){
+    var isin=e.type==='income'||e.type==='saving';
+    h+='<div class="rg2-row" onclick="rgbkGo(\'tracker\')"><span>'+(TYPEIC[e.type]||'💷')+'</span><span class="d">'+esc(e.date||'')+'</span><span>'+esc((e.description||e.type||'').slice(0,52))+'</span>'+
+       '<span class="'+(isin?'amt-in':'amt-out')+'">'+(isin?'+':'−')+money(e.amount)+'</span></div>';
+  });
+  /* quick log */
+  h+='<div class="rg2-sec">Log something for this goal</div><div class="rg2-log">'+
+    '<div class="rg2-types">'+
+      '<span class="rg2-type sel" data-t="investment" onclick="rgbkType(\'investment\')">📈 Investment</span>'+
+      '<span class="rg2-type" data-t="expense" onclick="rgbkType(\'expense\')">🛒 Expense</span>'+
+      '<span class="rg2-type" data-t="income" onclick="rgbkType(\'income\')">💚 Income</span>'+
+      '<span class="rg2-type" data-t="saving" onclick="rgbkType(\'saving\')">🏦 Saving</span>'+
+      '<span class="rg2-type" data-t="task" onclick="rgbkType(\'task\')">✅ To-do</span>'+
+      '<span class="rg2-type" data-t="note" onclick="rgbkType(\'note\')">📋 Note</span></div>'+
+    '<div class="rowi"><input class="amt" id="rg2-amt" type="number" inputmode="decimal" placeholder="£">'+
+    '<input class="txt" id="rg2-txt" placeholder="What happened? e.g. Paid for 2 driving lessons" onkeydown="if(event.key===\'Enter\')rgbkLog()">'+
+    '<button onclick="rgbkLog()">Log</button></div></div>';
+  h+='<div class="rg2-pageno">— GOAL PAGE '+(curIdx+1)+' OF '+gs.length+' —</div>';
+  h+='</div>';
+  h+='<div class="rg2-arrows"><span class="rg2-chip" onclick="rgbkTurn(-1)">⬅ Previous goal</span><span class="rg2-chip" onclick="rgbkToc()">📕 Contents</span><span class="rg2-chip" onclick="rgbkGo(\'home\')">🏠 Home</span><span class="rg2-chip" onclick="rgbkTurn(1)">Next goal ➡</span></div>';
+  h+='</div>';
+  r.innerHTML=h;
+  logType='investment';
+  /* animate ring */
+  var ring=document.getElementById('rg2-ring'),rp=document.getElementById('rg2-ringp');
+  if(ring){var cur=0;var step=Math.max(1,Math.round(p/28));
+    var iv=setInterval(function(){cur=Math.min(p,cur+step);
+      ring.style.background='conic-gradient(#d4af37 '+(cur*3.6)+'deg,rgba(255,255,255,.07) 0deg)';
+      if(rp)rp.textContent=cur+'%';
+      if(cur>=p)clearInterval(iv);},22);}
+  /* animate bars */
+  requestAnimationFrame(function(){setTimeout(function(){
+    r.querySelectorAll('.rg2-bar .b').forEach(function(bEl){bEl.style.height=bEl.getAttribute('data-h')+'%';});},60);});
+  /* swipe */
+  var page=r.querySelector('.rg2-page');var x0=null;
+  if(page){page.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;},{passive:true});
+    page.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>60)rgbkTurn(dx<0?1:-1);x0=null;},{passive:true});}
+}
+function activate(){if(!view.coverSeen)renderCover();else renderToc();}
+function injectChip(){
+  var sc=document.getElementById('s-goals');if(!sc)return;
+  if(document.getElementById('rgbk-entry'))return;
+  var d=document.createElement('div');d.id='rgbk-entry';
+  d.style.cssText='display:flex;justify-content:center;padding:10px 8px 2px;';
+  d.innerHTML='<span class="rg2-chip" style="font-size:.9rem;padding:10px 22px;" onclick="rgbkGo(\'goalbook\')">📕 Open the Royal Goals Book — one living page per goal</span>';
+  sc.insertBefore(d,sc.firstChild);
+}
+function hook(fn){
+  var o=window[fn];if(typeof o!=='function'||o._rgbk)return;
+  var w=function(n){var r2=o.apply(this,arguments);if(n==='goalbook'){setTimeout(activate,0);}return r2;};
+  w._rgbk=true;try{window[fn]=w;}catch(e){}
+}
+function boot(){ensureScreen();hook('go');hook('royalTab');injectChip();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(function(){injectChip();var sc=document.getElementById('s-goalbook');if(sc&&sc.classList.contains('active')){var r=document.getElementById('rgbk-root');if(r&&r.querySelector('.rg2-page')&&!document.activeElement.closest('.rg2-log'))renderPage();}},60000);
+setInterval(injectChip,2000);
 })();
 </script>
 
