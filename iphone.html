@@ -13402,7 +13402,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.13 · 8 Jul 2026 · profile-docs-email';
+window.ROYAL_APP_VERSION='v4.10.0 · 9 Jul 2026 · diary-book';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -22437,5 +22437,262 @@ else setTimeout(run,1000);
 })();
 </script>
 <!-- ==================== END RRSEED-APPT ==================== -->
+<style id="rbook-css">
+/* ═══════════ ROYAL DIARY BOOK (rbook) — page-a-day e-book ═══════════ */
+#s-book{padding-bottom:120px;}
+.rbk-wrap{max-width:760px;margin:0 auto;padding:6px 10px;}
+.rbk-topbar{display:flex;align-items:center;gap:8px;margin:4px 0 10px;flex-wrap:wrap;}
+.rbk-topbar .rbk-tt{font-weight:800;font-size:1.05rem;color:var(--gold,#d4af37);letter-spacing:.5px;}
+.rbk-topbar input[type=date]{background:rgba(255,255,255,.07);border:1px solid rgba(212,175,55,.35);color:inherit;border-radius:10px;padding:6px 8px;font-size:.85rem;}
+.rbk-chip{background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.4);color:var(--gold,#d4af37);border-radius:999px;padding:6px 13px;font-size:.8rem;font-weight:700;cursor:pointer;user-select:none;}
+.rbk-book{position:relative;perspective:1600px;}
+.rbk-page{background:linear-gradient(105deg,#faf6ec 0%,#f5efe0 55%,#efe7d2 100%);color:#2b2417;border-radius:6px 14px 14px 6px;box-shadow:0 10px 30px rgba(0,0,0,.45), inset 12px 0 18px -14px rgba(90,70,30,.55), inset -3px 0 8px -6px rgba(90,70,30,.3);padding:26px 26px 60px;min-height:70vh;font-family:Georgia,'Times New Roman',serif;position:relative;overflow:hidden;transition:transform .28s ease,opacity .28s ease;}
+.rbk-page.turn-l{transform:rotateY(8deg) translateX(-30px);opacity:0;}
+.rbk-page.turn-r{transform:rotateY(-8deg) translateX(30px);opacity:0;}
+.rbk-running{display:flex;justify-content:space-between;font-size:.72rem;color:#8a7a55;letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid #d8cba6;padding-bottom:8px;margin-bottom:14px;}
+.rbk-datehd{text-align:center;margin:2px 0 4px;}
+.rbk-datehd .d1{font-size:1.5rem;font-weight:700;color:#1f1a10;}
+.rbk-datehd .d2{font-size:.85rem;color:#7a6b45;font-style:italic;margin-top:2px;}
+.rbk-ai{background:rgba(212,175,55,.12);border:1px solid #e2d5ab;border-radius:10px;padding:9px 12px;font-size:.85rem;color:#4d4128;margin:12px 0;font-style:italic;line-height:1.45;}
+.rbk-sec{margin:16px 0 4px;font-size:.78rem;font-weight:700;letter-spacing:2px;color:#8a7a55;text-transform:uppercase;border-bottom:1px dotted #cbbd94;padding-bottom:4px;}
+.rbk-tl{position:relative;margin:8px 0 4px;padding-left:4px;}
+.rbk-ap{display:flex;gap:12px;align-items:flex-start;padding:7px 6px;border-radius:10px;cursor:pointer;position:relative;}
+.rbk-ap:hover{background:rgba(212,175,55,.1);}
+.rbk-ap:not(:last-child):before{content:'';position:absolute;left:21px;top:40px;bottom:-8px;width:2px;background:#e0d3ab;}
+.rbk-dot{width:36px;height:36px;min-width:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.05rem;box-shadow:0 2px 5px rgba(0,0,0,.18);}
+.rbk-ap .t{font-size:.74rem;color:#8a7a55;}
+.rbk-ap .n{font-size:.95rem;font-weight:600;color:#2b2417;line-height:1.3;}
+.rbk-line{display:flex;gap:10px;align-items:flex-start;padding:7px 6px;border-radius:10px;cursor:pointer;font-size:.92rem;line-height:1.4;}
+.rbk-line:hover{background:rgba(212,175,55,.1);}
+.rbk-line .ic{min-width:22px;text-align:center;}
+.rbk-line .amt-out{color:#a33b2e;font-weight:700;white-space:nowrap;}
+.rbk-line .amt-in{color:#2e7d43;font-weight:700;white-space:nowrap;}
+.rbk-line .go{margin-left:auto;color:#b09a5c;font-size:.72rem;white-space:nowrap;align-self:center;}
+.rbk-empty{color:#a4966f;font-style:italic;font-size:.85rem;padding:6px;}
+.rbk-task{display:flex;gap:10px;align-items:flex-start;padding:8px 6px;border-radius:10px;font-size:.95rem;}
+.rbk-task:hover{background:rgba(212,175,55,.08);}
+.rbk-task .cb{width:20px;height:20px;min-width:20px;border:2px solid #b09a5c;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#2e7d43;margin-top:1px;background:#fffdf5;}
+.rbk-task.done .txt{text-decoration:line-through;color:#a4966f;}
+.rbk-task .tag{font-size:.68rem;background:rgba(212,175,55,.18);border-radius:999px;padding:2px 8px;color:#7a6b45;white-space:nowrap;cursor:pointer;}
+.rbk-task .del{color:#b8a87c;cursor:pointer;padding:0 4px;font-size:.85rem;}
+.rbk-addbar{display:flex;gap:8px;margin-top:12px;}
+.rbk-addbar input{flex:1;background:#fffdf5;border:1.5px solid #cbbd94;border-radius:12px;padding:11px 13px;font-size:.95rem;color:#2b2417;font-family:inherit;}
+.rbk-addbar input::placeholder{color:#a4966f;}
+.rbk-addbar button{background:linear-gradient(135deg,#d4af37,#b8912a);border:none;color:#241d0d;font-weight:800;border-radius:12px;padding:0 18px;cursor:pointer;font-size:.9rem;}
+.rbk-hint{font-size:.72rem;color:#a4966f;margin-top:7px;font-style:italic;line-height:1.5;}
+.rbk-pageno{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:.75rem;color:#8a7a55;letter-spacing:1px;}
+.rbk-arrows{display:flex;justify-content:space-between;margin-top:10px;}
+.rbk-arrow{background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.4);color:var(--gold,#d4af37);border-radius:999px;padding:9px 18px;font-size:.85rem;font-weight:700;cursor:pointer;user-select:none;}
+.rbk-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#1d2a1f;color:#d9f2df;border:1px solid #2e7d43;border-radius:12px;padding:11px 18px;font-size:.86rem;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:88vw;text-align:center;}
+/* Cover */
+.rbk-cover{background:radial-gradient(ellipse at 50% 22%,#20301f 0%,#101a10 58%,#0a110a 100%);border:2px solid #d4af37;border-radius:8px 16px 16px 8px;min-height:72vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:30px 22px;box-shadow:0 14px 40px rgba(0,0,0,.55), inset 0 0 0 6px rgba(212,175,55,.12);cursor:pointer;}
+.rbk-cover .crest{font-size:3.2rem;}
+.rbk-cover .t1{font-family:Georgia,serif;font-size:1.7rem;color:#d4af37;letter-spacing:2px;font-weight:700;}
+.rbk-cover .t2{color:#c9bd94;font-size:.9rem;font-style:italic;letter-spacing:1px;}
+.rbk-cover .t3{color:#8fa08b;font-size:.75rem;letter-spacing:3px;text-transform:uppercase;margin-top:10px;}
+.rbk-cover .openbtn{margin-top:16px;background:linear-gradient(135deg,#d4af37,#b8912a);color:#1c160a;font-weight:800;border:none;border-radius:999px;padding:12px 26px;font-size:.95rem;cursor:pointer;}
+html.app-light .rbk-topbar input[type=date]{background:#fff;color:#333;}
+@media(max-width:640px){.rbk-page{padding:18px 14px 56px;min-height:64vh;}.rbk-datehd .d1{font-size:1.2rem;}}
+</style>
+<script id="rbook-js">
+/* ═══════════ ROYAL DIARY BOOK (rbook) — additive overlay, nothing existing touched ═══════════ */
+(function(){
+'use strict';
+var LSK='royal_book_v1';
+var MONL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var DAYL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function st(){var s=lsGet(LSK,null);if(!s||typeof s!=='object')s={byDate:{},coverSeen:false};if(!s.byDate)s.byDate={};return s;}
+function save(s){lsSet(LSK,s);}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fromIso(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function doy(d){var s=new Date(d.getFullYear(),0,1);return Math.floor((d-s)/86400000)+1;}
+function daysInYear(y){return ((y%4===0&&y%100!==0)||y%400===0)?366:365;}
+var cur=iso(new Date());
+
+/* ---------- data pulls (read-only on other stores) ---------- */
+function appts(dateIso){
+  var r=lsGet('rical_data_v1',{})||{};var a=(r.appts||[]).filter(function(x){
+    if(x.date===dateIso)return true;
+    if(x.rec==='daily')return x.date<=dateIso;
+    if(x.rec==='weekly')return x.date<=dateIso && fromIso(x.date).getDay()===fromIso(dateIso).getDay();
+    if(x.rec==='monthly')return x.date<=dateIso && x.date.slice(8)===dateIso.slice(8);
+    return false;});
+  a.sort(function(p,q){return (p.time||'').localeCompare(q.time||'');});return a;
+}
+function diaryFor(dateIso){return (lsGet('royal_diary_v1',[])||[]).filter(function(e){return e.date===dateIso;});}
+function moneyFor(dateIso){return (lsGet('royal_moneyhub_v1',[])||[]).filter(function(t){return t.date===dateIso;});}
+function endTime(t,dur){if(!t)return'';var p=t.split(':');var m=(+p[0])*60+(+p[1]||0)+(+dur||0);m=m%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+var CATDOT={work:['💼','#7fb4e8'],personal:['🟡','#e8c15a'],family:['🏠','#9fd89f'],royal:['👑','#d4af37'],health:['💊','#c9a3e8'],faith:['🙏','#e8a3a3'],money:['💷','#a3d3a3'],study:['🎓','#8fc7e8']};
+function dotFor(a){var c=CATDOT[(a.cat||'').toLowerCase()]||null;var emo=(a.title||'').match(/^\p{Extended_Pictographic}/u);return {e:emo?emo[0]:(c?c[0]:'📌'),bg:c?c[1]:'#e0d3ab'};}
+
+/* ---------- AI day summary ---------- */
+function aiLine(dateIso){
+  var ap=appts(dateIso),tx=moneyFor(dateIso),de=diaryFor(dateIso);
+  var s=st();var tasks=(s.byDate[dateIso]||{}).tasks||[];var open=tasks.filter(function(t){return !t.done;}).length;
+  var out=0,inn=0;tx.forEach(function(t){var a=+t.amount||0;if(t.type==='income')inn+=a;else out+=a;});
+  var bits=[];
+  bits.push(ap.length?ap.length+' appointment'+(ap.length>1?'s':''):'a clear schedule');
+  if(open)bits.push(open+' open task'+(open>1?'s':''));
+  if(inn)bits.push('£'+inn.toFixed(2)+' received');
+  if(out)bits.push('£'+out.toFixed(2)+' spent');
+  if(de.length)bits.push(de.length+' diary entr'+(de.length>1?'ies':'y'));
+  var nxt=ap[0]?(' First: '+(ap[0].time||'')+' — '+(ap[0].title||'').replace(/^\p{Extended_Pictographic}\s*/u,'')):'';
+  var today=iso(new Date())===dateIso;
+  return (today?'Your Highness, today holds ':'This page holds ')+bits.join(', ')+'.'+nxt;
+}
+
+/* ---------- smart routing classifier ---------- */
+function classify(text){
+  var t=text.toLowerCase();
+  var amt=null;var m=t.match(/£\s*([\d,]+(?:\.\d{1,2})?)/)||t.match(/([\d,]+(?:\.\d{1,2})?)\s*(?:pounds|gbp|quid)/);
+  if(m)amt=parseFloat(m[1].replace(/,/g,''));
+  if(amt!==null||/\b(paid|payment|spent|received|transfer(red)?|deposit|refund|invoice paid|income)\b/.test(t)){
+    if(amt!==null)return {route:'money',amount:amt,income:/\b(received|refund|income|got paid|paid me|credited)\b/.test(t),ghana:/\b(ghana|accra|cedi|kumasi|dadiaso|dadieso)\b/.test(t)};
+  }
+  if(/\b(pray|prayer|affirmation|manifesto|wu wei|blessing|devotion|psalm)\b/.test(t))return {route:'prayer'};
+  if(/\b(rota|shift|placement|live-?in|carer|care job|new client|agency offer|job offer|assignment)\b/.test(t))return {route:'rota'};
+  var verb=/^(go|buy|get|call|ring|text|email|send|finish|do|write|clean|book|check|pick|drop|pay|study|read|visit|wash|renew|cancel|order|collect|print|sign|return)\b/.test(t);
+  if(!verb && text.length>45)return {route:'info'};
+  return {route:'task'};
+}
+function nowHM(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+window.rbkAdd=function(){
+  var inp=document.getElementById('rbk-in');if(!inp)return;var text=(inp.value||'').trim();if(!text)return;
+  var c=classify(text);var s=st();var day=s.byDate[cur]=s.byDate[cur]||{tasks:[]};
+  var id='bt'+Date.now().toString(36);var tag='📝 Task',msg='Added to this page';
+  if(c.route==='money'){
+    var mh=lsGet('royal_moneyhub_v1',[])||[];
+    mh.push({id:'rbk_'+Date.now(),type:c.income?'income':(c.ghana?'ghana':'expense'),amount:c.amount,date:cur,desc:text,cat:'',extra:'From Royal Diary Book',recipient:'',beneficiary:'',method:'',source:'',purpose:'',loc:'',ref:'',notes:''});
+    lsSet('royal_moneyhub_v1',mh);tag='💷 Money Hub';msg='£'+c.amount.toFixed(2)+' recorded in your Money Hub';
+  }else if(c.route==='prayer'){
+    var pr=lsGet('royal_pray_v2',[])||[];
+    pr.push({id:'p_rbk'+Date.now().toString(36),panel:(new Date().getHours()<15?'morning':'evening'),title:text.slice(0,60).toUpperCase(),body:text});
+    lsSet('royal_pray_v2',pr);tag='🙏 Prayer Book';msg='Written into your Prayer Book';
+  }else if(c.route==='rota'){
+    var ro=lsGet('royal_rota_v1',[])||[];
+    ro.push({id:'rota_rbk'+Date.now().toString(36),employmentType:'',companyName:'',placeOfWork:'',carerName:'',clientName:text.slice(0,70),clientAddress:'',clientPhone:'',preferredName:'',careType:'',careReason:'',medicalDiagnosis:'',agencyName:'',agencyEmail:'',status:'offer',contactDate:cur,notes:text,days:[],rate:'',docs:[]});
+    lsSet('royal_rota_v1',ro);tag='🧑‍⚕️ Rota';msg='New offer card created in your Rota';
+  }else if(c.route==='info'){
+    var di=lsGet('royal_diary_v1',[])||[];
+    di.unshift({id:'dr_rbk'+Date.now().toString(36),date:cur,time:nowHM(),mood:'📝',title:text.slice(0,80),text:text});
+    lsSet('royal_diary_v1',di);tag='📔 Diary · Home';msg='Logged in your Royal Diary — it will show on your Home notifications';
+  }
+  day.tasks.push({id:id,txt:text,done:false,route:c.route,ts:Date.now(),tag:tag});
+  save(s);inp.value='';render();toast(msg);
+};
+function toast(m){var t=document.createElement('div');t.className='rbk-toast';t.textContent='✅ '+m;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';},2600);setTimeout(function(){t.remove();},3100);}
+window.rbkTick=function(id){var s=st();var d=s.byDate[cur];if(!d)return;d.tasks.forEach(function(t){if(t.id===id)t.done=!t.done;});save(s);render();};
+window.rbkDel=function(id){if(!confirm('Remove this task from the page?'))return;var s=st();var d=s.byDate[cur];if(!d)return;d.tasks=d.tasks.filter(function(t){return t.id!==id;});save(s);render();};
+window.rbkGo=function(tab){if(typeof window.go==='function'){window.go(tab);}else if(typeof window.royalTab==='function'){window.royalTab(tab,null);}};
+var ROUTE_NAV={money:'moneyhub',prayer:'pray',rota:'rota',info:'diary',task:''};
+window.rbkTagGo=function(route){var t=ROUTE_NAV[route];if(t)window.rbkGo(t);};
+
+/* ---------- page navigation ---------- */
+window.rbkTurn=function(dir){
+  var pg=document.querySelector('.rbk-page');if(pg){pg.classList.add(dir>0?'turn-r':'turn-l');}
+  setTimeout(function(){var d=fromIso(cur);d.setDate(d.getDate()+dir);cur=iso(d);render();},200);
+};
+window.rbkToday=function(){cur=iso(new Date());render();};
+window.rbkPick=function(v){if(v){cur=v;render();}};
+window.rbkOpenCover=function(){var s=st();s.coverSeen=true;save(s);render();};
+
+/* ---------- render ---------- */
+function ensureScreen(){
+  var sc=document.getElementById('s-book');
+  if(!sc){var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+    sc=document.createElement('div');sc.id='s-book';sc.className='screen';sc.innerHTML='<div id="rbook-root"></div>';main.appendChild(sc);}
+  return sc;
+}
+function render(){
+  ensureScreen();var root=document.getElementById('rbook-root');if(!root)return;
+  var s=st();
+  if(!s.coverSeen){
+    root.innerHTML='<div class="rbk-wrap"><div class="rbk-cover" onclick="rbkOpenCover()">'+
+      '<div class="crest">👑</div><div class="t1">The Royal Diary</div>'+
+      '<div class="t2">HRH Prince Kwame Nkrabea · Heir Apparent, Suaman Dadiaso</div>'+
+      '<div class="t3">One page for every day · '+new Date().getFullYear()+'</div>'+
+      '<button class="openbtn">📖 Open today’s page</button></div></div>';
+    return;
+  }
+  var d=fromIso(cur);var ap=appts(cur);var de=diaryFor(cur);var tx=moneyFor(cur);
+  var tasks=(s.byDate[cur]||{}).tasks||[];
+  var h='<div class="rbk-wrap">';
+  h+='<div class="rbk-topbar"><span class="rbk-tt">📖 The Royal Diary</span>'+
+     '<span class="rbk-chip" onclick="rbkToday()">Today</span>'+
+     '<input type="date" value="'+cur+'" onchange="rbkPick(this.value)">'+
+     '</div>';
+  h+='<div class="rbk-book"><div class="rbk-page">';
+  h+='<div class="rbk-running"><span>The Royal Diary</span><span>'+d.getFullYear()+'</span></div>';
+  h+='<div class="rbk-datehd"><div class="d1">'+DAYL[d.getDay()]+', '+d.getDate()+' '+MONL[d.getMonth()]+'</div>'+
+     '<div class="d2">'+(iso(new Date())===cur?'Today':'')+'</div></div>';
+  h+='<div class="rbk-ai">🤖 '+esc(aiLine(cur))+'</div>';
+  /* schedule */
+  h+='<div class="rbk-sec">Today’s Structure</div><div class="rbk-tl">';
+  if(!ap.length)h+='<div class="rbk-empty">No appointments written for this day. Tap to plan in your Royal iCalender →</div>';
+  ap.forEach(function(a){var dd=dotFor(a);
+    h+='<div class="rbk-ap" onclick="rbkGo(\'icalender\')"><div class="rbk-dot" style="background:'+dd.bg+'">'+dd.e+'</div>'+
+       '<div><div class="t">'+esc(a.time||'')+(a.dur?'–'+endTime(a.time,a.dur)+' ('+a.dur+' min)':'')+'</div>'+
+       '<div class="n">'+esc((a.title||'').replace(/^\p{Extended_Pictographic}\s*/u,''))+'</div>'+
+       (a.loc?'<div class="t">📍 '+esc(a.loc)+'</div>':'')+'</div></div>';
+  });
+  h+='</div>';
+  /* diary entries */
+  if(de.length){h+='<div class="rbk-sec">Written this day</div>';
+    de.forEach(function(e){h+='<div class="rbk-line" onclick="rbkGo(\'diary\')"><span class="ic">'+esc(e.mood||'📔')+'</span><span>'+esc(e.title||'')+'</span><span class="go">📔 Diary →</span></div>';});}
+  /* money */
+  if(tx.length){h+='<div class="rbk-sec">Money this day</div>';
+    tx.forEach(function(t){var isin=t.type==='income';
+      h+='<div class="rbk-line" onclick="rbkGo(\'moneyhub\')"><span class="ic">💷</span><span>'+esc(t.desc||t.cat||'')+'</span>'+
+         '<span class="'+(isin?'amt-in':'amt-out')+'" style="margin-left:auto">'+(isin?'+':'−')+'£'+(+t.amount||0).toFixed(2)+'</span><span class="go">Hub →</span></div>';});}
+  /* tasks */
+  h+='<div class="rbk-sec">Tasks for this page</div>';
+  if(!tasks.length)h+='<div class="rbk-empty">Nothing yet — write your first task below.</div>';
+  tasks.forEach(function(t){
+    h+='<div class="rbk-task'+(t.done?' done':'')+'"><div class="cb" onclick="rbkTick(\''+t.id+'\')">'+(t.done?'✔':'')+'</div>'+
+       '<div style="flex:1"><span class="txt">'+esc(t.txt)+'</span></div>'+
+       '<span class="tag" onclick="rbkTagGo(\''+t.route+'\')">'+esc(t.tag||'')+(ROUTE_NAV[t.route]?' →':'')+'</span>'+
+       '<span class="del" onclick="rbkDel(\''+t.id+'\')">✕</span></div>';
+  });
+  h+='<div class="rbk-addbar"><input id="rbk-in" placeholder="Write it once — I’ll file it in the right place…" onkeydown="if(event.key===\'Enter\')rbkAdd()"><button onclick="rbkAdd()">Add</button></div>';
+  h+='<div class="rbk-hint">💷 “Paid £85 driving lesson” → Money Hub &nbsp;·&nbsp; 🧑‍⚕️ “New live-in placement offer, Kent” → Rota &nbsp;·&nbsp; 🙏 “Evening prayer of gratitude…” → Prayer Book &nbsp;·&nbsp; 📔 longer notes → Diary &amp; Home</div>';
+  h+='<div class="rbk-pageno">— Page '+doy(d)+' of '+daysInYear(d.getFullYear())+' —</div>';
+  h+='</div></div>';
+  h+='<div class="rbk-arrows"><span class="rbk-arrow" onclick="rbkTurn(-1)">⬅ Previous day</span><span class="rbk-arrow" onclick="rbkTurn(1)">Next day ➡</span></div>';
+  h+='</div>';
+  root.innerHTML=h;
+  /* swipe */
+  var page=root.querySelector('.rbk-page');var x0=null;
+  if(page){page.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;},{passive:true});
+    page.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>60)rbkTurn(dx<0?1:-1);x0=null;},{passive:true});}
+}
+
+/* ---------- nav wiring (mirrors rical pattern; non-destructive) ---------- */
+function injectPill(){
+  var bars=document.querySelectorAll('.rrdl-holder .rrnav-bar');
+  for(var i=0;i<bars.length;i++){var bar=bars[i];
+    if(bar.querySelector('[data-tab="book"]'))continue;
+    var b=document.createElement('button');b.className='rrnav-pill';b.setAttribute('data-tab','book');
+    b.setAttribute('onclick',"rbkGo('book')");b.innerHTML='📖 Diary Book';
+    bar.insertBefore(b,bar.firstChild);}
+  var rbars=document.querySelectorAll('.ric-pillbar');
+  for(var j=0;j<rbars.length;j++){var rb=rbars[j];
+    if(rb.querySelector('[data-rbk]'))continue;
+    var p=document.createElement('button');p.className='rpill';p.setAttribute('data-rbk','1');
+    p.setAttribute('onclick',"rbkGo('book')");p.innerHTML='📖 Diary Book';rb.appendChild(p);}
+}
+function hook(fn){
+  var o=window[fn];if(typeof o!=='function'||o._rbook)return;
+  var w=function(n){var r=o.apply(this,arguments);if(n==='book'){setTimeout(function(){cur=iso(new Date());render();var hh=document.getElementById('nb-dailylife');if(hh)hh.classList.add('active');},0);}return r;};
+  w._rbook=true;try{window[fn]=w;}catch(e){}
+}
+function boot(){ensureScreen();hook('go');hook('royalTab');injectPill();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(injectPill,1800);
+})();
+</script>
+
 </body>
 </html>
