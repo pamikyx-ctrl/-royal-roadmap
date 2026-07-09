@@ -13466,7 +13466,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.14.0 · 9 Jul 2026 · daymode-voice-fixes';
+window.ROYAL_APP_VERSION='v4.15.0 · 9 Jul 2026 · prayer-room-preview';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -20990,6 +20990,7 @@ setInterval(loop,1200);
     var nightHtml='';
     if(c.night){ nightHtml='<div class="rcol-note">🌙 '+c.night.ruler+': wear '+c.night.wear.join(', ')+'. '+c.night.note+'</div>'; }
     card.innerHTML=
+      '<div class="rfx9c" onclick="rfx9Coll(event,\'rcol-home-card\')">'+(card.classList.contains('rncol-collapsed')?'▸':'▾')+'</div>'+
       '<div class="rcol-top"><span class="rcol-eyebrow">🎨 Colour of the Day · to wear</span></div>'+
       '<div class="rcol-title">'+c.emoji+' '+c.day+' — '+c.wear[0]+'</div>'+
       '<div class="rcol-planet">Ruled by '+c.planet+' · '+c.meaning+'</div>'+
@@ -21256,7 +21257,8 @@ setInterval(loop,1200);
           '<div class="rcdn-cd '+c.cls+'"><div class="big">'+c.big+'</div>'+(c.sm?'<div class="sm">'+c.sm+'</div>':'<div class="sm">to go</div>')+'</div></div>';
       }).join('');
     }
-    card.innerHTML='<div class="rcdn-head"><span class="rcdn-eyebrow">🔔 Upcoming · Royal iCalender & Legacy Daily</span></div>'+
+    card.innerHTML='<div class="rfx9c" onclick="rfx9Coll(event,\'rcdn-home-card\')">'+(card.classList.contains('rncol-collapsed')?'▸':'▾')+'</div>'+
+      '<div class="rcdn-head"><span class="rcdn-eyebrow">🔔 Upcoming · Royal iCalender & Legacy Daily</span></div>'+
       '<div class="rcdn-title">What’s coming up</div>'+rows;
   }
 
@@ -21414,9 +21416,10 @@ setInterval(loop,1200);
           '<div class="rrcd-dt">'+esc(range)+(dur?' · '+dur:'')+' · '+esc(st[0])+'</div></div>'+
           '<div class="rrcd-cd '+x.cd.cls+'"><div class="big">'+esc(x.cd.big)+'</div>'+(x.cd.sm?'<div class="sm">'+x.cd.sm+'</div>':'')+'</div></div>';
       }).join('');
-      if(!future.length) rows='<div class="rrcd-empty">No upcoming rota assignments — showing your most recent.</div>'+rows;
+      if(!future.length) rows='<div class="rrcd-empty">No upcoming rota assignments — completed ones rest in your Rota archive.</div>'+rows;
     }
-    card.innerHTML='<div class="rrcd-eyebrow">🗓️ Rota · Assignments &amp; Durations</div>'+
+    card.innerHTML='<div class="rfx9c" onclick="rfx9Coll(event,\'rrcd-home-card\')">'+(card.classList.contains('rncol-collapsed')?'▸':'▾')+'</div>'+
+      '<div class="rrcd-eyebrow">🗓️ Rota · Assignments &amp; Durations</div>'+
       '<div class="rrcd-title">Your rota timeline</div>'+rows+
       (all.length?'<div class="rrcd-foot">'+all.length+' rota'+(all.length===1?'':'s')+' on file · tap Rota &amp; Invoicing for full detail</div>':'');
   }
@@ -21488,7 +21491,7 @@ setInterval(loop,1200);
 #rcol-home-card>*:first-child,#rcdn-home-card>*:first-child,#rrcd-home-card>*:first-child{cursor:pointer;padding-right:28px;}
 #rcol-home-card::after,#rcdn-home-card::after,#rrcd-home-card::after{content:'▾';position:absolute;top:14px;right:15px;color:#E8C96A;font-size:12px;font-weight:800;pointer-events:none;opacity:.9;}
 #rcol-home-card.rncol-collapsed::after,#rcdn-home-card.rncol-collapsed::after,#rrcd-home-card.rncol-collapsed::after{content:'▸';}
-#rcol-home-card.rncol-collapsed>*:not(:first-child),#rcdn-home-card.rncol-collapsed>*:not(:first-child),#rrcd-home-card.rncol-collapsed>*:not(:first-child){display:none!important;}
+#rcol-home-card.rncol-collapsed>*:not(:first-child):not(:nth-child(2)),#rcdn-home-card.rncol-collapsed>*:not(:first-child):not(:nth-child(2)),#rrcd-home-card.rncol-collapsed>*:not(:first-child):not(:nth-child(2)){display:none!important;}
 </style>
 <script id="rncol-js">
 (function(){
@@ -24001,11 +24004,13 @@ setInterval(wrapManager,2500);
 
 <style id="rfx9-css">
 /* ═══════════ ROYAL FIXES 9 JUL (rfx9): day-mode contrast · big collapse buttons · voice chips · day toggle ═══════════ */
-/* — one-touch collapse buttons on home notification cards — */
+/* — one-touch collapse chevrons: rendered INSIDE the cards (stable, no blinking) — */
 #rcol-home-card,#rcdn-home-card,#rrcd-home-card{position:relative;}
-.rfx9-coll{position:absolute;top:10px;right:12px;width:42px;height:42px;border-radius:50%;background:rgba(201,168,76,.16);border:1.5px solid rgba(201,168,76,.5);color:var(--gold,#C9A84C);font-size:1.05rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;user-select:none;-webkit-tap-highlight-color:rgba(201,168,76,.3);}
-.rfx9-coll:active{background:rgba(201,168,76,.35);}
-#rcol-home-card.rncol-collapsed .rfx9-coll,#rcdn-home-card.rncol-collapsed .rfx9-coll,#rrcd-home-card.rncol-collapsed .rfx9-coll{display:flex!important;}
+.rfx9c{position:absolute;top:9px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(201,168,76,.13);border:1px solid rgba(201,168,76,.45);color:var(--gold,#C9A84C);font-size:.85rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;user-select:none;-webkit-tap-highlight-color:rgba(201,168,76,.3);}
+.rfx9c:active{background:rgba(201,168,76,.35);}
+#rcol-home-card.rncol-collapsed>.rfx9c,#rcdn-home-card.rncol-collapsed>.rfx9c,#rrcd-home-card.rncol-collapsed>.rfx9c{display:flex!important;}
+#rcol-home-card::after,#rcdn-home-card::after,#rrcd-home-card::after{content:''!important;}
+html.app-light .rfx9c{background:rgba(122,95,26,.1);color:#7A5F1A;}
 /* — global day/dark toggle chip — */
 #rfx9-theme{position:fixed;left:14px;bottom:150px;z-index:9999;background:rgba(20,22,18,.85);border:1.5px solid rgba(201,168,76,.55);color:var(--gold,#C9A84C);border-radius:999px;padding:9px 15px;font-size:.82rem;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);backdrop-filter:blur(6px);}
 html.app-light #rfx9-theme{background:rgba(255,255,255,.9);color:#7A5F1A;}
@@ -24043,6 +24048,19 @@ html.app-light .rg2-tt,html.app-light .rbk-tt,html.app-light .rdsb-title{color:#
 html.app-light #rcdn-home-card,html.app-light #rrcd-home-card,html.app-light #rcol-home-card{background:#fff!important;border-color:#dccf9f!important;}
 html.app-light .rcdn-nm,html.app-light .rrcd-item{color:#2b2417!important;}
 html.app-light .rcdn-dt{color:#77716a!important;}
+/* — day-mode readable headings: AI Command Centre, iCalender hero, card titles, hub tags — */
+html.app-light .rg-ttl h1{color:#241d0d!important;}
+html.app-light .rg-ttl p{color:#6b6353!important;}
+html.app-light .ric-greet,html.app-light .ric-date{color:#4a3f22!important;}
+html.app-light .ric-clock{color:#7A5F1A!important;}
+html.app-light .ric-sum,html.app-light .ric-hint{color:#6b6353!important;}
+html.app-light .rrnav-hubtag{color:#7A5F1A!important;}
+html.app-light .rcdn-eyebrow,html.app-light .rrcd-eyebrow,html.app-light .rcol-eyebrow,html.app-light .rg-eyebrow{color:#8a7a45!important;}
+html.app-light .rcdn-title,html.app-light .rrcd-title,html.app-light .rcol-title{color:#5a4a1a!important;}
+html.app-light .rcol-planet,html.app-light .rcol-row,html.app-light .rcol-note{color:#4a4136!important;}
+html.app-light .rrcd-foot,html.app-light .rrcd-empty,html.app-light .rcdn-empty{color:#8a8072!important;}
+html.app-light .rrdl-holder .rrnav-pill{background:rgba(122,95,26,.1)!important;color:#7A5F1A!important;}
+html.app-light .rpbk-sym{filter:none!important;}
 </style>
 <script id="rfx9-js">
 /* ═══════════ ROYAL FIXES (rfx9) — additive ═══════════ */
@@ -24059,18 +24077,12 @@ window.rfx9Coll=function(ev,id){
   var card=document.getElementById(id);if(!card)return;
   var st=cload();var now=!card.classList.contains('rncol-collapsed');
   card.classList.toggle('rncol-collapsed',now);st[id]=now;csave(st);
-  var b=card.querySelector('.rfx9-coll');if(b)b.textContent=now?'▸':'▾';
+  var b=card.querySelector('.rfx9c');if(b)b.textContent=now?'▸':'▾';
 };
 function collBtns(){
-  ['rcol-home-card','rcdn-home-card','rrcd-home-card'].forEach(function(id){
-    var card=document.getElementById(id);if(!card)return;
-    if(card.querySelector('.rfx9-coll'))return;
-    var b=document.createElement('div');b.className='rfx9-coll';
-    b.textContent=card.classList.contains('rncol-collapsed')?'▸':'▾';
-    b.addEventListener('click',function(e){rfx9Coll(e,id);});
-    b.addEventListener('touchend',function(e){rfx9Coll(e,id);},{passive:false});
-    card.appendChild(b);
-  });
+  /* v2: chevrons are rendered inside each card's own HTML (no re-injection, no blinking).
+     Here we only clean up any old floating buttons from the previous version. */
+  document.querySelectorAll('.rfx9-coll').forEach(function(b){b.remove();});
 }
 /* ── 2. Global Day/Dark toggle chip (uses the existing whole-app theme) ── */
 function themeChip(){
@@ -24128,6 +24140,294 @@ function tick(){try{collBtns();voiceChip();}catch(e){}}
 function boot(){themeChip();tick();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 setInterval(tick,1600);
+})();
+</script>
+
+<style id="rpbk-css">
+/* ═══════════ ROYAL PRAYER ROOM (rpbk) — a living spiritual sanctuary, page by page ═══════════ */
+#s-prayerbook{padding-bottom:120px;}
+@keyframes rpbkbreathe{0%,100%{opacity:.55;transform:scale(1);}50%{opacity:1;transform:scale(1.06);}}
+@keyframes rpbkfloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+.rpbk-page{border-radius:22px;box-shadow:0 14px 42px rgba(0,0,0,.5);padding:26px 22px 60px;position:relative;overflow:hidden;min-height:66vh;font-family:Georgia,'Times New Roman',serif;transition:transform .28s ease,opacity .28s ease;}
+.rpbk-page.turn-l{transform:translateX(-36px) scale(.98);opacity:0;}
+.rpbk-page.turn-r{transform:translateX(36px) scale(.98);opacity:0;}
+/* MORNING — the fresh breath of the universe */
+.rpbk-page.morning{background:linear-gradient(170deg,#fdf6e3 0%,#fbe8c8 40%,#f6d5a0 78%,#eec27f 100%);color:#4a3416;}
+.rpbk-page.morning .rpbk-orb{position:absolute;top:-70px;right:-50px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(255,215,130,.9),rgba(255,215,130,0) 70%);animation:rpbkbreathe 6s ease-in-out infinite;}
+/* EVENING — meeting the universe on the way to rest */
+.rpbk-page.evening{background:linear-gradient(170deg,#1b2036 0%,#252a4a 45%,#3a2f4e 80%,#4a3350 100%);color:#e8ddc2;}
+.rpbk-page.evening .rpbk-orb{position:absolute;top:-60px;right:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(220,205,255,.45),rgba(220,205,255,0) 70%);animation:rpbkbreathe 8s ease-in-out infinite;}
+/* JESUS CONSCIOUSNESS — golden field */
+.rpbk-page.jesus{background:linear-gradient(170deg,#fffbe9 0%,#fbeec2 45%,#f2d98f 100%);color:#4a3a12;}
+.rpbk-page.jesus .rpbk-orb{position:absolute;top:-70px;left:50%;margin-left:-115px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(255,225,140,.95),rgba(255,225,140,0) 70%);animation:rpbkbreathe 5s ease-in-out infinite;}
+/* DECLARATIONS / other — daylight */
+.rpbk-page.day{background:linear-gradient(170deg,#eef5f0 0%,#dcebe0 55%,#c8ddcf 100%);color:#2c3e33;}
+.rpbk-page.day .rpbk-orb{position:absolute;top:-70px;right:-50px;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle,rgba(160,220,180,.6),rgba(160,220,180,0) 70%);animation:rpbkbreathe 7s ease-in-out infinite;}
+.rpbk-eyebrow{font-size:.66rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;opacity:.65;text-align:center;}
+.rpbk-title{font-size:1.25rem;font-weight:700;text-align:center;margin:8px 0 2px;line-height:1.3;}
+.rpbk-sym{text-align:center;font-size:1.05rem;letter-spacing:10px;margin:10px 0 4px;animation:rpbkfloat 7s ease-in-out infinite;}
+.rpbk-rule{width:90px;height:2px;margin:8px auto 14px;background:currentColor;opacity:.3;border-radius:2px;}
+.rpbk-body{font-size:1rem;line-height:1.85;white-space:pre-wrap;position:relative;z-index:1;}
+.rpbk-body:first-letter{font-size:1.6em;font-weight:700;}
+.rpbk-pageno{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:.72rem;letter-spacing:2px;opacity:.55;}
+/* contents */
+.rpbk-toc{background:radial-gradient(ellipse at 50% 15%,#20301f 0%,#121a12 60%,#0b110b 100%);border:1.5px solid rgba(212,175,55,.5);border-radius:22px;padding:22px 16px 30px;box-shadow:0 14px 42px rgba(0,0,0,.55);}
+.rpbk-toc h2{text-align:center;color:#e8d9a0;font-family:Georgia,serif;margin:2px 0;}
+.rpbk-toc .sub{text-align:center;color:#9aa88f;font-style:italic;font-size:.8rem;margin-bottom:8px;}
+.rpbk-sec{font-size:.7rem;font-weight:800;letter-spacing:2px;color:#b09a5c;text-transform:uppercase;padding:15px 4px 6px;display:flex;align-items:center;gap:8px;}
+.rpbk-sec:after{content:'';flex:1;height:1px;background:rgba(212,175,55,.25);}
+.rpbk-item{display:flex;gap:11px;align-items:center;padding:9px 8px;border-radius:12px;cursor:pointer;color:#ded4b2;font-size:.92rem;transition:background .15s;}
+.rpbk-item:hover{background:rgba(212,175,55,.13);}
+.rpbk-item .ic{font-size:1.1rem;min-width:26px;text-align:center;}
+.rpbk-item .pg{margin-left:auto;font-size:.68rem;color:#8f886e;}
+</style>
+<script id="rpbk-js">
+/* ═══════════ ROYAL PRAYER ROOM (rpbk) — additive; classic Prayers page untouched ═══════════ */
+(function(){
+'use strict';
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* — one-time seed: THE JESUS CONSCIOUSNESS PRACTICE (from Elias's document, 8 Jul 2026) — */
+function seedJesus(){
+  if(lsGet('royal_pray_jesus_v1',0))return;
+  var pr=lsGet('royal_pray_v2',[])||[];
+  var blocks=[
+   {t:'The Jesus Consciousness Practice — Entering the Field',b:'A Daily Ritual for Financial Breakthrough and Vocation.\nDeclaration • Unity • Present-Tense Gratitude • The Feeling of the Wish Fulfilled.\n\nThis practice shifts you from petition (begging for what you lack) to declaration (affirming what already exists in the realm of potential).\n\nBefore speaking a single word, withdraw your attention from the current lack. Give your power of observation to what you are calling in, not to what you are leaving behind.\n\n1. Breathe. Take several deep breaths. Exhale the tension. Inhale the field of infinite possibility that exists right now.\n2. Shift perspective. You are not a beggar before a distant king. You are a vessel and a conduit for divine power.'},
+   {t:'I · The Invocation of Source',b:'“Abwun, Divine Source, Cosmic Womb of all creation — I recognise that there is no separation between me and the infinite supply of the universe. I am not standing on the shore calling to the ocean; I am the ocean experiencing itself as a wave. I and the Father are one, and the creative power that spoke the universe into existence flows through me now.”'},
+   {t:'II · The Declaration of Present-Tense Gratitude',b:'“I thank you, Source, that my financial breakthrough and perfect vocation are already accomplished in the invisible realm. I do not ask for a job; I give thanks for the purposeful, abundant work that is already mine in the field of infinite potential. I thank you that you have already heard me, and I know that you always hear me.”'},
+   {t:'III · The Activation of Feeling',b:'Spend 3–5 minutes here generating the actual physical sensation of relief, joy, and security — as if the work has already begun and the debts are already cleared.\n\n“I feel the warmth of security in my heart. I feel the expansion of joy as I walk into my new work. I acknowledge the frequency of abundance — more than enough — as my current state of being.”'},
+   {t:'IV · Exercising Dominion over the Circumstance',b:'Speak directly to your situation, as the storm was spoken to.\n\n“I look at the appearance of joblessness and the numbers in my account, and I say: I see you, but you are not my truth. You have no authority over my divine nature. Peace, be still. I withdraw my energy from the frequency of ‘not enough’ and invest it fully in the frequency of abundance.”'},
+   {t:'V · Sealing the Consciousness',b:'“I step into this day not as someone waiting for a miracle, but as someone for whom the miracle has already occurred. I will walk, talk, and decide from this place of completion. I am.”\n\nPractical guidance: practise for 5 minutes every morning, for 30 days. When doubt arrives, don’t fight it — return quietly to the feeling of gratitude for the thing already done. Watch for the leading edges: a sudden insight, a chance conversation, a wave of peace — and give thanks for each one.\n\n— Nana Kwame Nkrabea'}
+  ];
+  blocks.forEach(function(x,i){pr.push({id:'p_jesus'+(i+1),panel:'jesus',title:x.t,body:x.b});});
+  lsSet('royal_pray_v2',pr);lsSet('royal_pray_jesus_v1',1);
+}
+function prayers(){seedJesus();var p=lsGet('royal_pray_v2',[])||[];return Array.isArray(p)?p:[];}
+var ORDER=[['morning','🌅 Morning Manifesto — the fresh breath of the universe','morning'],
+           ['jesus','✝️ The Jesus Consciousness Practice','jesus'],
+           ['declarations','✨ Declarations & Mantras','day'],
+           ['colour','🎨 Colour & Energy','day'],
+           ['evening','🌙 Evening Manifesto — meeting the universe into rest','evening']];
+function pages(){
+  var pr=prayers();var out=[];
+  ORDER.forEach(function(g){
+    pr.forEach(function(p){if(p.panel===g[0])out.push({p:p,style:g[2],group:g[1]});});
+  });
+  pr.forEach(function(p){if(!ORDER.some(function(g){return g[0]===p.panel;}))out.push({p:p,style:'day',group:'🙏 Other prayers'});});
+  return out;
+}
+var SYMS='☯ ✝️ 🕉️ ☪️ ✡️ 🌍 ✨';
+var curIdx=0, atCover=true;
+window.rpbGo=function(t){if(typeof window.go==='function')window.go(t);else if(typeof window.royalTab==='function')window.royalTab(t,null);};
+window.rpbOpen=function(){atCover=false;renderToc();};
+window.rpbToc=function(){renderToc();};
+window.rpbPage=function(i){curIdx=i;renderPage();};
+window.rpbTurn=function(d){var n=pages().length;if(!n)return;
+  var pg=document.querySelector('#rpbk-root .rpbk-page');if(pg)pg.classList.add(d>0?'turn-r':'turn-l');
+  setTimeout(function(){curIdx=((curIdx+d)%n+n)%n;renderPage();},180);};
+function ensureScreen(){
+  var sc=document.getElementById('s-prayerbook');
+  if(!sc){var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+    sc=document.createElement('div');sc.id='s-prayerbook';sc.className='screen';sc.innerHTML='<div id="rpbk-root"></div>';main.appendChild(sc);}
+  return sc;
+}
+function root(){ensureScreen();return document.getElementById('rpbk-root');}
+function topbar(){
+  return '<div class="rg2-top"><span class="rg2-chip" onclick="rpbToc()">⬅ Prayer Room</span>'+
+    '<span class="rg2-tt">🕊️ Royal Prayer Room</span>'+
+    '<span style="flex:1"></span>'+
+    '<span class="rg2-chip" onclick="rpbGo(\'pray\')">✏️ Edit prayers</span>'+
+    '<span class="rg2-chip" onclick="rpbGo(\'home\')">🏠 Home</span></div>';
+}
+function renderCover(){
+  var r=root();if(!r)return;
+  r.innerHTML='<div class="rg2-wrap"><div class="rg2-top"><span class="rg2-chip" onclick="rpbGo(\'pray\')">⬅ Prayers</span><span class="rg2-chip" onclick="rpbGo(\'home\')">🏠 Home</span></div>'+
+    '<div class="rg2-cover" onclick="rpbOpen()">'+
+    '<div class="crest" style="animation:rpbkbreathe 5s ease-in-out infinite;">🕊️</div><div class="t1">The Royal Prayer Room</div>'+
+    '<div class="t2">A sanctuary of Wu Wei, universal energy and sacred words</div>'+
+    '<div class="t3">'+SYMS+'</div>'+
+    '<button class="openbtn">🕊️ Enter the sanctuary</button></div></div>';
+}
+function renderToc(){
+  var r=root();if(!r)return;var ps=pages();
+  var h='<div class="rg2-wrap">'+topbar()+'<div class="rpbk-toc">';
+  h+='<h2>🕊️ The Secret Prayer Room</h2><div class="sub">'+ps.length+' sacred pages · flip through them like a living book</div>'+
+     '<div class="rpbk-sym" style="color:#d4af37;">'+SYMS+'</div>';
+  var lastGroup='';
+  ps.forEach(function(x,i){
+    if(x.group!==lastGroup){h+='<div class="rpbk-sec">'+esc(x.group)+'</div>';lastGroup=x.group;}
+    h+='<div class="rpbk-item" onclick="rpbPage('+i+')"><span class="ic">'+(x.style==='morning'?'🌅':x.style==='evening'?'🌙':x.style==='jesus'?'✝️':'✨')+'</span>'+
+       '<span>'+esc(x.p.title||'Prayer')+'</span><span class="pg">p.'+(i+1)+'</span></div>';
+  });
+  h+='</div></div>';
+  r.innerHTML=h;
+}
+function renderPage(){
+  var r=root();if(!r)return;var ps=pages();if(!ps.length){renderCover();return;}
+  curIdx=Math.max(0,Math.min(curIdx,ps.length-1));
+  var x=ps[curIdx];var p=x.p;
+  var eyebrow=x.style==='morning'?'🌅 Morning · receiving the fresh breath of the universe':
+              x.style==='evening'?'🌙 Evening · meeting the universe on the way to rest':
+              x.style==='jesus'?'✝️ The Jesus Consciousness Practice':'✨ Sacred words for the day';
+  var h='<div class="rg2-wrap">'+topbar();
+  h+='<div class="rpbk-page '+x.style+'"><div class="rpbk-orb"></div>';
+  h+='<div class="rpbk-eyebrow">'+eyebrow+'</div>';
+  h+='<div class="rpbk-sym">'+SYMS+'</div>';
+  h+='<div class="rpbk-title">'+esc(p.title||'Prayer')+'</div><div class="rpbk-rule"></div>';
+  h+='<div class="rpbk-body">'+esc(p.body||'')+'</div>';
+  h+='<div class="rpbk-pageno">— PAGE '+(curIdx+1)+' OF '+ps.length+' —</div>';
+  h+='</div>';
+  h+='<div class="rg2-arrows" style="margin-top:12px;"><span class="rg2-chip" onclick="rpbTurn(-1)">⬅ Previous</span><span class="rg2-chip" onclick="rpbToc()">🕊️ Prayer Room</span><span class="rg2-chip" onclick="rpbGo(\'home\')">🏠 Home</span><span class="rg2-chip" onclick="rpbTurn(1)">Next ➡</span></div>';
+  h+='</div>';
+  r.innerHTML=h;
+  var page=r.querySelector('.rpbk-page');var x0=null;
+  if(page){page.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;},{passive:true});
+    page.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>60)rpbTurn(dx<0?1:-1);x0=null;},{passive:true});}
+}
+function activate(){atCover=true;renderCover();}
+function injectChip(){
+  var sc=document.getElementById('s-pray');if(!sc)return;
+  if(document.getElementById('rpbk-entry'))return;
+  var d=document.createElement('div');d.id='rpbk-entry';
+  d.style.cssText='display:flex;justify-content:center;padding:10px 8px 2px;';
+  d.innerHTML='<span class="rg2-chip" style="font-size:.9rem;padding:10px 22px;" onclick="rpbGo(\'prayerbook\')">🕊️ Enter the Royal Prayer Room — a living book of your prayers</span>';
+  sc.insertBefore(d,sc.firstChild);
+}
+function hook(fn){
+  var o=window[fn];if(typeof o!=='function'||o._rpbk)return;
+  var w=function(n){var r2=o.apply(this,arguments);if(n==='prayerbook'){setTimeout(activate,0);}return r2;};
+  w._rpbk=true;try{window[fn]=w;}catch(e){}
+}
+function boot(){ensureScreen();hook('go');hook('royalTab');injectChip();seedJesus();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(injectChip,2000);
+})();
+</script>
+
+<style id="rmhp-css">
+/* ═══════════ MONEY HUB PERIOD PREVIEW (rmhp) — like the Tax Bookkeeping preview ═══════════ */
+#rmhp-bar{max-width:980px;margin:8px auto 4px;background:rgba(255,255,255,.045);border:1px solid rgba(212,175,55,.35);border-radius:16px;padding:11px 13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+#rmhp-bar .lbl{font-size:.72rem;font-weight:800;letter-spacing:1.5px;color:var(--gold,#C9A84C);text-transform:uppercase;margin-right:2px;}
+#rmhp-bar input[type=date]{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:8px 9px;color:inherit;font-size:.84rem;}
+.rmhp-chip{background:rgba(212,175,55,.13);border:1px solid rgba(212,175,55,.4);color:var(--gold,#C9A84C);border-radius:999px;padding:7px 13px;font-size:.78rem;font-weight:700;cursor:pointer;user-select:none;}
+.rmhp-chip:hover{background:rgba(212,175,55,.26);}
+.rmhp-go{background:linear-gradient(135deg,#d4af37,#b8912a)!important;color:#241d0d!important;border:none!important;}
+html.app-light #rmhp-bar{background:#fff;border-color:#dccf9f;}
+html.app-light #rmhp-bar input[type=date]{background:#fff;color:#333;border-color:#ddd;}
+/* paper modal */
+#rmhp-modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;display:none;align-items:center;justify-content:center;padding:14px;}
+#rmhp-modal.open{display:flex;}
+#rmhp-paper{background:#fff;color:#111;border-radius:14px;max-width:760px;width:100%;max-height:88vh;overflow-y:auto;padding:26px 26px 20px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+#rmhp-paper h2{margin:0 0 2px;font-size:1.2rem;}
+#rmhp-paper .rng{color:#777;font-size:.82rem;margin-bottom:14px;}
+.rmhp-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-bottom:16px;}
+.rmhp-kpi{background:#f6f3ea;border:1px solid #e5decb;border-radius:11px;padding:10px;text-align:center;}
+.rmhp-kpi .v{font-size:1.05rem;font-weight:800;}
+.rmhp-kpi .v.in{color:#1f7a3a;} .rmhp-kpi .v.out{color:#b03a2e;}
+.rmhp-kpi .l{font-size:.64rem;letter-spacing:1px;color:#8a8272;text-transform:uppercase;margin-top:2px;}
+#rmhp-paper h3{font-size:.78rem;letter-spacing:1.5px;text-transform:uppercase;color:#8a7a45;border-bottom:1px solid #eee5cc;padding-bottom:5px;margin:16px 0 8px;}
+#rmhp-paper table{width:100%;border-collapse:collapse;font-size:.82rem;}
+#rmhp-paper th{text-align:left;color:#999;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;padding:5px 7px;border-bottom:1px solid #eee;}
+#rmhp-paper td{padding:6px 7px;border-bottom:1px solid #f2eede;}
+#rmhp-paper td.amt{text-align:right;font-weight:700;white-space:nowrap;}
+#rmhp-paper td.amt.in{color:#1f7a3a;} #rmhp-paper td.amt.out{color:#b03a2e;}
+.rmhp-btns{display:flex;gap:9px;margin-top:16px;flex-wrap:wrap;}
+.rmhp-btns button{flex:1;min-width:110px;border:none;border-radius:11px;padding:12px;font-weight:800;font-size:.88rem;cursor:pointer;background:#eee7d2;color:#4a3f22;}
+.rmhp-btns button.gold{background:linear-gradient(135deg,#d4af37,#b8912a);color:#241d0d;}
+</style>
+<script id="rmhp-js">
+/* ═══════════ MONEY HUB PERIOD PREVIEW (rmhp) — additive, read-only ═══════════ */
+(function(){
+'use strict';
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function money(n){n=+n||0;return '£'+n.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtD(s){try{var p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0];}catch(e){return s;}}
+var TYPELBL={income:'📈 Income',expense:'🛒 Expenses',personal:'🏠 Personal',debt:'💳 Debt payments',ghana:'🇬🇭 Ghana / Throne',family:'🏘️ Family',education:'🎓 Education',stanbic:'🏦 Stanbic investment',misc:'🗂️ Miscellaneous',vodafone:'📱 Vodafone Cash'};
+function inRange(t,a,b){var d=(t.date||'').slice(0,10);return d>=a&&d<=b;}
+window.rmhpQuick=function(kind){
+  var now=new Date();var a,b;
+  if(kind==='today'){a=b=iso(now);}
+  else if(kind==='week'){var d=new Date(now);d.setDate(now.getDate()-((now.getDay()+6)%7));a=iso(d);b=iso(now);}
+  else if(kind==='month'){a=iso(new Date(now.getFullYear(),now.getMonth(),1));b=iso(now);}
+  else if(kind==='lastmonth'){a=iso(new Date(now.getFullYear(),now.getMonth()-1,1));b=iso(new Date(now.getFullYear(),now.getMonth(),0));}
+  var f=document.getElementById('rmhp-from'),t=document.getElementById('rmhp-to');
+  if(f)f.value=a;if(t)t.value=b;
+  window.rmhpPreview();
+};
+function ensureModal(){
+  if(document.getElementById('rmhp-modal'))return;
+  var m=document.createElement('div');m.id='rmhp-modal';
+  m.innerHTML='<div id="rmhp-paper"></div>';
+  m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});
+  document.body.appendChild(m);
+}
+var lastHtml='';
+window.rmhpPreview=function(){
+  ensureModal();
+  var a=(document.getElementById('rmhp-from')||{}).value,b=(document.getElementById('rmhp-to')||{}).value;
+  if(!a&&!b){alert('Pick a From date (or tap Today / This Week / This Month).');return;}
+  if(!a)a=b; if(!b)b=a;
+  if(a>b){var t0=a;a=b;b=t0;}
+  var tx=(lsGet('royal_moneyhub_v1',[])||[]).filter(function(t){return inRange(t,a,b);});
+  tx.sort(function(p,q){return String(p.date).localeCompare(String(q.date));});
+  var inn=0,out=0,byType={};
+  tx.forEach(function(t){var amt=+t.amount||0;
+    if(t.type==='income'){inn+=amt;}else{out+=amt;}
+    var k=t.type||'misc';byType[k]=(byType[k]||0)+amt;});
+  var days=Math.round((new Date(b)-new Date(a))/86400000)+1;
+  var h='<h2>💷 Money Hub — Period Snapshot</h2>'+
+    '<div class="rng">'+fmtD(a)+' → '+fmtD(b)+' · '+days+' day'+(days>1?'s':'')+' · '+tx.length+' entr'+(tx.length===1?'y':'ies')+' · HRH Prince Kwame Nkrabea</div>';
+  h+='<div class="rmhp-kpis">'+
+    '<div class="rmhp-kpi"><div class="v in">'+money(inn)+'</div><div class="l">Money in</div></div>'+
+    '<div class="rmhp-kpi"><div class="v out">'+money(out)+'</div><div class="l">Money out</div></div>'+
+    '<div class="rmhp-kpi"><div class="v '+(inn-out>=0?'in':'out')+'">'+money(inn-out)+'</div><div class="l">Net</div></div>'+
+    '<div class="rmhp-kpi"><div class="v">'+money(days?out/days:0)+'</div><div class="l">Avg out / day</div></div></div>';
+  var keys=Object.keys(byType).sort(function(p,q){return byType[q]-byType[p];});
+  if(keys.length){h+='<h3>By type</h3><table><tr><th>Type</th><th style="text-align:right">Total</th></tr>';
+    keys.forEach(function(k){h+='<tr><td>'+(TYPELBL[k]||esc(k))+'</td><td class="amt '+(k==='income'?'in':'out')+'">'+money(byType[k])+'</td></tr>';});
+    h+='</table>';}
+  h+='<h3>Every entry in this view</h3>';
+  if(!tx.length)h+='<div style="color:#999;font-style:italic;padding:8px;">No entries between these dates.</div>';
+  else{h+='<table><tr><th>Date</th><th>Description</th><th>Type</th><th style="text-align:right">£</th></tr>';
+    tx.forEach(function(t){var isin=t.type==='income';
+      h+='<tr><td>'+fmtD((t.date||'').slice(0,10))+'</td><td>'+esc((t.desc||t.cat||'').slice(0,60))+'</td><td>'+esc(t.type||'')+'</td><td class="amt '+(isin?'in':'out')+'">'+(isin?'+':'−')+money(t.amount)+'</td></tr>';});
+    h+='</table>';}
+  lastHtml=h;
+  h+='<div class="rmhp-btns"><button onclick="rmhpExcel()">⬇️ Excel</button><button onclick="rmhpPrint()">🖨 Print</button><button class="gold" onclick="document.getElementById(\'rmhp-modal\').classList.remove(\'open\')">✕ Close</button></div>';
+  document.getElementById('rmhp-paper').innerHTML=h;
+  document.getElementById('rmhp-modal').classList.add('open');
+};
+window.rmhpExcel=function(){
+  var blob=new Blob(['<html><head><meta charset="utf-8"></head><body>'+lastHtml+'</body></html>'],{type:'application/vnd.ms-excel'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='Money-Hub-Snapshot.xls';document.body.appendChild(a);a.click();a.remove();
+};
+window.rmhpPrint=function(){
+  var f=document.createElement('iframe');f.style.cssText='position:fixed;width:0;height:0;border:0;';
+  document.body.appendChild(f);
+  f.contentDocument.write('<html><head><title>Money Hub Snapshot</title><style>body{font-family:-apple-system,Segoe UI,Arial,sans-serif;padding:28px;color:#111;}h2{margin:0 0 4px;}table{width:100%;border-collapse:collapse;font-size:12px;}th,td{text-align:left;padding:5px 7px;border-bottom:1px solid #eee;}td.amt{text-align:right;font-weight:700;}.rng{color:#777;font-size:12px;margin-bottom:12px;}.rmhp-kpis{display:flex;gap:10px;margin-bottom:14px;}.rmhp-kpi{border:1px solid #ddd;border-radius:8px;padding:8px 12px;text-align:center;}.rmhp-kpi .l{font-size:9px;color:#999;text-transform:uppercase;}h3{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8a7a45;border-bottom:1px solid #eee;padding-bottom:4px;}</style></head><body>'+lastHtml+'</body></html>');
+  f.contentDocument.close();
+  setTimeout(function(){try{f.contentWindow.print();}catch(e){}setTimeout(function(){f.remove();},2000);},250);
+};
+function injectBar(){
+  var sc=document.getElementById('s-moneyhub');if(!sc)return;
+  if(document.getElementById('rmhp-bar'))return;
+  var d=document.createElement('div');d.id='rmhp-bar';
+  d.innerHTML='<span class="lbl">🔎 Period preview</span>'+
+    '<input type="date" id="rmhp-from" title="From"><span style="opacity:.6">→</span><input type="date" id="rmhp-to" title="To">'+
+    '<span class="rmhp-chip" onclick="rmhpQuick(\'today\')">Today</span>'+
+    '<span class="rmhp-chip" onclick="rmhpQuick(\'week\')">This week</span>'+
+    '<span class="rmhp-chip" onclick="rmhpQuick(\'month\')">This month</span>'+
+    '<span class="rmhp-chip" onclick="rmhpQuick(\'lastmonth\')">Last month</span>'+
+    '<span class="rmhp-chip rmhp-go" onclick="rmhpPreview()">🔎 Preview total for this view</span>';
+  sc.insertBefore(d,sc.firstChild);
+}
+function boot(){injectBar();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(injectBar,2000);
 })();
 </script>
 
