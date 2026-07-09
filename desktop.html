@@ -13926,7 +13926,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.12.0 · 9 Jul 2026 · goals-book';
+window.ROYAL_APP_VERSION='v4.13.0 · 9 Jul 2026 · scholars-contacts-cover';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -22999,6 +22999,7 @@ function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'
 function doy(d){var s=new Date(d.getFullYear(),0,1);return Math.floor((d-s)/86400000)+1;}
 function daysInYear(y){return ((y%4===0&&y%100!==0)||y%400===0)?366:365;}
 var cur=iso(new Date());
+var atCover=true; /* every visit starts at the royal cover */
 
 /* ---------- data pulls (read-only on other stores) ---------- */
 function appts(dateIso){
@@ -23086,7 +23087,7 @@ window.rbkTurn=function(dir){
 };
 window.rbkToday=function(){cur=iso(new Date());render();};
 window.rbkPick=function(v){if(v){cur=v;render();}};
-window.rbkOpenCover=function(){var s=st();s.coverSeen=true;save(s);render();};
+window.rbkOpenCover=function(){atCover=false;cur=iso(new Date());render();};
 
 /* ---------- render ---------- */
 function ensureScreen(){
@@ -23098,7 +23099,7 @@ function ensureScreen(){
 function render(){
   ensureScreen();var root=document.getElementById('rbook-root');if(!root)return;
   var s=st();
-  if(!s.coverSeen){
+  if(atCover){
     root.innerHTML='<div class="rbk-wrap"><div class="rbk-topbar"><span class="rbk-chip" onclick="rbkDaily()">⬅ Daily Life</span><span class="rbk-chip" onclick="rbkGo(\'home\')">🏠 Home</span></div><div class="rbk-cover" onclick="rbkOpenCover()">'+
       '<div class="crest">👑</div><div class="t1">The Royal Diary</div>'+
       '<div class="t2">HRH Prince Kwame Nkrabea · Heir Apparent, Suaman Dadiaso</div>'+
@@ -23175,7 +23176,7 @@ function injectPill(){
 }
 function hook(fn){
   var o=window[fn];if(typeof o!=='function'||o._rbook)return;
-  var w=function(n){var r=o.apply(this,arguments);if(n==='book'){setTimeout(function(){cur=iso(new Date());render();var hh=document.getElementById('nb-dailylife');if(hh)hh.classList.add('active');},0);}return r;};
+  var w=function(n){var r=o.apply(this,arguments);if(n==='book'){setTimeout(function(){atCover=true;cur=iso(new Date());render();var hh=document.getElementById('nb-dailylife');if(hh)hh.classList.add('active');},0);}return r;};
   w._rbook=true;try{window[fn]=w;}catch(e){}
 }
 function boot(){ensureScreen();hook('go');hook('royalTab');injectPill();}
@@ -23820,6 +23821,479 @@ function boot(){ensureScreen();hook('go');hook('royalTab');injectChip();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 setInterval(function(){injectChip();var sc=document.getElementById('s-goalbook');if(sc&&sc.classList.contains('active')){var r=document.getElementById('rgbk-root');if(r&&r.querySelector('.rg2-page')&&!document.activeElement.closest('.rg2-log'))renderPage();}},60000);
 setInterval(injectChip,2000);
+})();
+</script>
+
+<style id="rsbk-css">
+/* ═══════════ ROYAL SCHOLARS BOOK (rsbk) — the future leaders you are raising ═══════════ */
+#s-scholarbook{padding-bottom:120px;}
+.rsb-av{width:58px;height:58px;min-width:58px;border-radius:50%;background:linear-gradient(135deg,#2e5a3a,#173322);border:2px solid rgba(212,175,55,.55);display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:800;color:#d4af37;}
+.rsb-journey{margin:6px 0;}
+.rsb-stage{display:flex;gap:11px;align-items:center;padding:6px 6px;border-radius:10px;font-size:.88rem;color:#e6dfc8;position:relative;}
+.rsb-stage .dot{width:26px;height:26px;min-width:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.18);color:transparent;}
+.rsb-stage.done .dot{background:rgba(89,194,110,.16);border-color:#59c26e;color:#59c26e;}
+.rsb-stage:not(:last-child):before{content:'';position:absolute;left:18px;top:32px;height:12px;width:2px;background:rgba(255,255,255,.13);}
+.rsb-stage.done:not(:last-child):before{background:rgba(89,194,110,.4);}
+.rsb-stage .lbl{flex:1;}
+.rsb-stage.done .lbl{color:#bfe8c8;}
+.rsb-profile{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin:8px 0;}
+.rsb-pf{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:13px;padding:9px 11px;}
+.rsb-pf .l{font-size:.62rem;letter-spacing:1px;color:#a9a184;text-transform:uppercase;}
+.rsb-pf .v{font-size:.9rem;font-weight:700;color:#f2ead2;margin-top:2px;line-height:1.35;}
+.rsb-amb{background:linear-gradient(135deg,rgba(212,175,55,.14),rgba(212,175,55,.04));border:1px solid rgba(212,175,55,.4);border-radius:15px;padding:12px 14px;margin:10px 0;font-size:.88rem;color:#e8dfbe;line-height:1.55;}
+</style>
+<script id="rsbk-js">
+/* ═══════════ ROYAL SCHOLARS BOOK (rsbk) — additive overlay; reuses rg2 styles ═══════════ */
+(function(){
+'use strict';
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function money(n){n=+n||0;return '£'+Math.round(n).toLocaleString();}
+function scholars(){var s=lsGet('royal_scholars_v1',[]);return Array.isArray(s)?s:(s&&s.list)||[];}
+function initials(n){return (n||'?').split(/\s+/).map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();}
+function jPct(s){var j=s.journey||[];if(!j.length)return (s.status==='Completed'||s.status==='Graduated')?100:0;var d=j.filter(function(x){return x.done;}).length;return Math.round(d/j.length*100);}
+function daysTo(d){if(!d)return null;var t=new Date(d)-new Date();return isNaN(t)?null:Math.ceil(t/86400000);}
+var curIdx=0, atCover=true;
+var AMB=[[/law|legal|lawyer/i,'the legal strength of your Kingdom — a trusted counsel for Suaman Dadiaso and guardian of your Royal Legacy Blueprint'],
+ [/doctor|medic|nurs|health/i,'the health pillar of your Royal vision — care for your community and family for generations'],
+ [/teach|educat/i,'the education pillar of your vision — raising the next generation of leaders in Suaman Dadiaso'],
+ [/engineer|build|architect/i,'the builders of your Kingdom — the hands that will raise the Royal Residence and community works'],
+ [/business|entrepreneur|account|financ/i,'the economic engine of your legacy — wealth circulated, not withheld'],
+ [/govern|admin|public/i,'the governance pillar of your Royal Manifesto — stewardship and order that outlive your reign']];
+function ambitionFor(s){
+  var g=(s.careerGoal||'')+' '+(s.course||'');
+  for(var i=0;i<AMB.length;i++)if(AMB[i][0].test(g))return AMB[i][1];
+  return 'the generational blueprint of your Royal Manifesto — opportunity created, not waited for';
+}
+function mhMatches(s){
+  var first=(s.name||'').split(/\s+/)[0];if(!first||first.length<3)return [];
+  var re=new RegExp(first.replace(/[.*+?^${}()|[\]\\]/g,''),'i');
+  return (lsGet('royal_moneyhub_v1',[])||[]).filter(function(t){
+    return re.test(t.beneficiary||'')||re.test(t.recipient||'')||re.test(t.desc||'')||re.test(t.notes||'');
+  }).slice(0,6);
+}
+window.rsbGo=function(t){if(typeof window.go==='function')window.go(t);else if(typeof window.royalTab==='function')window.royalTab(t,null);};
+window.rsbOpen=function(){atCover=false;renderToc();};
+window.rsbToc=function(){renderToc();};
+window.rsbPage=function(i){curIdx=i;renderPage();};
+window.rsbTurn=function(d){var n=scholars().length;if(!n)return;
+  var pg=document.querySelector('#rsbk-root .rg2-page');if(pg)pg.classList.add(d>0?'turn-r':'turn-l');
+  setTimeout(function(){curIdx=((curIdx+d)%n+n)%n;renderPage();},170);};
+function ensureScreen(){
+  var sc=document.getElementById('s-scholarbook');
+  if(!sc){var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+    sc=document.createElement('div');sc.id='s-scholarbook';sc.className='screen';sc.innerHTML='<div id="rsbk-root"></div>';main.appendChild(sc);}
+  return sc;
+}
+function root(){ensureScreen();return document.getElementById('rsbk-root');}
+function topbar(){
+  return '<div class="rg2-top"><span class="rg2-chip" onclick="rsbToc()">⬅ Scholars Contents</span>'+
+    '<span class="rg2-tt">📗 Royal Scholars Book</span>'+
+    '<span class="rg2-live"><span class="dot"></span>LIVE</span>'+
+    '<span style="flex:1"></span>'+
+    '<span class="rg2-chip" onclick="rsbGo(\'scholars\')">✏️ Manage</span>'+
+    '<span class="rg2-chip" onclick="rsbGo(\'home\')">🏠 Home</span></div>';
+}
+function renderCover(){
+  var r=root();if(!r)return;
+  r.innerHTML='<div class="rg2-wrap"><div class="rg2-top"><span class="rg2-chip" onclick="rsbGo(\'scholars\')">⬅ Scholars</span><span class="rg2-chip" onclick="rsbGo(\'home\')">🏠 Home</span><span class="rg2-live"><span class="dot"></span>LIVE</span></div>'+
+    '<div class="rg2-cover" onclick="rsbOpen()">'+
+    '<div class="crest">🎓</div><div class="t1">The Royal Scholars</div>'+
+    '<div class="t2">Education sponsorship — the future leaders you are raising</div>'+
+    '<div class="t3">One living page per scholar · linked to your Royal ambitions</div>'+
+    '<button class="openbtn">📗 Open the book</button></div></div>';
+}
+function renderToc(){
+  var r=root();if(!r)return;var ss=scholars();
+  var tot=0;ss.forEach(function(s){tot+=(+s.totalInvested||0);});
+  var h='<div class="rg2-wrap">'+topbar()+'<div class="rg2-toc">';
+  h+='<h2>🎓 The Future Leaders You Are Raising</h2><div class="sub">'+ss.length+' scholar'+(ss.length===1?'':'s')+' · '+money(tot)+' invested in their futures · tap a scholar to open their page</div>';
+  if(!ss.length)h+='<div class="rg2-empty" style="text-align:center;padding:20px;">No scholars yet — add them in ✏️ Manage.</div>';
+  h+='<div class="rg2-grid" style="margin-top:12px;">';
+  ss.forEach(function(s,i){
+    var p=jPct(s);
+    h+='<div class="rg2-tile" onclick="rsbPage('+i+')">'+
+      '<div class="rsb-av" style="margin:0 auto;">'+esc(initials(s.name))+'</div>'+
+      '<div class="n">'+esc(s.name||'Scholar')+'<br><span style="color:#a9a184;font-weight:600;font-size:.68rem;">'+esc(s.relationship||'')+'</span></div>'+
+      '<div class="rg2-mini" style="background:conic-gradient(#d4af37 '+(p*3.6)+'deg,rgba(255,255,255,.08) 0deg)"><div class="hole">'+p+'%</div></div>'+
+      '<div class="pg">PAGE '+(i+1)+' · '+esc((s.status||'').toUpperCase())+'</div></div>';
+  });
+  h+='</div></div></div>';
+  r.innerHTML=h;
+}
+function aiLine(s){
+  var j=s.journey||[];var d=j.filter(function(x){return x.done;}).length;
+  var bits=[];
+  if(j.length)bits.push(d+' of '+j.length+' journey stages complete');
+  if(s.totalInvested)bits.push(money(s.totalInvested)+' invested so far');
+  if(s.feePerTerm)bits.push(money(s.feePerTerm)+' per term');
+  var nd=daysTo(s.nextFeeDue);
+  if(nd!==null)bits.push(nd>0?('next fee in '+nd+' days'):'a fee is due — check now');
+  var st=(s.status||'').toLowerCase();
+  var lead=st.indexOf('complet')>-1||st.indexOf('graduat')>-1?'has completed the road you paved':'is rising steadily';
+  return 'Your Highness, '+esc((s.name||'this scholar').split(' ')[0])+' '+lead+' — '+bits.join(' · ')+'.';
+}
+function renderPage(){
+  var r=root();if(!r)return;var ss=scholars();if(!ss.length){renderToc();return;}
+  curIdx=Math.max(0,Math.min(curIdx,ss.length-1));
+  var s=ss[curIdx];var p=jPct(s);var nd=daysTo(s.nextFeeDue);
+  var done=(s.status||'').match(/complet|graduat/i);
+  var h='<div class="rg2-wrap">'+topbar()+'<div class="rg2-page">';
+  h+='<div class="rg2-head"><div class="rsb-av">'+esc(initials(s.name))+'</div><div class="t">'+
+     '<h2>'+esc(s.name||'Scholar')+'</h2>'+
+     '<div class="sub"><span>'+esc(s.relationship||'')+'</span>'+
+     (s.studentId?'<span>🎫 '+esc(s.studentId)+'</span>':'')+
+     '<span class="rg2-st '+(done?'on':'on')+'">'+esc((s.status||'ACTIVE').toUpperCase())+'</span>'+
+     (nd!==null?('<span class="rg2-count">'+(nd>0?'⏳ fee in '+nd+' days':'⚠️ fee due')+'</span>'):'')+
+     '</div></div></div>';
+  h+='<div class="rg2-ai">🤖 '+aiLine(s)+'</div>';
+  /* hero: journey ring + KPIs */
+  h+='<div class="rg2-hero"><div class="rg2-ringwrap"><div class="rg2-ring" id="rsb-ring"><div class="hole"><div class="p" id="rsb-ringp">0%</div><div class="pl">journey</div></div></div></div>'+
+    '<div class="rg2-kpis">'+
+    '<div class="rg2-kpi"><div class="v">'+money(s.totalInvested)+'</div><div class="l">💰 Invested</div></div>'+
+    '<div class="rg2-kpi"><div class="v">'+(s.feePerTerm?money(s.feePerTerm):'—')+'</div><div class="l">🧾 Fee / term</div></div>'+
+    '<div class="rg2-kpi"><div class="v">'+esc(s.nextFeeDue||'—')+'</div><div class="l">📅 Next fee</div></div>'+
+    '<div class="rg2-kpi"><div class="v">'+esc(s.expectedGrad||'—')+'</div><div class="l">🎓 Expected finish</div></div>'+
+    '</div></div>';
+  /* profile */
+  h+='<div class="rg2-sec">Personal &amp; education profile</div><div class="rsb-profile">'+
+    '<div class="rsb-pf"><div class="l">Institution</div><div class="v">'+esc(s.institution||'—')+'</div></div>'+
+    '<div class="rsb-pf"><div class="l">Level</div><div class="v">'+esc(s.level||'—')+'</div></div>'+
+    '<div class="rsb-pf"><div class="l">Year / Class</div><div class="v">'+esc(s.year||'—')+'</div></div>'+
+    '<div class="rsb-pf"><div class="l">Course</div><div class="v">'+esc(s.course||'—')+'</div></div>'+
+    '<div class="rsb-pf"><div class="l">Started</div><div class="v">'+esc(s.startDate||'—')+'</div></div>'+
+    '<div class="rsb-pf"><div class="l">Career goal</div><div class="v">'+esc(s.careerGoal||'—')+'</div></div>'+
+    '</div>';
+  /* journey */
+  var j=s.journey||[];
+  if(j.length){h+='<div class="rg2-sec">Education journey — '+p+'% walked</div><div class="rsb-journey">';
+    j.forEach(function(st2){h+='<div class="rsb-stage'+(st2.done?' done':'')+'"><div class="dot">✔</div><div class="lbl">'+esc(st2.label||'')+'</div></div>';});
+    h+='</div>';}
+  /* royal ambition link */
+  h+='<div class="rg2-sec">In your Royal vision</div>'+
+     '<div class="rsb-amb">👑 '+esc((s.name||'This scholar').split(' ')[0])+' is being raised as '+ambitionFor(s)+'. '+
+     '<span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rsbGo(\'goalbook\')">🎯 Open the Royal Goals Book</span></div>';
+  /* notes */
+  if(s.notes)h+='<div class="rg2-sec">Notes</div><div style="font-style:italic;color:#cfc7a8;font-size:.9rem;line-height:1.55;padding:2px 6px;">'+esc(s.notes)+'</div>';
+  /* money hub matches */
+  var mm=mhMatches(s);
+  if(mm.length){h+='<div class="rg2-sec">Payments found in your Money Hub</div>';
+    mm.forEach(function(t){h+='<div class="rg2-row" onclick="rsbGo(\'moneyhub\')"><span>💷</span><span class="d">'+esc(t.date||'')+'</span><span>'+esc((t.desc||'').slice(0,52))+'</span><span class="amt-out">−'+money(t.amount)+'</span></div>';});}
+  h+='<div class="rg2-pageno">— SCHOLAR PAGE '+(curIdx+1)+' OF '+ss.length+' —</div>';
+  h+='</div>';
+  h+='<div class="rg2-arrows"><span class="rg2-chip" onclick="rsbTurn(-1)">⬅ Previous scholar</span><span class="rg2-chip" onclick="rsbToc()">📗 Contents</span><span class="rg2-chip" onclick="rsbGo(\'home\')">🏠 Home</span><span class="rg2-chip" onclick="rsbTurn(1)">Next scholar ➡</span></div>';
+  h+='</div>';
+  r.innerHTML=h;
+  var ring=document.getElementById('rsb-ring'),rp=document.getElementById('rsb-ringp');
+  if(ring){var cur=0;var step=Math.max(1,Math.round(p/28));
+    var iv=setInterval(function(){cur=Math.min(p,cur+step);
+      ring.style.background='conic-gradient(#d4af37 '+(cur*3.6)+'deg,rgba(255,255,255,.07) 0deg)';
+      if(rp)rp.textContent=cur+'%';if(cur>=p)clearInterval(iv);},22);}
+  var page=r.querySelector('.rg2-page');var x0=null;
+  if(page){page.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;},{passive:true});
+    page.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>60)rsbTurn(dx<0?1:-1);x0=null;},{passive:true});}
+}
+function activate(){atCover=true;renderCover();}
+function injectChip(){
+  var sc=document.getElementById('s-scholars');if(!sc)return;
+  if(document.getElementById('rsbk-entry'))return;
+  var d=document.createElement('div');d.id='rsbk-entry';
+  d.style.cssText='display:flex;justify-content:center;padding:10px 8px 2px;';
+  d.innerHTML='<span class="rg2-chip" style="font-size:.9rem;padding:10px 22px;" onclick="rsbGo(\'scholarbook\')">📗 Open the Royal Scholars Book — one living page per scholar</span>';
+  sc.insertBefore(d,sc.firstChild);
+}
+function hook(fn){
+  var o=window[fn];if(typeof o!=='function'||o._rsbk)return;
+  var w=function(n){var r2=o.apply(this,arguments);if(n==='scholarbook'){setTimeout(activate,0);}return r2;};
+  w._rsbk=true;try{window[fn]=w;}catch(e){}
+}
+function boot(){ensureScreen();hook('go');hook('royalTab');injectChip();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(injectChip,2000);
+})();
+</script>
+
+<style id="rcbk-css">
+/* ═══════════ ROYAL CONTACTS BOOK (rcbk) — AI profile pages with photos ═══════════ */
+#s-contactbook{padding-bottom:120px;}
+.rcb-search{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;}
+.rcb-search input{flex:1;min-width:180px;background:rgba(0,0,0,.35);border:1px solid rgba(212,175,55,.35);border-radius:12px;padding:11px 13px;color:#f2ead2;font-size:.95rem;}
+.rcb-groups{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 10px;}
+.rcb-card{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:11px 13px;cursor:pointer;transition:all .2s;}
+.rcb-card:hover{transform:translateY(-2px);border-color:rgba(212,175,55,.55);box-shadow:0 8px 20px rgba(0,0,0,.4);}
+.rcb-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;}
+.rcb-av{width:48px;height:48px;min-width:48px;border-radius:50%;background:linear-gradient(135deg,#2e5a3a,#173322);border:2px solid rgba(212,175,55,.5);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#d4af37;overflow:hidden;}
+.rcb-av img{width:100%;height:100%;object-fit:cover;}
+.rcb-av.big{width:92px;height:92px;min-width:92px;font-size:1.7rem;border-width:3px;box-shadow:0 6px 20px rgba(0,0,0,.45);}
+.rcb-card .t{min-width:0;}
+.rcb-card .t .n{font-weight:700;font-size:.92rem;color:#f2ead2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rcb-card .t .g{font-size:.68rem;color:#a9a184;margin-top:2px;}
+.rcb-acts{display:flex;gap:9px;margin:12px 0;flex-wrap:wrap;}
+.rcb-act{flex:1;min-width:110px;text-align:center;background:rgba(255,255,255,.05);border:1px solid rgba(212,175,55,.35);border-radius:13px;padding:11px 8px;cursor:pointer;color:#d4af37;font-weight:700;font-size:.84rem;text-decoration:none;transition:all .2s;}
+.rcb-act:hover{background:rgba(212,175,55,.16);}
+/* modal (reuses rdsb modal look) */
+#rcbk-modal{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:99998;display:none;align-items:flex-end;justify-content:center;}
+#rcbk-modal.open{display:flex;}
+#rcbk-modal .card{background:#181c22;border:1px solid rgba(212,175,55,.35);border-radius:22px 22px 0 0;padding:20px 18px 30px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;}
+#rcbk-modal h3{margin:0 0 12px;color:#d4af37;font-size:1.05rem;}
+#rcbk-modal .f{margin-bottom:11px;}
+#rcbk-modal label{display:block;font-size:.7rem;color:#9aa4b0;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+#rcbk-modal input,#rcbk-modal select,#rcbk-modal textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:10px 11px;color:#f2ead2;font-size:.95rem;box-sizing:border-box;}
+#rcbk-modal textarea{min-height:56px;resize:vertical;}
+#rcbk-modal .row2{display:flex;gap:9px;}
+#rcbk-modal .row2 .f{flex:1;}
+#rcbk-modal .btns{display:flex;gap:9px;margin-top:14px;}
+#rcbk-modal .btns button{flex:1;border:none;border-radius:12px;padding:12px;font-weight:800;font-size:.92rem;cursor:pointer;}
+#rcbk-modal .save{background:linear-gradient(135deg,#d4af37,#b8912a);color:#241d0d;}
+#rcbk-modal .cancel{background:rgba(255,255,255,.08);color:#cbd2da;}
+.rcb-photoline{display:flex;gap:12px;align-items:center;}
+html.app-light #rcbk-modal .card{background:#f7f4ea;}
+html.app-light #rcbk-modal input,html.app-light #rcbk-modal select,html.app-light #rcbk-modal textarea{background:#fff;color:#333;border-color:#ddd;}
+</style>
+<script id="rcbk-js">
+/* ═══════════ ROYAL CONTACTS BOOK (rcbk) — additive; classic manager still available ═══════════ */
+(function(){
+'use strict';
+var CKEY='royalContacts_v1', PKEY='royal_contact_photos_v1';
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function money(n){n=+n||0;return '£'+Math.round(n).toLocaleString();}
+function contacts(){var c=lsGet(CKEY,[]);return Array.isArray(c)?c:[];}
+function photos(){return lsGet(PKEY,{})||{};}
+function initials(n){return (n||'?').split(/\s+/).map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();}
+var curId=null, filterG='', q='', atCover=true, editingId=null;
+function groupsOf(){var g={};contacts().forEach(function(c){if(c.group)g[c.group]=1;});return Object.keys(g);}
+function avatar(c,big){
+  var ph=photos()[c.id];
+  return '<div class="rcb-av'+(big?' big':'')+'">'+(ph?('<img src="'+ph+'">'):esc(initials(c.name)))+'</div>';
+}
+function mhFor(c){
+  var first=(c.name||'').split(/\s+/)[0];if(!first||first.length<3)return {list:[],out:0,inn:0};
+  var re;try{re=new RegExp(first.replace(/[.*+?^${}()|[\]\\]/g,''),'i');}catch(e){return {list:[],out:0,inn:0};}
+  var out=0,inn=0;var list=(lsGet('royal_moneyhub_v1',[])||[]).filter(function(t){
+    var hit=re.test(t.beneficiary||'')||re.test(t.recipient||'')||re.test(t.desc||'');
+    if(hit){var a=+t.amount||0;if(t.type==='income')inn+=a;else out+=a;}
+    return hit;});
+  return {list:list.slice(0,6),out:out,inn:inn};
+}
+window.rcbGo=function(t){if(typeof window.go==='function')window.go(t);else if(typeof window.royalTab==='function')window.royalTab(t,null);};
+window.rcbHome=function(){renderDir();};
+window.rcbShow=function(id){curId=id;renderProfile();};
+window.rcbFilter=function(g){filterG=g;renderDir();};
+window.rcbSearch=function(v){q=(v||'').toLowerCase();renderDir(true);};
+window.rcbOpenBook=function(){atCover=false;renderDir();};
+function ensureScreen(){
+  var sc=document.getElementById('s-contactbook');
+  if(!sc){var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+    sc=document.createElement('div');sc.id='s-contactbook';sc.className='screen';sc.innerHTML='<div id="rcbk-root"></div>';main.appendChild(sc);}
+  return sc;
+}
+function root(){ensureScreen();return document.getElementById('rcbk-root');}
+function topbar(dir){
+  return '<div class="rg2-top">'+(dir?'':'<span class="rg2-chip" onclick="rcbHome()">⬅ All Contacts</span>')+
+    '<span class="rg2-tt">👥 Royal Contacts Book</span>'+
+    '<span class="rg2-live"><span class="dot"></span>LIVE</span>'+
+    '<span style="flex:1"></span>'+
+    '<span class="rg2-chip" onclick="rcbAdd()">＋ Add</span>'+
+    '<span class="rg2-chip" onclick="rcbClassic()">⚙️ Classic editor</span>'+
+    '<span class="rg2-chip" onclick="rcbGo(\'home\')">🏠 Home</span></div>';
+}
+function renderCover(){
+  var r=root();if(!r)return;
+  r.innerHTML='<div class="rg2-wrap"><div class="rg2-top"><span class="rg2-chip" onclick="rcbGo(\'home\')">🏠 Home</span><span class="rg2-live"><span class="dot"></span>LIVE</span></div>'+
+    '<div class="rg2-cover" onclick="rcbOpenBook()">'+
+    '<div class="crest">👥</div><div class="t1">The Royal Contacts</div>'+
+    '<div class="t2">Your court, your family, your circle — with living AI profiles</div>'+
+    '<div class="t3">'+contacts().length+' people · photos · money intelligence</div>'+
+    '<button class="openbtn">👥 Open the book</button></div></div>';
+}
+function renderDir(keepFocus){
+  var r=root();if(!r)return;
+  var cs=contacts().slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'');});
+  if(filterG)cs=cs.filter(function(c){return c.group===filterG;});
+  if(q)cs=cs.filter(function(c){return ((c.name||'')+' '+(c.phone||'')+' '+(c.group||'')).toLowerCase().indexOf(q)>-1;});
+  var h='<div class="rg2-wrap">'+topbar(true)+'<div class="rg2-toc">';
+  h+='<h2>👥 Your Royal Circle</h2><div class="sub">'+contacts().length+' contacts · tap anyone for their living profile</div>';
+  h+='<div class="rcb-search"><input id="rcb-q" placeholder="🔍 Search name, phone or group…" value="'+esc(q)+'" oninput="rcbSearch(this.value)"></div>';
+  h+='<div class="rcb-groups"><span class="rg2-chip'+(filterG===''?'':' ')+'" style="'+(filterG===''?'outline:2px solid rgba(212,175,55,.55);':'opacity:.7;')+'" onclick="rcbFilter(\'\')">All</span>';
+  groupsOf().forEach(function(g){h+='<span class="rg2-chip" style="'+(filterG===g?'outline:2px solid rgba(212,175,55,.55);':'opacity:.7;')+'" onclick="rcbFilter(\''+esc(g).replace(/'/g,"\\'")+'\')">'+esc(g)+'</span>';});
+  h+='</div><div class="rcb-cards">';
+  if(!cs.length)h+='<div class="rg2-empty">No contacts match.</div>';
+  cs.forEach(function(c){
+    h+='<div class="rcb-card" onclick="rcbShow(\''+esc(c.id)+'\')">'+avatar(c)+
+      '<div class="t"><div class="n">'+esc(c.name||'')+'</div><div class="g">'+esc(c.group||'')+(c.role?' · '+esc(c.role):'')+'</div></div></div>';
+  });
+  h+='</div></div></div>';
+  r.innerHTML=h;
+  if(keepFocus){var inp=document.getElementById('rcb-q');if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}}
+}
+function aiProfile(c,m){
+  var bits=[];
+  if(c.group)bits.push('part of your '+c.group);
+  if(c.role)bits.push(c.role);
+  if(m.out)bits.push(money(m.out)+' sent to them');
+  if(m.inn)bits.push(money(m.inn)+' received from them');
+  if(m.list.length)bits.push(m.list.length+'+ money records');
+  if(!bits.length)bits.push('no records yet — their story starts here');
+  var last=m.list[0];
+  return 'Your Highness, '+esc((c.name||'').split(' ')[0])+' is '+bits.join(' · ')+'.'+(last&&last.date?(' Last money activity: '+esc(last.date)+'.'):'');
+}
+function renderProfile(){
+  var r=root();if(!r)return;
+  var c=contacts().find(function(x){return x.id===curId;});
+  if(!c){renderDir();return;}
+  var m=mhFor(c);
+  var h='<div class="rg2-wrap">'+topbar(false)+'<div class="rg2-page">';
+  h+='<div class="rg2-head">'+avatar(c,true)+'<div class="t">'+
+     '<h2>'+esc(c.name||'')+'</h2>'+
+     '<div class="sub"><span>'+esc(c.group||'')+'</span>'+(c.role?'<span>· '+esc(c.role)+'</span>':'')+(c.location?'<span>· 📍 '+esc(c.location)+'</span>':'')+'</div></div></div>';
+  h+='<div class="rg2-ai">🤖 '+aiProfile(c,m)+'</div>';
+  h+='<div class="rcb-acts">'+
+    (c.phone?'<a class="rcb-act" href="tel:'+esc(c.phone)+'">📞 Call</a><a class="rcb-act" href="sms:'+esc(c.phone)+'">💬 Message</a>':'')+
+    (c.email?'<a class="rcb-act" href="mailto:'+esc(c.email)+'">✉️ Email</a>':'')+
+    '<span class="rcb-act" onclick="rcbEdit(\''+esc(c.id)+'\')">✏️ Edit profile</span></div>';
+  h+='<div class="rg2-sec">Details</div><div class="rsb-profile">'+
+    '<div class="rsb-pf"><div class="l">Phone</div><div class="v">'+esc(c.phone||'—')+'</div></div>'+
+    '<div class="rsb-pf"><div class="l">Email</div><div class="v">'+esc(c.email||'—')+'</div></div>'+
+    '<div class="rsb-pf"><div class="l">Group</div><div class="v">'+esc(c.group||'—')+'</div></div>'+
+    '<div class="rsb-pf"><div class="l">Role / Title</div><div class="v">'+esc(c.role||'—')+'</div></div>'+
+    '<div class="rsb-pf"><div class="l">Location</div><div class="v">'+esc(c.location||'—')+'</div></div>'+
+    '<div class="rsb-pf"><div class="l">Birthday</div><div class="v">'+esc(c.birthday||'—')+'</div></div>'+
+    '</div>';
+  if(c.cnotes)h+='<div class="rg2-sec">Notes</div><div style="font-style:italic;color:#cfc7a8;font-size:.9rem;line-height:1.55;padding:2px 6px;">'+esc(c.cnotes)+'</div>';
+  if(m.list.length){h+='<div class="rg2-sec">Money between you — live from the Money Hub</div>';
+    m.list.forEach(function(t){var isin=t.type==='income';
+      h+='<div class="rg2-row" onclick="rcbGo(\'moneyhub\')"><span>💷</span><span class="d">'+esc(t.date||'')+'</span><span>'+esc((t.desc||'').slice(0,50))+'</span><span class="'+(isin?'amt-in':'amt-out')+'">'+(isin?'+':'−')+money(t.amount)+'</span></div>';});}
+  h+='</div></div>';
+  r.innerHTML=h;
+}
+/* ── add / edit modal ── */
+function ensureModal(){
+  if(document.getElementById('rcbk-modal'))return;
+  var m=document.createElement('div');m.id='rcbk-modal';
+  m.innerHTML='<div class="card"><h3 id="rcb-mt">＋ Add contact</h3>'+
+    '<div class="rcb-photoline"><div id="rcb-mav" class="rcb-av big">?</div>'+
+    '<div style="flex:1"><label style="display:block;font-size:.7rem;color:#9aa4b0;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Photo</label>'+
+    '<input type="file" id="rcb-photo" accept="image/*" onchange="rcbPhotoPick(this)"></div></div>'+
+    '<div class="f" style="margin-top:10px;"><label>Full name</label><input id="rcb-name" placeholder="e.g. Nana Adwoa Konamah" oninput="rcbAutoFill()"></div>'+
+    '<div class="row2"><div class="f"><label>Phone</label><input id="rcb-phone" type="tel" placeholder="+44 / +233…"></div>'+
+    '<div class="f"><label>Email</label><input id="rcb-email" type="email" placeholder="optional"></div></div>'+
+    '<div class="row2"><div class="f"><label>Group</label><select id="rcb-group"></select></div>'+
+    '<div class="f"><label>Role / Title</label><input id="rcb-role" placeholder="e.g. Queen Mother · Lawyer"></div></div>'+
+    '<div class="row2"><div class="f"><label>Location</label><input id="rcb-loc" placeholder="e.g. Accra · London"></div>'+
+    '<div class="f"><label>Birthday</label><input id="rcb-bday" type="date"></div></div>'+
+    '<div class="f"><label>Notes</label><textarea id="rcb-notes" placeholder="Anything worth remembering…"></textarea></div>'+
+    '<div class="btns"><button class="cancel" onclick="rcbClose()">Cancel</button><button class="save" onclick="rcbSave()">Save contact</button></div></div>';
+  m.addEventListener('click',function(e){if(e.target===m)window.rcbClose();});
+  document.body.appendChild(m);
+}
+var pendingPhoto=null;
+window.rcbPhotoPick=function(inp){
+  var f=inp.files&&inp.files[0];if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      var c=document.createElement('canvas');var s=Math.min(img.width,img.height);
+      c.width=128;c.height=128;var x=c.getContext('2d');
+      x.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,128,128);
+      pendingPhoto=c.toDataURL('image/jpeg',0.72);
+      var av=document.getElementById('rcb-mav');if(av)av.innerHTML='<img src="'+pendingPhoto+'">';
+    };
+    img.src=ev.target.result;
+  };
+  rd.readAsDataURL(f);
+};
+window.rcbAutoFill=function(){
+  var n=(document.getElementById('rcb-name').value||'').toLowerCase();
+  var gsel=document.getElementById('rcb-group');
+  if(!gsel||gsel.getAttribute('data-touched'))return;
+  if(/nana|omanhemaa|chief|elder|kyidomhene|abusuapanin|royal|paakyere|nkrabea/.test(n))gsel.value='Biological Royal Family';
+  else if(/care|client|agency|abicare|pamikyx|carer/.test(n))gsel.value='Self-Employment';
+  var av=document.getElementById('rcb-mav');
+  if(av&&!pendingPhoto)av.textContent=initials(document.getElementById('rcb-name').value)||'?';
+};
+function fillGroups(sel,cur){
+  var gs=groupsOf();if(!gs.length)gs=['Biological Royal Family','Self-Employment'];
+  sel.innerHTML=gs.map(function(g){return '<option'+(g===cur?' selected':'')+'>'+esc(g)+'</option>';}).join('')+'<option value="__new">➕ Add your own…</option>';
+  sel.onchange=function(){sel.setAttribute('data-touched','1');
+    if(sel.value==='__new'){var v=prompt('New group name:');if(v){var o=document.createElement('option');o.textContent=v;o.selected=true;sel.insertBefore(o,sel.lastElementChild);}else sel.selectedIndex=0;}};
+}
+window.rcbAdd=function(){
+  ensureModal();editingId=null;pendingPhoto=null;
+  document.getElementById('rcb-mt').textContent='＋ Add contact';
+  ['name','phone','email','role','loc','bday','notes'].forEach(function(f){var e=document.getElementById('rcb-'+f);if(e)e.value='';});
+  var gsel=document.getElementById('rcb-group');gsel.removeAttribute('data-touched');fillGroups(gsel,'');
+  document.getElementById('rcb-mav').textContent='?';
+  document.getElementById('rcb-photo').value='';
+  document.getElementById('rcbk-modal').classList.add('open');
+};
+window.rcbEdit=function(id){
+  ensureModal();var c=contacts().find(function(x){return x.id===id;});if(!c)return;
+  editingId=id;pendingPhoto=null;
+  document.getElementById('rcb-mt').textContent='✏️ Edit — '+(c.name||'');
+  document.getElementById('rcb-name').value=c.name||'';
+  document.getElementById('rcb-phone').value=c.phone||'';
+  document.getElementById('rcb-email').value=c.email||'';
+  document.getElementById('rcb-role').value=c.role||'';
+  document.getElementById('rcb-loc').value=c.location||'';
+  document.getElementById('rcb-bday').value=c.birthday||'';
+  document.getElementById('rcb-notes').value=c.cnotes||'';
+  var gsel=document.getElementById('rcb-group');gsel.setAttribute('data-touched','1');fillGroups(gsel,c.group||'');
+  var ph=photos()[id];var av=document.getElementById('rcb-mav');
+  av.innerHTML=ph?('<img src="'+ph+'">'):esc(initials(c.name));
+  document.getElementById('rcb-photo').value='';
+  document.getElementById('rcbk-modal').classList.add('open');
+};
+window.rcbClose=function(){var m=document.getElementById('rcbk-modal');if(m)m.classList.remove('open');};
+function toast(msg){var t=document.createElement('div');t.className='rbk-toast';t.textContent='✅ '+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';},2600);setTimeout(function(){t.remove();},3100);}
+window.rcbSave=function(){
+  var name=(document.getElementById('rcb-name').value||'').trim();
+  if(!name){alert('Please give the contact a name.');return;}
+  var arr=contacts();var c;
+  if(editingId){c=arr.find(function(x){return x.id===editingId;});if(!c)return;}
+  else{c={id:'c_rcb'+Date.now().toString(36)};arr.push(c);}
+  c.name=name;
+  c.phone=(document.getElementById('rcb-phone').value||'').trim();
+  c.email=(document.getElementById('rcb-email').value||'').trim();
+  c.group=document.getElementById('rcb-group').value==='__new'?'':document.getElementById('rcb-group').value;
+  c.role=(document.getElementById('rcb-role').value||'').trim();
+  c.location=(document.getElementById('rcb-loc').value||'').trim();
+  c.birthday=document.getElementById('rcb-bday').value||'';
+  c.cnotes=(document.getElementById('rcb-notes').value||'').trim();
+  lsSet(CKEY,arr);
+  if(pendingPhoto){var ph=photos();ph[c.id]=pendingPhoto;lsSet(PKEY,ph);}
+  window.rcbClose();
+  curId=c.id;renderProfile();
+  toast(editingId?'Profile updated':'Welcome to the court, '+name.split(' ')[0]);
+  editingId=null;
+};
+/* ── wiring: our book becomes the Contacts page; classic manager still one tap away ── */
+var origManager=null;
+window.rcbClassic=function(){if(typeof origManager==='function')origManager();else if(typeof window.openContactsManager==='function')window.openContactsManager();};
+function wrapManager(){
+  if(typeof window.openContactsManager==='function'&&!window.openContactsManager._rcbk){
+    origManager=window.openContactsManager;
+    var w=function(){atCover=true;activate();};
+    w._rcbk=true;window.openContactsManager=w;
+  }
+}
+function activate(){
+  var sc=ensureScreen();
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  sc.classList.add('active');
+  try{window.scrollTo(0,0);}catch(e){}
+  if(atCover)renderCover();else renderDir();
+}
+function hook(fn){
+  var o=window[fn];if(typeof o!=='function'||o._rcbk)return;
+  var w=function(n){var r2=o.apply(this,arguments);if(n==='contactbook'){setTimeout(function(){atCover=true;activate();},0);}return r2;};
+  w._rcbk=true;try{window[fn]=w;}catch(e){}
+}
+function boot(){ensureScreen();hook('go');hook('royalTab');wrapManager();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(wrapManager,2500);
 })();
 </script>
 
