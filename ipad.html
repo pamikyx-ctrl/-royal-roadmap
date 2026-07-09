@@ -13466,7 +13466,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.9.11 · 8 Jul 2026 · profile-docs-email';
+window.ROYAL_APP_VERSION='v4.9.12 · 8 Jul 2026 · profile-docs-email';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21883,7 +21883,7 @@ if(document.readyState!=='loading'){build();cvEmail();}else document.addEventLis
 <script>
 (function(){
 "use strict";
-window.RR_BUILD='v4.9.11-08jul';
+window.RR_BUILD='v4.9.12-08jul';
 
 /* ---- 1. section id sync (the Save fix) ---- */
 window.rotaSectionIdSync=function(){
@@ -22416,5 +22416,51 @@ else setTimeout(run,800);
 })();
 </script>
 <!-- ==================== END RRSEED-SUB ==================== -->
+
+<!-- ==================== RRSEED-MH v4.9.12 (8 Jul 2026, by Claude) ====================
+     Money Hub tidy-up so weekly/monthly spend tracking is accurate:
+     1. Driving lesson (GBP 70) + day travel card (GBP 15) reclassified to PERSONAL expenditure.
+     2. Claude AI subscription payments added on their real dates:
+        14 May GBP 18, 27 May GBP 24, 10 Jun GBP 87.36 - category Subscriptions.
+     One-time per device (marker key), guarded ids, never duplicates. -->
+<script>
+(function(){
+"use strict";
+function run(){
+  try{
+    var mh=[]; try{ mh=(typeof mhData==='function')?mhData():JSON.parse(localStorage.getItem('royal_moneyhub_v1')||'[]'); }catch(e){}
+    if(!Array.isArray(mh)) mh=[];
+    var ch=false;
+    /* 1. reclassify the two driving-lesson entries to Personal (once per device) */
+    if(localStorage.getItem('rr_mh_personal_fix_1')!=='1'){
+      mh.forEach(function(t){
+        if(!t) return;
+        if(t.id==='rr_dl_lesson_080726' && !(t.type==='personal'&&t.cat==='p-other')){ t.type='personal'; t.cat='p-other'; ch=true; }
+        if(t.id==='rr_dl_travel_080726' && !(t.type==='personal'&&t.cat==='p-travel')){ t.type='personal'; t.cat='p-travel'; ch=true; }
+      });
+      try{ localStorage.setItem('rr_mh_personal_fix_1','1'); }catch(e){}
+    }
+    /* 2. Claude subscription payments (real invoice dates) */
+    var subs=[
+      {id:'rr_claude_pay_140526', amount:18.00, date:'2026-05-14'},
+      {id:'rr_claude_pay_270526', amount:24.00, date:'2026-05-27'},
+      {id:'rr_claude_pay_100626', amount:87.36, date:'2026-06-10'}
+    ];
+    subs.forEach(function(p){
+      if(!mh.some(function(t){ return t && t.id===p.id; })){
+        mh.push({id:p.id,type:'expense',amount:p.amount,date:p.date,
+          desc:'Claude AI Max subscription — Anthropic (Mastercard •••• 3537)',
+          cat:'subscriptions',extra:'Anthropic — Claude AI',recipient:'',beneficiary:'',method:'Mastercard •••• 3537',source:'Mastercard •••• 3537'});
+        ch=true;
+      }
+    });
+    if(ch){ if(typeof mhSave_data==='function') mhSave_data(mh); else localStorage.setItem('royal_moneyhub_v1',JSON.stringify(mh)); }
+  }catch(e){}
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ setTimeout(run,900); });
+else setTimeout(run,900);
+})();
+</script>
+<!-- ==================== END RRSEED-MH ==================== -->
 </body>
 </html>
