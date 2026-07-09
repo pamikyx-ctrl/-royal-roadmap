@@ -13926,7 +13926,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.13.0 · 9 Jul 2026 · scholars-contacts-cover';
+window.ROYAL_APP_VERSION='v4.14.0 · 9 Jul 2026 · daymode-voice-fixes';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -21659,6 +21659,7 @@ setInterval(loop,1200);
       else { home.insertBefore(card, home.firstChild); }
     }
     var items=collect();
+    try{ if(window.__rupcRota){ items=items.concat(window.__rupcRota()); items.sort(function(a,b){ return a.date-b.date; }); items=items.slice(0,7); } }catch(e){}
     var rows;
     if(!items.length){
       rows='<div class="rcdn-empty">Nothing coming up. Add an appointment or dated entry in Royal iCalender or Legacy Daily and it will appear here with a countdown.</div>';
@@ -21812,10 +21813,11 @@ setInterval(loop,1200);
       if(after&&after.parentNode){ after.parentNode.insertBefore(card, after.nextSibling); } else { home.insertBefore(card, home.firstChild); }
     }
     var all=collect();
-    var future=all.filter(function(x){return x.order<3 && !x.archived && x.status!=='decline';});
-    var show=(future.length?future:all).slice(0,5);
+    var DONEHIDE={paid:1,complete:1,donepaid:1,decline:1,done:1};
+    var future=all.filter(function(x){return x.order<3 && !x.archived && !DONEHIDE[x.status];});
+    var show=future.slice(0,5);
     var rows;
-    if(!all.length){
+    if(!show.length){
       rows='<div class="rrcd-empty">No rotas yet. Create one in Rota &amp; Invoicing and its dates and countdown will appear here.</div>';
     } else {
       rows=show.map(function(x){
@@ -23969,10 +23971,19 @@ function renderPage(){
   if(j.length){h+='<div class="rg2-sec">Education journey — '+p+'% walked</div><div class="rsb-journey">';
     j.forEach(function(st2){h+='<div class="rsb-stage'+(st2.done?' done':'')+'"><div class="dot">✔</div><div class="lbl">'+esc(st2.label||'')+'</div></div>';});
     h+='</div>';}
-  /* royal ambition link */
+  /* royal ambition link — editable + AI generate */
+  var ambText=s.ambition||('👑 '+esc((s.name||'This scholar').split(' ')[0])+' is being raised as '+ambitionFor(s)+'.');
   h+='<div class="rg2-sec">In your Royal vision</div>'+
-     '<div class="rsb-amb">👑 '+esc((s.name||'This scholar').split(' ')[0])+' is being raised as '+ambitionFor(s)+'. '+
-     '<span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rsbGo(\'goalbook\')">🎯 Open the Royal Goals Book</span></div>';
+     '<div class="rsb-amb" id="rsb-amb-view">'+esc(ambText).replace(/\n/g,'<br>')+
+     '<br><span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rsbAmbEdit()">✎ Edit</span> '+
+     '<span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rsbAmbGen(true)">✨ Generate with AI</span> '+
+     '<span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rsbGo(\'goalbook\')">🎯 Goals Book</span></div>'+
+     '<div class="rsb-amb" id="rsb-amb-edit" style="display:none;">'+
+     '<textarea id="rsb-amb-ta" style="width:100%;min-height:110px;background:rgba(0,0,0,.35);border:1px solid rgba(212,175,55,.4);border-radius:12px;padding:11px;color:#f2ead2;font-size:.9rem;line-height:1.5;box-sizing:border-box;resize:vertical;"></textarea>'+
+     '<div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap;">'+
+     '<span class="rg2-chip" onclick="rsbAmbGen(false)">✨ Generate with AI</span>'+
+     '<span class="rg2-chip" style="background:linear-gradient(135deg,#d4af37,#b8912a);color:#1c160a;" onclick="rsbAmbSave()">💾 Save</span>'+
+     '<span class="rg2-chip" onclick="rsbAmbCancel()">Cancel</span></div></div>';
   /* notes */
   if(s.notes)h+='<div class="rg2-sec">Notes</div><div style="font-style:italic;color:#cfc7a8;font-size:.9rem;line-height:1.55;padding:2px 6px;">'+esc(s.notes)+'</div>';
   /* money hub matches */
@@ -23993,6 +24004,54 @@ function renderPage(){
   if(page){page.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;},{passive:true});
     page.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>60)rsbTurn(dx<0?1:-1);x0=null;},{passive:true});}
 }
+/* — ambition editor + AI generator — */
+function toast(msg){var t=document.createElement('div');t.className='rbk-toast';t.textContent='✅ '+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';},2600);setTimeout(function(){t.remove();},3100);}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+window.rsbAmbEdit=function(){
+  var s=scholars()[curIdx];if(!s)return;
+  var v=document.getElementById('rsb-amb-view'),e=document.getElementById('rsb-amb-edit'),ta=document.getElementById('rsb-amb-ta');
+  if(!v||!e||!ta)return;
+  ta.value=s.ambition||('👑 '+(s.name||'This scholar').split(' ')[0]+' is being raised as '+ambitionFor(s)+'.');
+  v.style.display='none';e.style.display='';ta.focus();
+};
+window.rsbAmbCancel=function(){
+  var v=document.getElementById('rsb-amb-view'),e=document.getElementById('rsb-amb-edit');
+  if(v)v.style.display='';if(e)e.style.display='none';
+};
+window.rsbAmbSave=function(){
+  var s=scholars()[curIdx];if(!s)return;
+  var ta=document.getElementById('rsb-amb-ta');if(!ta)return;
+  var txt=(ta.value||'').trim();
+  var arr=scholars();arr[curIdx].ambition=txt;
+  lsSet('royal_scholars_v1',arr);
+  /* update the section directly — no dependence on a full re-render */
+  var v=document.getElementById('rsb-amb-view'),e=document.getElementById('rsb-amb-edit');
+  if(v){v.innerHTML=esc(txt||('👑 '+(s.name||'This scholar').split(' ')[0]+' is being raised as '+ambitionFor(s)+'.')).replace(/\n/g,'<br>')+
+    '<br><span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rsbAmbEdit()">✎ Edit</span> '+
+    '<span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rsbAmbGen(true)">✨ Generate with AI</span> '+
+    '<span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rsbGo(\'goalbook\')">🎯 Goals Book</span>';
+    v.style.display='';}
+  if(e)e.style.display='none';
+  toast('Royal vision saved for '+(s.name||'').split(' ')[0]);
+};
+window.rsbAmbGen=function(fromView){
+  var s=scholars()[curIdx];if(!s)return;
+  if(fromView)window.rsbAmbEdit();
+  var ta=document.getElementById('rsb-amb-ta');if(!ta)return;
+  var first=(s.name||'This scholar').split(' ')[0];
+  var p=jPct(s);var inv=s.totalInvested?('£'+Math.round(+s.totalInvested).toLocaleString()):'';
+  var rel=(s.relationship||'').toLowerCase();
+  var relTxt=rel==='son'?'your son':rel==='daughter'?'your daughter':rel?('your '+rel.toLowerCase()):'a scholar of your house';
+  var goal=(s.careerGoal||s.course||'their calling');
+  var seed=Date.now()%3;
+  var T=[
+    '👑 '+first+', '+relTxt+', walks the road you paved — '+p+'% of the education journey already behind them'+(inv?(', carried by '+inv+' of your investment'):'')+'. As a future '+goal+', they stand as '+ambitionFor(s)+'. When you are crowned, they will be among the pillars that hold the Kingdom steady.',
+    '👑 Every term fee for '+first+' is a stone laid in the foundation of Suaman Dadiaso. '+(s.institution?('At '+s.institution+', '):'')+relTxt.charAt(0).toUpperCase()+relTxt.slice(1)+' is being shaped into a '+goal+' — '+ambitionFor(s)+'. '+(inv?(inv+' invested is not spending; it is legacy compounding.'):'This is not spending; it is legacy compounding.'),
+    '👑 In your Royal Manifesto you vowed to raise leaders, not wait for them. '+first+' is that vow made flesh: '+p+'% of the journey walked, aimed at becoming a '+goal+'. Through them you build '+ambitionFor(s)+' — a light that will outlive your reign.'
+  ];
+  ta.value=T[seed];
+  toast('✨ A new vision has been written — edit it or Save');
+};
 function activate(){atCover=true;renderCover();}
 function injectChip(){
   var sc=document.getElementById('s-scholars');if(!sc)return;
@@ -24136,6 +24195,7 @@ function aiProfile(c,m){
   if(m.inn)bits.push(money(m.inn)+' received from them');
   if(m.list.length)bits.push(m.list.length+'+ money records');
   if(!bits.length)bits.push('no records yet — their story starts here');
+  if(c.goalUid){var gg=royalGoals().find(function(g){return g.uid===c.goalUid;});if(gg)bits.push('a hand in Goal '+gg.n+' — '+gg.t);}
   var last=m.list[0];
   return 'Your Highness, '+esc((c.name||'').split(' ')[0])+' is '+bits.join(' · ')+'.'+(last&&last.date?(' Last money activity: '+esc(last.date)+'.'):'');
 }
@@ -24165,9 +24225,65 @@ function renderProfile(){
   if(m.list.length){h+='<div class="rg2-sec">Money between you — live from the Money Hub</div>';
     m.list.forEach(function(t){var isin=t.type==='income';
       h+='<div class="rg2-row" onclick="rcbGo(\'moneyhub\')"><span>💷</span><span class="d">'+esc(t.date||'')+'</span><span>'+esc((t.desc||'').slice(0,50))+'</span><span class="'+(isin?'amt-in':'amt-out')+'">'+(isin?'+':'−')+money(t.amount)+'</span></div>';});}
+  /* — Royal ambition allocation — */
+  var gl=c.goalUid?royalGoals().find(function(g){return g.uid===c.goalUid;}):null;
+  if(gl){
+    var un=unsynced(c,gl);
+    h+='<div class="rg2-sec">🎯 Royal ambition — '+gl.n+'. '+esc(gl.t)+'</div>'+
+      '<div class="rsb-amb">👑 The money you send '+esc((c.name||'').split(' ')[0])+' serves <b>Goal '+gl.n+' — '+esc(gl.t)+'</b>. '+
+      (m.out?('So far '+money(m.out)+' has flowed through them towards this ambition. '):'')+
+      (un.total>0?('<br><span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rcbSync(\''+esc(c.id)+'\')">📈 Allocate '+money(un.total)+' ('+un.list.length+' payment'+(un.list.length>1?'s':'')+') into the goal\'s progress</span>'):'<br><span style="font-size:.78rem;color:#8f886e;">All matched payments are already counted in the goal\'s progress.</span>')+
+      ' <span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rcbGo(\'goalbook\')">📕 Open Goals Book</span></div>';
+  }else{
+    var sg=suggestGoal(c,m.list);
+    if(sg)h+='<div class="rg2-sec">🎯 Royal ambition</div><div class="rsb-amb">🤖 Reading the purpose of your payments, this person looks connected to <b>Goal '+sg.n+' — '+esc(sg.t)+'</b>. '+
+      '<span class="rg2-chip" style="display:inline-block;margin-top:8px;" onclick="rcbLinkGoal(\''+esc(c.id)+'\',\''+esc(sg.uid)+'\')">🔗 Link them to this goal</span></div>';
+  }
   h+='</div></div>';
   r.innerHTML=h;
 }
+/* — goal allocation intelligence — */
+function suggestGoal(c,txs){
+  if(!txs||!txs.length)return null;
+  var text=txs.map(function(t){return (t.desc||'')+' '+(t.notes||'')+' '+(t.cat||'')+' '+(t.purpose||'');}).join(' ').toLowerCase();
+  var best=null,score=0;
+  royalGoals().forEach(function(g){
+    var words=(g.t||'').toLowerCase().split(/[^a-z]+/).filter(function(w){return w.length>3;});
+    var s=0;words.forEach(function(w){if(text.indexOf(w)>-1)s++;});
+    if(/throne|coronation|ceremony/.test(text)&&/throne|coronation/i.test(g.t))s+=3;
+    if(/house|residence|construction|cement|build/.test(text)&&/house|residence/i.test(g.t))s+=2;
+    if(/school|fees|tuition|education/.test(text)&&/school|phd|university|diploma/i.test(g.t))s+=2;
+    if(s>score){score=s;best=g;}
+  });
+  return score>=2?best:null;
+}
+var SYNCK='royal_goalsync_v1';
+function unsynced(c,gl){
+  var map=lsGet(SYNCK,{})||{};var m=mhFor(c);
+  var list=m.list.filter(function(t){return t.type!=='income'&&!map[String(t.id)];});
+  var total=0;list.forEach(function(t){total+=(+t.amount||0);});
+  return {list:list,total:total};
+}
+window.rcbLinkGoal=function(cid,uid){
+  var arr=contacts();var c=arr.find(function(x){return x.id===cid;});if(!c)return;
+  c.goalUid=uid;lsSet(CKEY,arr);renderProfile();
+  toast('Linked to the goal — their money now speaks to your ambition');
+};
+window.rcbSync=function(cid){
+  var c=contacts().find(function(x){return x.id===cid;});if(!c||!c.goalUid)return;
+  var gl=royalGoals().find(function(g){return g.uid===c.goalUid;});if(!gl)return;
+  var un=unsynced(c,gl);if(!un.list.length)return;
+  if(!confirm('Allocate '+un.list.length+' payment(s) totalling £'+Math.round(un.total).toLocaleString()+' into Goal '+gl.n+' — '+gl.t+'?'))return;
+  var ek='royal_'+gl.uid+'_entries';var es=lsGet(ek,[])||[];
+  var map=lsGet(SYNCK,{})||{};
+  un.list.forEach(function(t){
+    es.unshift({id:'cs_'+t.id,type:'investment',amount:+t.amount||0,date:t.date||'',description:'Via '+(c.name||'')+' — '+(t.desc||'support')});
+    map[String(t.id)]=gl.uid;
+  });
+  lsSet(ek,es);lsSet(SYNCK,map);
+  renderProfile();
+  toast(money(un.total)+' allocated into Goal '+gl.n+' — see it in the Goals Book');
+};
 /* ── add / edit modal ── */
 function ensureModal(){
   if(document.getElementById('rcbk-modal'))return;
@@ -24183,6 +24299,7 @@ function ensureModal(){
     '<div class="f"><label>Role / Title</label><input id="rcb-role" placeholder="e.g. Queen Mother · Lawyer"></div></div>'+
     '<div class="row2"><div class="f"><label>Location</label><input id="rcb-loc" placeholder="e.g. Accra · London"></div>'+
     '<div class="f"><label>Birthday</label><input id="rcb-bday" type="date"></div></div>'+
+    '<div class="f"><label>🎯 Linked Royal Goal / Ambition</label><select id="rcb-goal"></select></div>'+
     '<div class="f"><label>Notes</label><textarea id="rcb-notes" placeholder="Anything worth remembering…"></textarea></div>'+
     '<div class="btns"><button class="cancel" onclick="rcbClose()">Cancel</button><button class="save" onclick="rcbSave()">Save contact</button></div></div>';
   m.addEventListener('click',function(e){if(e.target===m)window.rcbClose();});
@@ -24215,15 +24332,22 @@ window.rcbAutoFill=function(){
   if(av&&!pendingPhoto)av.textContent=initials(document.getElementById('rcb-name').value)||'?';
 };
 function fillGroups(sel,cur){
-  var gs=groupsOf();if(!gs.length)gs=['Biological Royal Family','Self-Employment'];
+  var gs=groupsOf();['Friends','Biological Royal Family','Self-Employment'].forEach(function(d){if(gs.indexOf(d)<0)gs.push(d);});
   sel.innerHTML=gs.map(function(g){return '<option'+(g===cur?' selected':'')+'>'+esc(g)+'</option>';}).join('')+'<option value="__new">➕ Add your own…</option>';
   sel.onchange=function(){sel.setAttribute('data-touched','1');
     if(sel.value==='__new'){var v=prompt('New group name:');if(v){var o=document.createElement('option');o.textContent=v;o.selected=true;sel.insertBefore(o,sel.lastElementChild);}else sel.selectedIndex=0;}};
+}
+function royalGoals(){var g=lsGet('royal_goals_v2',null);if(g&&g.length)return g;return (window.goals&&window.goals.length)?window.goals:[];}
+function fillGoals(sel,cur){
+  if(!sel)return;
+  sel.innerHTML='<option value="">— None —</option>'+royalGoals().map(function(g){
+    return '<option value="'+esc(g.uid)+'"'+(g.uid===cur?' selected':'')+'>'+g.n+'. '+esc(g.t)+'</option>';}).join('');
 }
 window.rcbAdd=function(){
   ensureModal();editingId=null;pendingPhoto=null;
   document.getElementById('rcb-mt').textContent='＋ Add contact';
   ['name','phone','email','role','loc','bday','notes'].forEach(function(f){var e=document.getElementById('rcb-'+f);if(e)e.value='';});
+  fillGoals(document.getElementById('rcb-goal'),'');
   var gsel=document.getElementById('rcb-group');gsel.removeAttribute('data-touched');fillGroups(gsel,'');
   document.getElementById('rcb-mav').textContent='?';
   document.getElementById('rcb-photo').value='';
@@ -24240,6 +24364,7 @@ window.rcbEdit=function(id){
   document.getElementById('rcb-loc').value=c.location||'';
   document.getElementById('rcb-bday').value=c.birthday||'';
   document.getElementById('rcb-notes').value=c.cnotes||'';
+  fillGoals(document.getElementById('rcb-goal'),c.goalUid||'');
   var gsel=document.getElementById('rcb-group');gsel.setAttribute('data-touched','1');fillGroups(gsel,c.group||'');
   var ph=photos()[id];var av=document.getElementById('rcb-mav');
   av.innerHTML=ph?('<img src="'+ph+'">'):esc(initials(c.name));
@@ -24261,6 +24386,7 @@ window.rcbSave=function(){
   c.role=(document.getElementById('rcb-role').value||'').trim();
   c.location=(document.getElementById('rcb-loc').value||'').trim();
   c.birthday=document.getElementById('rcb-bday').value||'';
+  c.goalUid=document.getElementById('rcb-goal')?document.getElementById('rcb-goal').value:'';
   c.cnotes=(document.getElementById('rcb-notes').value||'').trim();
   lsSet(CKEY,arr);
   if(pendingPhoto){var ph=photos();ph[c.id]=pendingPhoto;lsSet(PKEY,ph);}
@@ -24294,6 +24420,138 @@ function hook(fn){
 function boot(){ensureScreen();hook('go');hook('royalTab');wrapManager();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 setInterval(wrapManager,2500);
+})();
+</script>
+
+<style id="rfx9-css">
+/* ═══════════ ROYAL FIXES 9 JUL (rfx9): day-mode contrast · big collapse buttons · voice chips · day toggle ═══════════ */
+/* — one-touch collapse buttons on home notification cards — */
+#rcol-home-card,#rcdn-home-card,#rrcd-home-card{position:relative;}
+.rfx9-coll{position:absolute;top:10px;right:12px;width:42px;height:42px;border-radius:50%;background:rgba(201,168,76,.16);border:1.5px solid rgba(201,168,76,.5);color:var(--gold,#C9A84C);font-size:1.05rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;user-select:none;-webkit-tap-highlight-color:rgba(201,168,76,.3);}
+.rfx9-coll:active{background:rgba(201,168,76,.35);}
+#rcol-home-card.rncol-collapsed .rfx9-coll,#rcdn-home-card.rncol-collapsed .rfx9-coll,#rrcd-home-card.rncol-collapsed .rfx9-coll{display:flex!important;}
+/* — global day/dark toggle chip — */
+#rfx9-theme{position:fixed;left:14px;bottom:150px;z-index:9999;background:rgba(20,22,18,.85);border:1.5px solid rgba(201,168,76,.55);color:var(--gold,#C9A84C);border-radius:999px;padding:9px 15px;font-size:.82rem;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);backdrop-filter:blur(6px);}
+html.app-light #rfx9-theme{background:rgba(255,255,255,.9);color:#7A5F1A;}
+/* — voice chip — */
+.rfx9-voice{cursor:pointer;}
+/* ═══ DAY MODE CONTRAST — system-wide readable text ═══ */
+html.app-light .rg2-page,html.app-light .rg2-toc{background:linear-gradient(155deg,#fbf8ef,#f2ecdb)!important;border-color:#cdb878!important;box-shadow:0 10px 26px rgba(60,50,20,.18)!important;}
+html.app-light .rg2-page:before{background:radial-gradient(circle,rgba(184,145,42,.12),transparent 70%)!important;}
+html.app-light .rg2-head .t h2,html.app-light .rg2-toc h2,html.app-light .rg2-kpi .v,html.app-light .rsb-pf .v,html.app-light .rcb-card .t .n,html.app-light .rg2-tile .n{color:#2b2417!important;}
+html.app-light .rg2-row,html.app-light .rsb-stage{color:#3a3222!important;}
+html.app-light .rg2-ai{background:rgba(184,145,42,.1)!important;color:#5a4a20!important;border-color:#d5c48d!important;}
+html.app-light .rg2-kpi,html.app-light .rsb-pf,html.app-light .rcb-card,html.app-light .rg2-tile{background:rgba(120,95,30,.07)!important;border-color:rgba(120,95,30,.2)!important;}
+html.app-light .rg2-kpi .l,html.app-light .rsb-pf .l,html.app-light .rg2-sec,html.app-light .rg2-head .t .sub,html.app-light .rg2-toc .sub,html.app-light .rg2-row .d,html.app-light .rg2-tile .pg,html.app-light .rcb-card .t .g{color:#7a6845!important;}
+html.app-light .rg2-ring .hole,html.app-light .rg2-mini .hole{background:#f7f3e6!important;}
+html.app-light .rg2-log{background:rgba(120,95,30,.06)!important;}
+html.app-light .rg2-log input,html.app-light .rcb-search input{background:#fff!important;color:#333!important;border-color:#cbb87e!important;}
+html.app-light .rg2-type{background:rgba(120,95,30,.08)!important;color:#5a4a20!important;border-color:rgba(120,95,30,.25)!important;}
+html.app-light .rg2-type.sel{background:linear-gradient(135deg,#d4af37,#b8912a)!important;color:#241d0d!important;}
+html.app-light .rg2-row:hover,html.app-light .rcb-card:hover{background:rgba(120,95,30,.09)!important;}
+html.app-light .rg2-empty,html.app-light .rbk-hint{color:#8a7a55!important;}
+html.app-light .rsb-amb{background:rgba(184,145,42,.12)!important;color:#4d4128!important;}
+html.app-light .rsb-stage .lbl{color:#3a3222!important;}
+html.app-light .rsb-stage.done .lbl{color:#2e7d43!important;}
+html.app-light .rdsb-sheet{background:#fff!important;border-color:#e0d6b5!important;}
+html.app-light .rdsb-name{color:#222!important;}
+html.app-light .rdsb-meta,html.app-light .rdsb-tcol{color:#77716a!important;}
+html.app-light .rdsb-note{color:#8a847c!important;}
+html.app-light .rdsb-row:hover{background:rgba(0,0,0,.05)!important;}
+html.app-light .rdsb-row.nowrow{background:rgba(61,127,196,.1)!important;}
+html.app-light .rdsb-gap{color:#8a847c!important;}
+html.app-light .rdsb-ai{background:rgba(61,127,196,.08)!important;color:#3d5a77!important;}
+html.app-light .rdsb-day .dw{color:#77716a!important;}
+html.app-light .rg2-chip,html.app-light .rbk-chip,html.app-light .rdsb-chip,html.app-light .rrnav-pill{background:rgba(184,145,42,.14)!important;color:#7A5F1A!important;border-color:rgba(122,95,26,.45)!important;}
+html.app-light .rg2-tt,html.app-light .rbk-tt,html.app-light .rdsb-title{color:#7A5F1A!important;}
+html.app-light #rcdn-home-card,html.app-light #rrcd-home-card,html.app-light #rcol-home-card{background:#fff!important;border-color:#dccf9f!important;}
+html.app-light .rcdn-nm,html.app-light .rrcd-item{color:#2b2417!important;}
+html.app-light .rcdn-dt{color:#77716a!important;}
+</style>
+<script id="rfx9-js">
+/* ═══════════ ROYAL FIXES (rfx9) — additive ═══════════ */
+(function(){
+'use strict';
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* ── 1. One-touch collapse buttons on the three home cards ── */
+var KEY='royal_home_cards_collapsed_v1';
+function cload(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}}
+function csave(o){try{localStorage.setItem(KEY,JSON.stringify(o));}catch(e){}}
+window.rfx9Coll=function(ev,id){
+  if(ev){ev.stopPropagation();ev.preventDefault();}
+  var card=document.getElementById(id);if(!card)return;
+  var st=cload();var now=!card.classList.contains('rncol-collapsed');
+  card.classList.toggle('rncol-collapsed',now);st[id]=now;csave(st);
+  var b=card.querySelector('.rfx9-coll');if(b)b.textContent=now?'▸':'▾';
+};
+function collBtns(){
+  ['rcol-home-card','rcdn-home-card','rrcd-home-card'].forEach(function(id){
+    var card=document.getElementById(id);if(!card)return;
+    if(card.querySelector('.rfx9-coll'))return;
+    var b=document.createElement('div');b.className='rfx9-coll';
+    b.textContent=card.classList.contains('rncol-collapsed')?'▸':'▾';
+    b.addEventListener('click',function(e){rfx9Coll(e,id);});
+    b.addEventListener('touchend',function(e){rfx9Coll(e,id);},{passive:false});
+    card.appendChild(b);
+  });
+}
+/* ── 2. Global Day/Dark toggle chip (uses the existing whole-app theme) ── */
+function themeChip(){
+  if(document.getElementById('rfx9-theme'))return;
+  var b=document.createElement('button');b.id='rfx9-theme';
+  function lbl(){var light=document.documentElement.classList.contains('app-light');b.textContent=light?'🌙 Dark mode':'☀️ Day mode';}
+  b.onclick=function(){
+    if(typeof window.mhToggleTheme==='function'){window.mhToggleTheme();}
+    else{try{var k='royal_mh_theme';var c=localStorage.getItem(k)||'dark';localStorage.setItem(k,c==='light'?'dark':'light');document.documentElement.classList.toggle('app-light',c!=='light');}catch(e){}}
+    setTimeout(lbl,60);
+  };
+  document.body.appendChild(b);lbl();
+  setInterval(lbl,3000);
+}
+/* ── 3. Rota placements into "What's coming up" (drafts included, done excluded) ── */
+window.__rupcRota=function(){
+  var rotas=lsGet('royal_rota_v1',[])||[];var out=[];
+  var t0=new Date();t0.setHours(0,0,0,0);
+  var HIDE={paid:1,complete:1,donepaid:1,decline:1,done:1};
+  rotas.forEach(function(r){
+    if(r.archived||HIDE[r.status])return;
+    var ds=r.weekStart||r.startDate||'';
+    var m=String(ds).match(/^(\d{4})-(\d{2})-(\d{2})/);if(!m)return;
+    var d=new Date(+m[1],+m[2]-1,+m[3]);if(isNaN(d)||d<t0)return;
+    var who=r.clientName||r.preferredName||r.companyName||'Placement';
+    var stl={offer:'New offer',draft:'Draft',confirmed:'Confirmed',inprogress:'Ongoing',invoiced:'Invoiced'}[r.status]||(r.status||'');
+    out.push({icon:'🧑‍⚕️',title:'Rota — '+who+(stl?' ('+stl+')':''),kind:'Rota placement',date:d,raw:ds,time:''});
+  });
+  return out;
+};
+/* ── 4. 🎙 Voice command chips: Royal Diary page + every book top bar ── */
+function voiceChip(){
+  if(typeof window.voiceToggle!=='function')return;
+  /* books + day view top bars */
+  document.querySelectorAll('.rg2-top,.rbk-topbar,.rdsb-top').forEach(function(bar){
+    if(bar.querySelector('[data-rfx9-vc]'))return;
+    var s=document.createElement('span');
+    s.className=(bar.classList.contains('rbk-topbar')?'rbk-chip':(bar.classList.contains('rdsb-top')?'rdsb-chip':'rg2-chip'))+' rfx9-voice';
+    s.setAttribute('data-rfx9-vc','1');s.textContent='🎙 Speak';
+    s.onclick=function(e){e.stopPropagation();window.voiceToggle();};
+    bar.appendChild(s);
+  });
+  /* Royal Diary screen header */
+  var sd=document.getElementById('s-diary');
+  if(sd&&!sd.querySelector('[data-rfx9-vcd]')){
+    var host=sd.querySelector('.rrdl-holder')||sd;
+    var d=document.createElement('div');d.setAttribute('data-rfx9-vcd','1');
+    d.style.cssText='display:flex;justify-content:flex-end;padding:4px 6px;';
+    d.innerHTML='<span class="rg2-chip rfx9-voice">🎙 Speak — AI voice command</span>';
+    d.firstChild.onclick=function(){window.voiceToggle();};
+    host.appendChild(d);
+  }
+}
+function tick(){try{collBtns();voiceChip();}catch(e){}}
+function boot(){themeChip();tick();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+setInterval(tick,1600);
 })();
 </script>
 
