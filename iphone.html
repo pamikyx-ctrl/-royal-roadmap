@@ -13420,7 +13420,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.19.0 · 14 Jul 2026 · rota-availability';
+window.ROYAL_APP_VERSION='v4.19.1 · 14 Jul 2026 · rota-availability-fix';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -26510,6 +26510,8 @@ html.app-light .rfg5-btn{background:#f6edd2;color:#5a4a12;}
 
 
 
+
+
 <!-- ════════ RRAV · AI ROTA AVAILABILITY CALENDAR (tab in the Rota page) ════════
      A proper tab alongside "All Rotas / New Rota / AI Generator". Shows when you are FREE vs BUSY,
      colour-coded, built from ALL your rota data (royal_rota_v1): placement date ranges + active
@@ -26581,17 +26583,28 @@ html.app-light .rrav-detail h4{color:#3a2d0a;}
   function todayISO(){ var n=new Date(); return iso(n.getFullYear(),n.getMonth(),n.getDate()); }
   function addDays(ds,n){ var d=new Date(ds+'T12:00:00'); d.setDate(d.getDate()+n); return iso(d.getFullYear(),d.getMonth(),d.getDate()); }
 
+  // Real rota schema: weeks[].shifts[] (each {day,date,active,start,end,breakMins}) with top-level
+  // weekStart/weekEnd; top-level shifts[] kept for backwards-compat; some data uses startDate/endDate.
+  function workInfo(r){
+    var dates=[], times={};
+    function pushShift(sh){ if(sh && sh.date && sh.active){ var d=String(sh.date).substring(0,10); if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return; if(times[d]===undefined){ dates.push(d); times[d]={start:sh.start,end:sh.end}; } } }
+    if(r.weeks && r.weeks.length){ r.weeks.forEach(function(w){ (w.shifts||[]).forEach(pushShift); }); }
+    else if(r.shifts && r.shifts.length){ r.shifts.forEach(pushShift); }
+    if(!dates.length){
+      var s=(r.weeks && r.weeks.length ? r.weeks[0].weekStart : r.weekStart) || r.startDate;
+      var e=(r.weeks && r.weeks.length ? r.weeks[r.weeks.length-1].weekEnd : r.weekEnd) || r.endDate || s;
+      if(s){ s=String(s).substring(0,10); e=String(e).substring(0,10); if(e<s) e=s; if(/^\d{4}-\d{2}-\d{2}$/.test(s)){ var cur=s, g=0; while(cur<=e && g<400){ dates.push(cur); cur=addDays(cur,1); g++; } } }
+    }
+    return {dates:dates, times:times};
+  }
   function busyMap(){
     var map={};
     rota().forEach(function(r){
       var st=(r.status||'draft'); if(st==='decline') return;
       var tone=TENT[st]?'tentative':'booked';
       var name=(r.preferredName||r.clientName||r.carerName||'Placement');
-      var dates=[], times={};
-      var shifts=(r.shifts||[]).filter(function(sh){ return sh && sh.date && sh.active; });
-      if(shifts.length){ shifts.forEach(function(sh){ var dd=String(sh.date).substring(0,10); dates.push(dd); times[dd]={start:sh.start,end:sh.end}; }); }
-      else if(r.startDate){ var s=String(r.startDate).substring(0,10), e=String(r.endDate||r.startDate).substring(0,10); if(e<s) e=s; var guard=0, cur=s; while(cur<=e && guard<400){ dates.push(cur); cur=addDays(cur,1); guard++; } }
-      dates.forEach(function(d){ if(!map[d]) map[d]=[]; var t=times[d]||{}; map[d].push({tone:tone,name:name,status:st,start:t.start,end:t.end}); });
+      var info=workInfo(r);
+      info.dates.forEach(function(d){ if(!map[d]) map[d]=[]; var t=info.times[d]||{}; map[d].push({tone:tone,name:name,status:st,start:t.start,end:t.end}); });
     });
     return map;
   }
