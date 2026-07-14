@@ -15,7 +15,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Royal Roadmap — HRH Prince Kwame Nkrabea · build 14jul-rota-fix</title>
+<title>Royal Roadmap — HRH Prince Kwame Nkrabea · build 14jul-payslip</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13926,7 +13926,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.19.1 · 14 Jul 2026 · rota-availability-fix';
+window.ROYAL_APP_VERSION='v4.19.2 · 14 Jul 2026 · payslip-invoice';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -26982,6 +26982,8 @@ html.app-light .rfg5-btn{background:#f6edd2;color:#5a4a12;}
 
 
 
+
+
 <!-- ════════ RRAV · AI ROTA AVAILABILITY CALENDAR (tab in the Rota page) ════════
      A proper tab alongside "All Rotas / New Rota / AI Generator". Shows when you are FREE vs BUSY,
      colour-coded, built from ALL your rota data (royal_rota_v1): placement date ranges + active
@@ -27037,6 +27039,34 @@ html.app-light .rrav-detail h4{color:#3a2d0a;}
 .rrav-detail .st.booked{background:rgba(255,69,58,.2);color:#FF8A84;}
 .rrav-detail .st.tentative{background:rgba(255,159,10,.2);color:#FFC061;}
 .rrav-detail .free{color:#8fd7a4;font-weight:600;}
+.rrav-drow{border-top:1px solid rgba(201,168,76,.12);padding-top:7px;margin-top:7px;}
+.rrav-drow:first-child{border-top:none;margin-top:0;padding-top:0;}
+.rrav-dsub{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap;}
+.rrav-dsub .typ{font-size:11px;color:#9a8f77;}
+html.app-light .rrav-dsub .typ{color:#7a7258;}
+.rrav-doc-btn{background:rgba(201,168,76,.16);border:1px solid rgba(201,168,76,.42);color:#E8C96A;border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;}
+.rrav-doc-btn.pay{background:rgba(48,209,88,.14);border-color:rgba(48,209,88,.42);color:#8fd7a4;}
+.rrav-doc-btn.inv{background:rgba(124,196,255,.14);border-color:rgba(124,196,255,.42);color:#a9d4ff;}
+html.app-light .rrav-doc-btn{color:#5a4a12;background:#f6edd2;}
+#rrav-doc-modal{position:fixed;inset:0;z-index:100000;background:rgba(6,11,8,.82);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px;}
+#rrav-doc-modal.on{display:flex;}
+#rrav-doc-sheet{width:100%;max-width:560px;background:#12211a;border:1px solid rgba(201,168,76,.34);border-radius:16px;padding:14px;}
+html.app-light #rrav-doc-sheet{background:#fffdf6;}
+.rrav-doc-top{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#F3E4B0;font-size:14px;font-weight:800;margin-bottom:10px;}
+html.app-light .rrav-doc-top{color:#3a2d0a;}
+.rrav-x{background:rgba(255,255,255,.08);border:1px solid rgba(201,168,76,.3);color:#E8C96A;border-radius:8px;width:30px;height:30px;font-size:14px;cursor:pointer;}
+html.app-light .rrav-x{background:#f0e6c8;color:#5a4a12;}
+.rrav-paper{background:#fff;color:#222;border-radius:10px;padding:20px;font-family:Georgia,serif;}
+.rrav-paper .rp-h{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #8a6d1b;padding-bottom:9px;margin-bottom:11px;}
+.rrav-paper .rp-t{font-size:21px;font-weight:bold;color:#8a6d1b;letter-spacing:1.5px;}
+.rrav-paper .rp-s{font-size:11px;color:#666;}
+.rrav-paper .rp-emp{font-size:14px;font-weight:bold;color:#222;text-align:right;}
+.rrav-paper .rp-tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.rrav-paper .rp-tbl td{padding:7px 4px;border-bottom:1px solid #eee;}
+.rrav-paper .rp-tbl td:first-child{color:#777;width:48%;}
+.rrav-paper .rp-tbl td:last-child{text-align:right;font-weight:bold;color:#222;}
+.rrav-paper .rp-tot td{border-top:2px solid #8a6d1b;border-bottom:none;font-size:15.5px;color:#8a6d1b !important;padding-top:9px;}
+.rrav-paper .rp-note{font-size:10.5px;color:#888;margin-top:13px;font-style:italic;line-height:1.5;}
 </style>
 <script id="rrav-js">
 (function(){
@@ -27074,7 +27104,7 @@ html.app-light .rrav-detail h4{color:#3a2d0a;}
       var tone=TENT[st]?'tentative':'booked';
       var name=(r.preferredName||r.clientName||r.carerName||'Placement');
       var info=workInfo(r);
-      info.dates.forEach(function(d){ if(!map[d]) map[d]=[]; var t=info.times[d]||{}; map[d].push({tone:tone,name:name,status:st,start:t.start,end:t.end}); });
+      info.dates.forEach(function(d){ if(!map[d]) map[d]=[]; var t=info.times[d]||{}; map[d].push({tone:tone,name:name,status:st,start:t.start,end:t.end,id:r.id,emp:(r.employmentType||'employment'),company:(r.companyName||r.agencyName||'')}); });
     });
     return map;
   }
@@ -27092,9 +27122,76 @@ html.app-light .rrav-detail h4{color:#3a2d0a;}
   window.rravDay=function(ds){
     var map=busyMap(), list=map[ds]||[]; var det=document.getElementById('rrav-detail'); if(!det) return;
     var d=new Date(ds+'T12:00:00'); var head=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    if(!list.length){ det.innerHTML='<h4>'+head+'</h4><div class="free">🟩 You are free all day — no rota commitments.</div>'; }
-    else { det.innerHTML='<h4>'+head+'</h4>'+list.map(function(x){ var tl=x.start&&x.end?(x.start+'–'+x.end):(x.tone==='booked'?'All day':'Tentative'); return '<div class="row"><span class="nm">'+esc(x.name)+' · '+esc(tl)+'</span><span class="st '+x.tone+'">'+esc(LABELS[x.status]||x.status)+'</span></div>'; }).join(''); }
+    if(!list.length){ det.innerHTML='<h4>'+head+'</h4><div class="free">🟩 You are free all day — no rota commitments.</div>'; det.classList.add('on'); return; }
+    det.innerHTML='<h4>'+head+'</h4>'+list.map(function(x){
+      var tl=x.start&&x.end?(x.start+'–'+x.end):(x.tone==='booked'?'All day':'Tentative');
+      var selfEmp=(x.emp==='self-employment');
+      var typeLbl=selfEmp?'💼 Self-employment':('👔 Employment'+(x.company?(' · '+esc(x.company)):''));
+      var btn=selfEmp
+        ? '<button class="rrav-doc-btn inv" onclick="rravInvoice(\''+esc(x.id)+'\')">🧾 Preview invoice</button>'
+        : '<button class="rrav-doc-btn pay" onclick="rravPayslip(\''+esc(x.id)+'\')">🧾 Preview payslip</button>';
+      return '<div class="rrav-drow"><div class="row"><span class="nm">'+esc(x.name)+' · '+esc(tl)+'</span><span class="st '+x.tone+'">'+esc(LABELS[x.status]||x.status)+'</span></div>'
+        +'<div class="rrav-dsub"><span class="typ">'+typeLbl+'</span>'+btn+'</div></div>';
+    }).join('');
     det.classList.add('on');
+  };
+
+  /* ---- payslip (employment) / invoice (self-employment) preview ---- */
+  function money(n){ n=parseFloat(n)||0; return '£'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+  function hoursCalc(s,e,brk){ if(!s||!e) return 0; var a=String(s).split(':'),b=String(e).split(':'); var m=((+b[0])*60+(+b[1]))-((+a[0])*60+(+a[1]))-(parseInt(brk)||0); return m>0?m/60:0; }
+  function repShift(r){ var sh=null; (r.weeks||[]).forEach(function(w){ (w.shifts||[]).forEach(function(s){ if(s&&s.active&&!sh) sh=s; }); }); if(!sh&&r.shifts){ r.shifts.forEach(function(s){ if(s&&s.active&&!sh) sh=s; }); } return sh; }
+  function calcPay(r){
+    var wd=(typeof window.rotaWorkDates==='function')? window.rotaWorkDates(r) : workInfo(r).dates;
+    var days=wd.length, sh=repShift(r);
+    var hpd=sh ? ((typeof window.rotaHours==='function')? window.rotaHours(sh.start,sh.end,sh.breakMins) : hoursCalc(sh.start,sh.end,sh.breakMins)) : 0;
+    var totalHours=hpd*days, isDaily=(r.rateType==='daily'), rate=parseFloat(r.hourlyRate)||0, daily=parseFloat(r.dailyRate)||0;
+    var gross=isDaily ? daily*days : rate*totalHours;
+    return {days:days,hpd:hpd,totalHours:totalHours,rate:rate,daily:daily,isDaily:isDaily,gross:gross,start:(wd[0]||''),end:(wd[wd.length-1]||'')};
+  }
+  function docModal(title, inner){
+    var m=document.getElementById('rrav-doc-modal');
+    if(!m){ m=document.createElement('div'); m.id='rrav-doc-modal'; m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('on'); }); document.body.appendChild(m); }
+    m.innerHTML='<div id="rrav-doc-sheet"><div class="rrav-doc-top"><b>'+title+'</b><span><button class="rrav-doc-btn" onclick="rravDocPrint()">🖨 Print</button> <button class="rrav-x" onclick="document.getElementById(\'rrav-doc-modal\').classList.remove(\'on\')">✕</button></span></div><div id="rrav-doc-body">'+inner+'</div></div>';
+    m.classList.add('on');
+  }
+  window.rravDocPrint=function(){ var body=document.getElementById('rrav-doc-body'); if(!body) return; var w=window.open('','_blank'); if(!w){ alert('Please allow pop-ups to print.'); return; } w.document.write('<html><head><title>Print</title><style>body{font-family:Georgia,serif;margin:20px;}table{width:100%;border-collapse:collapse;}td{padding:6px 4px;border-bottom:1px solid #eee;}td:last-child{text-align:right;font-weight:bold;}</style></head><body>'+body.innerHTML+'</body></html>'); w.document.close(); setTimeout(function(){ try{w.print();}catch(e){} },300); };
+  window.rravPayslip=function(id){
+    var r=rota().filter(function(x){return x&&x.id===id;})[0]; if(!r) return;
+    var p=calcPay(r), employer=(r.companyName||'Employer'), employee=(r.carerName||'Elias Nettey'), client=(r.clientName||'');
+    var html='<div class="rrav-paper">'
+      +'<div class="rp-h"><div><div class="rp-t">PAYSLIP</div><div class="rp-s">Employment placement</div></div><div class="rp-emp">'+esc(employer)+'</div></div>'
+      +'<table class="rp-tbl">'
+      +'<tr><td>Employee</td><td>'+esc(employee)+'</td></tr>'
+      +'<tr><td>Client / assignment</td><td>'+esc(client)+'</td></tr>'
+      +'<tr><td>Pay period</td><td>'+esc(p.start)+' → '+esc(p.end)+'</td></tr>'
+      +'<tr><td>Days worked</td><td>'+p.days+'</td></tr>'
+      +'<tr><td>Hours per day</td><td>'+p.hpd.toFixed(2)+'</td></tr>'
+      +'<tr><td>Total hours</td><td>'+p.totalHours.toFixed(2)+'</td></tr>'
+      +'<tr><td>Rate</td><td>'+(p.isDaily?(money(p.daily)+' / day'):(money(p.rate)+' / hour'))+'</td></tr>'
+      +'<tr class="rp-tot"><td>Gross pay</td><td>'+money(p.gross)+'</td></tr>'
+      +'</table>'
+      +'<div class="rp-note">Illustrative gross pay before tax and National Insurance. This is an employment placement — your payslip is issued by '+esc(employer)+'.</div>'
+      +'</div>';
+    docModal('🧾 Payslip preview', html);
+  };
+  window.rravInvoice=function(id){
+    if(typeof window.generateInvoice==='function'){ try{ window.generateInvoice(id); return; }catch(e){} }
+    var r=rota().filter(function(x){return x&&x.id===id;})[0]; if(!r) return;
+    var p=calcPay(r), from=(r.agencyName||r.companyName||'Pamikyx Ltd'), to=(r.clientRepName||r.clientName||'Client');
+    var html='<div class="rrav-paper">'
+      +'<div class="rp-h"><div><div class="rp-t">INVOICE</div><div class="rp-s">Self-employment</div></div><div class="rp-emp">'+esc(from)+'</div></div>'
+      +'<table class="rp-tbl">'
+      +'<tr><td>Bill to</td><td>'+esc(to)+'</td></tr>'
+      +'<tr><td>Client</td><td>'+esc(r.clientName||'')+'</td></tr>'
+      +'<tr><td>Period</td><td>'+esc(p.start)+' → '+esc(p.end)+'</td></tr>'
+      +'<tr><td>Days</td><td>'+p.days+'</td></tr>'
+      +'<tr><td>Total hours</td><td>'+p.totalHours.toFixed(2)+'</td></tr>'
+      +'<tr><td>Rate</td><td>'+(p.isDaily?(money(p.daily)+' / day'):(money(p.rate)+' / hour'))+'</td></tr>'
+      +'<tr class="rp-tot"><td>Total due</td><td>'+money(p.gross)+'</td></tr>'
+      +'</table>'
+      +'<div class="rp-note">Self-employment assignment — an invoice is raised to the client. For the full branded invoice with your bank details, use the Invoice button on the rota card.</div>'
+      +'</div>';
+    docModal('🧾 Invoice preview', html);
   };
   window.rravMonth=function(delta){ M+=delta; if(M<0){M=11;Y--;} else if(M>11){M=0;Y++;} render(); };
   window.rravToday=function(){ var n=new Date(); Y=n.getFullYear(); M=n.getMonth(); render(); var d=document.getElementById('rrav-detail'); if(d)d.classList.remove('on'); };
