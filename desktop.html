@@ -15,7 +15,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Royal Roadmap — HRH Prince Kwame Nkrabea · build 14jul-aifinance</title>
+<title>Royal Roadmap — HRH Prince Kwame Nkrabea · build 14jul-rota-avail</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13926,7 +13926,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v4.18.0 · 14 Jul 2026 · ai-finance-suite';
+window.ROYAL_APP_VERSION='v4.19.0 · 14 Jul 2026 · rota-availability';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -26977,6 +26977,184 @@ html.app-light .rfg5-btn{background:#f6edd2;color:#5a4a12;}
 })();
 </script>
 <!-- ════════ END RFG5 ════════ -->
+
+
+
+<!-- ════════ RRAV · AI ROTA AVAILABILITY CALENDAR (tab in the Rota page) ════════
+     A proper tab alongside "All Rotas / New Rota / AI Generator". Shows when you are FREE vs BUSY,
+     colour-coded, built from ALL your rota data (royal_rota_v1): placement date ranges + active
+     shifts, every status. Green = free · Amber = tentative (offer/draft) · Red = booked · Declined = free.
+     Integrates with the app's own rotaView() tab switching. Namespaced rrav.
+-->
+<style id="rrav-css">
+#rrav-tab-btn{background:linear-gradient(135deg,rgba(48,209,88,.18),rgba(48,209,88,.1))!important;border:1.5px solid rgba(48,209,88,.4)!important;color:#30D158!important;flex-shrink:0;}
+#rrav-panel{display:none;background:linear-gradient(160deg,rgba(30,45,36,.5),rgba(17,26,21,.4));border:1px solid rgba(201,168,76,.24);border-radius:16px;padding:14px;margin-top:14px;}
+#rrav-panel.on{display:block;}
+html.app-light #rrav-panel{background:#fffdf6;border-color:rgba(201,168,76,.4);}
+.rrav-title{font-size:15px;font-weight:800;color:#F3E4B0;}
+html.app-light .rrav-title{color:#3a2d0a;}
+.rrav-title small{display:block;font-size:11px;font-weight:600;color:#9a8f77;margin-top:1px;}
+.rrav-nav{display:flex;align-items:center;gap:10px;margin:12px 0 8px;}
+.rrav-nav button{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);color:#E8C96A;border-radius:9px;padding:6px 12px;font-size:14px;font-weight:800;cursor:pointer;}
+html.app-light .rrav-nav button{background:#f6edd2;color:#5a4a12;}
+.rrav-mon{font-size:14px;font-weight:800;color:#e7ecd9;flex:1;text-align:center;}
+html.app-light .rrav-mon{color:#2c2a20;}
+.rrav-today{font-size:11px!important;padding:6px 10px!important;}
+.rrav-ai{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.16);border-radius:11px;padding:9px 12px;font-size:12.5px;line-height:1.5;color:#e7ecd9;margin-bottom:10px;}
+html.app-light .rrav-ai{background:#fbf7ea;color:#2c2a20;}
+.rrav-ai b{color:#F3E4B0;} html.app-light .rrav-ai b{color:#3a2d0a;}
+.rrav-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;margin-bottom:10px;color:#b9c2b0;}
+html.app-light .rrav-legend{color:#5a5540;}
+.rrav-legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:middle;}
+.rrav-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.rrav-wd{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#8fa093;text-align:center;padding-bottom:2px;}
+html.app-light .rrav-wd{color:#8a7f60;}
+.rrav-cell{min-height:54px;border-radius:9px;border:1px solid rgba(255,255,255,.06);padding:4px 5px;position:relative;overflow:hidden;}
+.rrav-cell.empty{background:transparent;border-color:transparent;}
+.rrav-cell.free{background:rgba(48,209,88,.13);border-color:rgba(48,209,88,.3);cursor:pointer;}
+.rrav-cell.tentative{background:rgba(255,159,10,.16);border-color:rgba(255,159,10,.4);cursor:pointer;}
+.rrav-cell.booked{background:rgba(255,69,58,.17);border-color:rgba(255,69,58,.42);cursor:pointer;}
+.rrav-cell.past{opacity:.5;}
+.rrav-cell.today{box-shadow:0 0 0 2px #C9A84C inset;}
+.rrav-dnum{font-size:11px;font-weight:700;color:#e7ecd9;}
+html.app-light .rrav-dnum{color:#2c2a20;}
+.rrav-cell.free .rrav-dnum{color:#8fd7a4;} html.app-light .rrav-cell.free .rrav-dnum{color:#1a7d3c;}
+.rrav-tag{font-size:8.5px;line-height:1.15;margin-top:2px;color:#f0d9d7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
+html.app-light .rrav-tag{color:#7a2020;}
+.rrav-cell.tentative .rrav-tag{color:#f5d9a8;} html.app-light .rrav-cell.tentative .rrav-tag{color:#8a5a12;}
+.rrav-free-lbl{font-size:8px;color:#8fd7a4;font-weight:700;margin-top:2px;}
+html.app-light .rrav-free-lbl{color:#2a8d4c;}
+.rrav-detail{margin-top:10px;background:rgba(9,16,12,.4);border:1px solid rgba(201,168,76,.2);border-radius:11px;padding:11px 13px;font-size:12.5px;display:none;}
+html.app-light .rrav-detail{background:#f6f1e0;color:#2c2a20;}
+.rrav-detail.on{display:block;}
+.rrav-detail h4{margin:0 0 6px;font-size:12.5px;color:#F3E4B0;}
+html.app-light .rrav-detail h4{color:#3a2d0a;}
+.rrav-detail .row{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px dashed rgba(201,168,76,.15);}
+.rrav-detail .row .nm{color:#e7ecd9;} html.app-light .rrav-detail .row .nm{color:#2c2a20;}
+.rrav-detail .st{font-size:10px;padding:2px 7px;border-radius:12px;white-space:nowrap;}
+.rrav-detail .st.booked{background:rgba(255,69,58,.2);color:#FF8A84;}
+.rrav-detail .st.tentative{background:rgba(255,159,10,.2);color:#FFC061;}
+.rrav-detail .free{color:#8fd7a4;font-weight:600;}
+</style>
+<script id="rrav-js">
+(function(){
+  "use strict";
+  var Y,M;
+  function rota(){ try{ if(typeof window.rotaSGet==='function'){ var a=window.rotaSGet('royal_rota_v1',[]); if(Array.isArray(a)) return a; } }catch(e){} try{ return JSON.parse(localStorage.getItem('royal_rota_v1')||'[]')||[]; }catch(e){ return []; } }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  var MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var WD=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var LABELS={draft:'Draft',confirmed:'Confirmed',invoiced:'Invoiced',paid:'Paid',complete:'Assignment Complete',offer:'New Job Offer',inprogress:'Job in Progress',donepaid:'Done — Paid & Complete',decline:'Declined'};
+  var TENT={offer:1,draft:1};
+  function pad(n){ return (n<10?'0':'')+n; }
+  function iso(y,m,d){ return y+'-'+pad(m+1)+'-'+pad(d); }
+  function todayISO(){ var n=new Date(); return iso(n.getFullYear(),n.getMonth(),n.getDate()); }
+  function addDays(ds,n){ var d=new Date(ds+'T12:00:00'); d.setDate(d.getDate()+n); return iso(d.getFullYear(),d.getMonth(),d.getDate()); }
+
+  function busyMap(){
+    var map={};
+    rota().forEach(function(r){
+      var st=(r.status||'draft'); if(st==='decline') return;
+      var tone=TENT[st]?'tentative':'booked';
+      var name=(r.preferredName||r.clientName||r.carerName||'Placement');
+      var dates=[], times={};
+      var shifts=(r.shifts||[]).filter(function(sh){ return sh && sh.date && sh.active; });
+      if(shifts.length){ shifts.forEach(function(sh){ var dd=String(sh.date).substring(0,10); dates.push(dd); times[dd]={start:sh.start,end:sh.end}; }); }
+      else if(r.startDate){ var s=String(r.startDate).substring(0,10), e=String(r.endDate||r.startDate).substring(0,10); if(e<s) e=s; var guard=0, cur=s; while(cur<=e && guard<400){ dates.push(cur); cur=addDays(cur,1); guard++; } }
+      dates.forEach(function(d){ if(!map[d]) map[d]=[]; var t=times[d]||{}; map[d].push({tone:tone,name:name,status:st,start:t.start,end:t.end}); });
+    });
+    return map;
+  }
+  function dayTone(list){ if(!list||!list.length) return 'free'; for(var i=0;i<list.length;i++){ if(list[i].tone==='booked') return 'booked'; } return 'tentative'; }
+  function fmt(ds){ var d=new Date(ds+'T12:00:00'); return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); }
+  function summary(map){
+    var days=new Date(Y,M+1,0).getDate(), booked=0,tent=0,free=0;
+    for(var d=1; d<=days; d++){ var t=dayTone(map[iso(Y,M,d)]); if(t==='booked')booked++; else if(t==='tentative')tent++; else free++; }
+    var scan=todayISO(), guard=0, startFree=null, len=0;
+    while(guard<120){ var tn=dayTone(map[scan]); if(tn==='free'){ if(!startFree){startFree=scan;} len++; } else if(startFree){ break; } scan=addDays(scan,1); guard++; }
+    var stretch=''; if(startFree){ var endFree=addDays(startFree,len-1); stretch=(len===1)?('Your next free day is '+fmt(startFree)+'.'):('Your next free stretch is '+fmt(startFree)+' → '+fmt(endFree)+' ('+len+' days).'); }
+    return {booked:booked,tent:tent,free:free,stretch:stretch};
+  }
+
+  window.rravDay=function(ds){
+    var map=busyMap(), list=map[ds]||[]; var det=document.getElementById('rrav-detail'); if(!det) return;
+    var d=new Date(ds+'T12:00:00'); var head=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    if(!list.length){ det.innerHTML='<h4>'+head+'</h4><div class="free">🟩 You are free all day — no rota commitments.</div>'; }
+    else { det.innerHTML='<h4>'+head+'</h4>'+list.map(function(x){ var tl=x.start&&x.end?(x.start+'–'+x.end):(x.tone==='booked'?'All day':'Tentative'); return '<div class="row"><span class="nm">'+esc(x.name)+' · '+esc(tl)+'</span><span class="st '+x.tone+'">'+esc(LABELS[x.status]||x.status)+'</span></div>'; }).join(''); }
+    det.classList.add('on');
+  };
+  window.rravMonth=function(delta){ M+=delta; if(M<0){M=11;Y--;} else if(M>11){M=0;Y++;} render(); };
+  window.rravToday=function(){ var n=new Date(); Y=n.getFullYear(); M=n.getMonth(); render(); var d=document.getElementById('rrav-detail'); if(d)d.classList.remove('on'); };
+
+  function render(){
+    var panel=document.getElementById('rrav-panel'); if(!panel) return;
+    if(Y==null){ var n=new Date(); Y=n.getFullYear(); M=n.getMonth(); }
+    var map=busyMap();
+    var mEl=panel.querySelector('.rrav-mon'); if(mEl) mEl.textContent=MON[M]+' '+Y;
+    var s=summary(map);
+    var ai=panel.querySelector('#rrav-ai'); if(ai) ai.innerHTML='🤖 In '+MON[M]+': <b>'+s.free+'</b> free day'+(s.free===1?'':'s')+', <b>'+s.booked+'</b> booked'+(s.tent?(', <b>'+s.tent+'</b> tentative'):'')+'. '+(s.stretch||'');
+    var days=new Date(Y,M+1,0).getDate(), first=(new Date(Y,M,1).getDay()+6)%7, t0=todayISO(), cells='';
+    WD.forEach(function(w){ cells+='<div class="rrav-wd">'+w+'</div>'; });
+    for(var b=0;b<first;b++){ cells+='<div class="rrav-cell empty"></div>'; }
+    for(var d=1; d<=days; d++){
+      var ds=iso(Y,M,d), list=map[ds]||[], tone=dayTone(list);
+      var cls='rrav-cell '+tone; if(ds<t0) cls+=' past'; if(ds===t0) cls+=' today';
+      var inner='<div class="rrav-dnum">'+d+'</div>';
+      if(tone==='free'){ inner+='<div class="rrav-free-lbl">Free</div>'; }
+      else { var nm=list[0].name; inner+='<div class="rrav-tag">'+esc(nm.length>10?nm.substring(0,9)+'…':nm)+'</div>'+(list.length>1?'<div class="rrav-tag">+'+(list.length-1)+' more</div>':''); }
+      cells+='<div class="'+cls+'" onclick="rravDay(\''+ds+'\')">'+inner+'</div>';
+    }
+    panel.querySelector('.rrav-grid').innerHTML=cells;
+  }
+  window.rravRender=render;
+
+  // Show the calendar tab: hide the list/new areas, reveal the panel, mark our button active.
+  window.rravShow=function(btn){
+    var la=document.getElementById('rota-list-area'), fa=document.getElementById('rota-form-area');
+    if(la) la.style.display='none'; if(fa) fa.style.display='none';
+    document.querySelectorAll('.rvt-btn').forEach(function(b){ b.classList.remove('active'); });
+    var b=btn||document.getElementById('rrav-tab-btn'); if(b) b.classList.add('active');
+    var p=document.getElementById('rrav-panel'); if(p) p.classList.add('on');
+    render();
+  };
+  function hide(){ var p=document.getElementById('rrav-panel'); if(p) p.classList.remove('on'); }
+
+  function shell(){
+    var scr=document.getElementById('s-rota'); if(!scr) return false;
+    var bar=scr.querySelector('.rota-view-toggle'); if(!bar) return false;
+    if(!document.getElementById('rrav-tab-btn')){
+      var btn=document.createElement('button'); btn.id='rrav-tab-btn'; btn.className='rvt-btn'; btn.type='button';
+      btn.innerHTML='🗓️ Availability'; btn.onclick=function(){ rravShow(btn); };
+      bar.appendChild(btn);
+    }
+    if(!document.getElementById('rrav-panel')){
+      var panel=document.createElement('div'); panel.id='rrav-panel';
+      panel.innerHTML=
+        '<div class="rrav-title">🗓️ AI Availability Calendar<small>When you are free and when you are booked — from all your rota</small></div>'
+        +'<div class="rrav-nav"><button onclick="rravMonth(-1)">‹</button><div class="rrav-mon"></div><button onclick="rravMonth(1)">›</button><button class="rrav-today" onclick="rravToday()">Today</button></div>'
+        +'<div class="rrav-ai" id="rrav-ai"></div>'
+        +'<div class="rrav-legend"><span><i style="background:#30D158"></i>Free</span><span><i style="background:#FF9F0A"></i>Tentative (offer/draft)</span><span><i style="background:#FF453A"></i>Booked</span><span><i style="background:#C9A84C"></i>Today</span></div>'
+        +'<div class="rrav-grid"></div><div class="rrav-detail" id="rrav-detail"></div>';
+      // place the panel after the list & form areas so it sits in the same content region
+      var fa=document.getElementById('rota-form-area');
+      if(fa&&fa.parentNode){ fa.parentNode.insertBefore(panel, fa.nextSibling); } else { scr.appendChild(panel); }
+    }
+    // Hook the app's tab switcher once so leaving the tab hides the calendar
+    if(!window.__rravHook && typeof window.rotaView==='function'){
+      window.__rravHook=true; var orig=window.rotaView;
+      window.rotaView=function(){ hide(); return orig.apply(this,arguments); };
+    }
+    return true;
+  }
+
+  var lastSig='';
+  function sig(){ try{ var a=rota(); return a.length+'|'+a.map(function(r){return (r.id||'')+r.status+r.startDate+r.endDate+((r.shifts||[]).length);}).join(','); }catch(e){ return ''; } }
+  function tick(){ if(!shell()) return; var p=document.getElementById('rrav-panel'); if(p&&p.classList.contains('on')){ var s=sig(); if(s!==lastSig){ lastSig=s; try{ render(); }catch(e){} } } }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', tick); else tick();
+  setInterval(tick, 1500);
+})();
+</script>
+<!-- ════════ END RRAV ════════ -->
 
 </body>
 </html>
