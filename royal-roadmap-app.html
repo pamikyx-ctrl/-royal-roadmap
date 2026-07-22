@@ -27339,6 +27339,7 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
 #v7mob-grid button .gic{font-size:28px;}
 </style>
 
+
 <script id="v7mob2-js">
 (function(){
  function goTab(id){ if(typeof go==='function'){go(id);} else {var b=document.getElementById('nb-'+id); if(b)b.click();} window.scrollTo(0,0); }
@@ -27352,25 +27353,34 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
      {ic:'💰',lbl:'Income',run:function(){goTab('income');}},
      {ic:'🧾',lbl:'Spending',run:function(){goTab('expense');}},
      {ic:'📊',lbl:'Reports',run:function(){goTab('report');}},
-     {ic:'📋',lbl:'Rota & Invoicing',run:function(){goTab('rota');}}
+     {ic:'📋',lbl:'Rota & Invoicing',run:function(){goTab('rota');}},
+     {ic:'👑',lbl:'Exec Wealth',run:function(){goTab('wealth');}}
    ]},
    plan:{title:'Plan',items:[
      {ic:'🎯',lbl:'17 Goals',run:function(){goTab('goals');}},
+     {ic:'📖',lbl:'Goals Book',run:function(){goTab('goalbook');}},
      {ic:'🕐',lbl:'Schedule',run:function(){goTab('sched');}},
-     {ic:'📔',lbl:'Diary',run:function(){goTab('diary');}}
+     {ic:'📔',lbl:'Royal Diary',run:function(){goTab('diary');}},
+     {ic:'📅',lbl:'iCalender',run:function(){goTab('icalender');}},
+     {ic:'☀️',lbl:'Royal Daily',run:function(){goTab('royaldaily');}}
    ]},
    royal:{title:'Royal',items:[
      {ic:'⚖️',lbl:'Chieftaincy',run:function(){goTab('chief');}},
      {ic:'🏰',lbl:'Residence',run:function(){goTab('residence');}},
      {ic:'🏘️',lbl:'Family',run:function(){goTab('family');}},
      {ic:'🙏',lbl:'Prayers',run:function(){goTab('pray');}},
-     {ic:'👑',lbl:'Exec Wealth',run:function(){goTab('wealth');}},
-     {ic:'👥',lbl:'Contacts',run:function(){callFn('openContactsManager');}}
+     {ic:'📿',lbl:'Prayer Book',run:function(){goTab('prayerbook');}},
+     {ic:'🎓',lbl:'Scholars',run:function(){goTab('scholars');}},
+     {ic:'📚',lbl:'Scholars Book',run:function(){goTab('scholarbook');}},
+     {ic:'📜',lbl:'Identity Book',run:function(){goTab('identity');}}
    ]},
    more:{title:'Settings & System',items:[
      {ic:'👤',lbl:'Profile',run:function(){goTab('profile');}},
      {ic:'⚙️',lbl:'Settings',run:function(){goTab('settings');}},
      {ic:'🎙️',lbl:'AI Chat & Search',run:function(){callFn('voiceToggle');}},
+     {ic:'👥',lbl:'Contacts',run:function(){callFn('openContactsManager');}},
+     {ic:'📇',lbl:'Contact Book',run:function(){goTab('contactbook');}},
+     {ic:'📕',lbl:'Royal Library',run:function(){goTab('book');}},
      {ic:'🔄',lbl:'Sync Devices',run:function(){clickByText('Sync Between Devices');}},
      {ic:'📲',lbl:'Install App',run:function(){clickByText('Install as App');}}
    ]}
