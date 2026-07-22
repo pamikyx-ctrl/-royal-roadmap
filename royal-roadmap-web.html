@@ -27378,7 +27378,8 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
      N('🕐','Daily Schedule','Daily Schedule'),
      N('📔','Royal Diary','Royal Diary'),
      N('📅','Legacy Daily','Legacy Daily'),
-     N('☀️','Royal Daily','Royal Daily')
+     N('☀️','Royal Daily','Royal Daily'),
+     N('💼','Job Engine','Job Engine')
    ]},
    royal:{title:'Royal',items:[
      N('⚖️','Chieftaincy & Coronation','Chieftaincy & Coronation'),
@@ -27448,5 +27449,275 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
  }
  build(); setInterval(build,1500);
 })();</script>
+<style id="rje-css">
+#s-jobengine .rje-wrap{max-width:1100px;margin:0 auto;}
+.rje-hero{background:linear-gradient(135deg,rgba(201,168,76,0.12),rgba(20,20,32,0.6));border:1px solid rgba(201,168,76,0.35);border-radius:18px;padding:22px 24px;margin-bottom:18px;}
+.rje-hero h2{color:#E8C96A;font-family:Georgia,serif;font-size:26px;margin:0 0 4px;}
+.rje-hero p{color:#c9bb93;font-size:14px;margin:0;}
+.rje-pills{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px;}
+.rje-pill{background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.3);color:#c9bb93;border-radius:20px;padding:8px 15px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.rje-pill.on{background:rgba(201,168,76,0.2);color:#E8C96A;}
+.rje-view{display:none;}
+.rje-view.on{display:block;}
+.rje-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px;}
+.rje-kpi{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;}
+.rje-kpi .v{font-size:24px;font-weight:800;color:#E8C96A;font-family:Georgia,serif;}
+.rje-kpi .l{font-size:11px;color:#9b8f70;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;}
+.rje-card{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px 18px;margin-bottom:12px;}
+.rje-card h3{color:#E8C96A;font-size:16px;margin:0 0 10px;}
+.rje-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.rje-plat{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:14px 8px;color:#e8e0cc;font-size:12px;font-weight:600;text-align:center;cursor:pointer;text-decoration:none;}
+.rje-plat:active{background:rgba(201,168,76,0.15);}
+.rje-plat .pi{font-size:22px;}
+.rje-chip{display:inline-block;background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.3);color:#c9bb93;border-radius:16px;padding:6px 12px;font-size:12px;margin:3px;cursor:pointer;}
+.rje-chip.on{background:rgba(201,168,76,0.22);color:#E8C96A;}
+.rje-f{width:100%;background:#0f0f18;border:1px solid rgba(255,255,255,0.14);border-radius:10px;color:#f0ebe0;padding:11px 12px;font-size:14px;font-family:inherit;box-sizing:border-box;margin:5px 0;}
+.rje-btn{background:var(--gold,#C9A84C);color:#1a1400;border:none;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;}
+.rje-btn.ghost{background:transparent;border:1.5px solid rgba(201,168,76,0.4);color:#E8C96A;}
+.rje-job{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+.rje-job .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.rje-job .ttl{font-size:16px;font-weight:700;color:#f0ebe0;}
+.rje-job .emp{font-size:13px;color:#9b8f70;}
+.rje-match{font-size:22px;font-weight:800;font-family:Georgia,serif;}
+.rje-tags{margin-top:8px;}
+.rje-tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:3px 8px;border-radius:8px;margin:2px 4px 2px 0;background:rgba(201,168,76,0.15);color:#E8C96A;}
+.rje-sal{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px;margin-top:10px;font-size:12px;}
+.rje-sal div{background:rgba(0,0,0,0.25);border-radius:8px;padding:7px;}
+.rje-sal b{color:#E8C96A;display:block;font-size:14px;}
+.rje-lab{font-size:11px;color:#9b8f70;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 3px;}
+@media (max-width:1024px),(hover:none){#s-jobengine .rje-kpis{grid-template-columns:repeat(2,1fr);}.rje-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+<script id="rje-js">
+(function(){
+ function el(id){return document.getElementById(id);}
+ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+ var K='royal_jobengine_v1';
+ function L(){try{return JSON.parse(localStorage.getItem(K))||{};}catch(e){return {};}}
+ function S(d){try{localStorage.setItem(K,JSON.stringify(d));}catch(e){}}
+ function db(){var d=L();
+   d.profile=d.profile||{quals:'ATHE Level 5 Diploma — Health & Social Care Management',expYears:10,skills:'Live-in care, Domiciliary, Dementia, Complex & Palliative care, Senior Carer, Team Leader',certs:'Care Certificate, Moving & Handling, Safeguarding, Medication, First Aid',currentIncome:2625,targetMonthly:4500,homeArea:'Richmond upon Thames',maxRadius:'15'};
+   d.jobs=d.jobs||[]; d.apps=d.apps||[]; d.interviews=d.interviews||[]; d.docs=d.docs||{cv:'',covers:'',certs:'',refs:''};
+   d.filters=d.filters||{types:['Live in Care','Domiciliary Care','Senior Carer'],area:'Richmond upon Thames',radius:'15'};
+   return d;}
+ var JOBTYPES=['Live in Care','Live Out Care','Domiciliary Care','Community Care','Personal Assistant','Support Worker','Complex Care','Dementia Care','Palliative Care','Night Care','Senior Carer','Team Leader','Registered Manager','Deputy Manager','Care Coordinator','Care Assessor','Care Quality','Self Employed','Agency Work','Permanent','Temporary','Weekend Work','Emergency Cover'];
+ var AREAS=['Richmond upon Thames','Richmond','Barnes','East Sheen','Mortlake','Kew','Ham','Petersham','Twickenham','Teddington','Hampton','Whitton','St Margarets'];
+ var RADII=['5','10','15','20','30','Nationwide'];
+ function radMiles(r){return r==='Nationwide'?'':r;}
+ function PU(kw,loc,r){var q=encodeURIComponent(kw+' care'),ql=encodeURIComponent(kw),l=encodeURIComponent(loc),rm=radMiles(r);return {
+   'Indeed':'https://uk.indeed.com/jobs?q='+q+'&l='+l+(rm?'&radius='+rm:''),
+   'Totaljobs':'https://www.totaljobs.com/jobs/'+ql+'/in-'+encodeURIComponent(loc.toLowerCase().replace(/ /g,'-'))+(rm?'?radius='+rm:''),
+   'CV Library':'https://www.cv-library.co.uk/'+ql+'-care-jobs-in-'+encodeURIComponent(loc.replace(/ /g,'-'))+(rm?'?distance='+rm:''),
+   'Reed':'https://www.reed.co.uk/jobs/'+ql+'-care-jobs-in-'+encodeURIComponent(loc.toLowerCase().replace(/ /g,'-'))+(rm?'?proximity='+rm:''),
+   'NHS Jobs':'https://www.jobs.nhs.uk/candidate/search/results?keyword='+q+'&location='+l+(rm?'&distance='+rm:''),
+   'LinkedIn':'https://www.linkedin.com/jobs/search/?keywords='+q+'&location='+l+'%2C%20England',
+   'Glassdoor':'https://www.glassdoor.co.uk/Search/results.htm?keyword='+q,
+   'Adzuna':'https://www.adzuna.co.uk/search?q='+q+'&w='+l,
+   'Carehome.co.uk':'https://www.carehome.co.uk/jobs',
+   'Social Care Jobs':'https://www.socialcare.co.uk/jobs?keywords='+q+'&location='+l,
+   'Guardian Jobs':'https://jobs.theguardian.com/jobs/'+ql+'/in-'+encodeURIComponent(loc.toLowerCase().replace(/ /g,'-'))+'/',
+   'Monster':'https://www.monster.co.uk/jobs/search?q='+q+'&where='+l+(rm?'&rad='+rm:''),
+   'Jobsite':'https://www.jobsite.co.uk/jobs/'+ql+'-care/in-'+encodeURIComponent(loc.toLowerCase().replace(/ /g,'-'))+(rm?'?radius='+rm:''),
+   'Caring Homes':'https://www.caringhomes.org/careers/',
+   'Country Cousins':'https://www.countrycousins.co.uk/live-in-care-jobs/',
+   'Promedica24':'https://www.promedica24.co.uk/careers/',
+   'Helping Hands':'https://www.helpinghands.co.uk/careers/',
+   'Trinity Homecare':'https://www.trinityhomecare.co.uk/careers/',
+   'Good Oaks':'https://www.goodoakshomecare.co.uk/careers/',
+   'Home Instead':'https://www.homeinstead.co.uk/jobs/',
+   'Bluebird Care':'https://www.bluebirdcare.co.uk/careers',
+   'Right at Home':'https://www.rightathome.co.uk/careers/',
+   'Agincare':'https://www.agincare.com/careers/current-vacancies/',
+   'Barchester':'https://www.barchester.com/jobs',
+   'HC One':'https://jobs.hc-one.co.uk/',
+   'Four Seasons':'https://jobs.fshc.co.uk/'
+ };}
+ var PICON={'Indeed':'🔵','Totaljobs':'🟣','CV Library':'📗','Reed':'🔴','NHS Jobs':'🏥','LinkedIn':'💼','Glassdoor':'🟢','Adzuna':'🧭','Carehome.co.uk':'🏡','Social Care Jobs':'🤝','Guardian Jobs':'📰','Monster':'👾','Jobsite':'🌐','Caring Homes':'🏠','Country Cousins':'🏘️','Promedica24':'➕','Helping Hands':'✋','Trinity Homecare':'🔺','Good Oaks':'🌳','Home Instead':'🏡','Bluebird Care':'🐦','Right at Home':'🏠','Agincare':'💙','Barchester':'🏰','HC One':'1️⃣','Four Seasons':'🍂'};
+ function money(n){return '£'+(Math.round(n||0)).toLocaleString('en-GB');}
+ function annualOf(j){var v=+j.salaryVal||0,h=+j.hoursWk||40;
+   if(j.salaryUnit==='year')return v; if(j.salaryUnit==='month')return v*12; if(j.salaryUnit==='week')return v*52;
+   if(j.salaryUnit==='day')return v*(+j.daysWk||5)*52; return v*h*52; }
+ function salary(j){var an=annualOf(j),h=+j.hoursWk||40,dw=+j.daysWk||5;
+   var hourly=an/52/h, weekly=an/52, monthly=an/12, daily=weekly/(dw||5);
+   var travelWk=(+j.distanceMi||0)*2*dw*0.45, travelMo=travelWk*4.33;
+   return {hourly:hourly,daily:daily,weekly:weekly,monthly:monthly,annual:an,travelMo:travelMo,net:monthly-travelMo};}
+ function score(j,p){var s=0;
+   var d=+j.distanceMi||0,mr=+p.maxRadius||15;
+   s+= d<=mr? 25*(1-Math.min(d,mr)/(mr+1)) : Math.max(0,10-(d-mr));
+   var an=annualOf(j),cur=(+p.currentIncome||0)*12;
+   s+= an>cur? 25 : (cur>0? Math.max(0,25*an/cur):12);
+   var sk=(p.skills||'').toLowerCase(); var t=(j.title||'').toLowerCase()+' '+(j.jtype||'').toLowerCase();
+   var hit=(p.skills||'').split(',').some(function(x){x=x.trim().toLowerCase();return x&&t.indexOf(x.split(' ')[0])>=0;});
+   s+= hit?20:8;
+   s+= 15;
+   var er=+j.empRating||0, cq=(j.cqc||'').toLowerCase();
+   s+= (cq.indexOf('outstanding')>=0?15:cq.indexOf('good')>=0?11:er>=4?12:er>0?er*2:6);
+   return Math.max(5,Math.min(99,Math.round(s)));}
+ function ranks(j,p){var t=[];var sal=salary(j);var an=annualOf(j);
+   if(sal.hourly>=16||an>=38000)t.push('Best Income');
+   if((+j.distanceMi||99)<=6)t.push('Closest to Home');
+   if(/manager|lead|coordinator|senior|deputy/i.test(j.title||''))t.push('Career Growth');
+   if(/outstanding|good/i.test(j.cqc||'')|| (+j.empRating||0)>=4)t.push('Top Reputation');
+   if(j.startSoon)t.push('Fast Start');
+   if((j.matchScore||0)>=80)t.push('Highest Match');
+   if(/live.?in/i.test(j.title||'')&&an>=32000)t.push('Premium Live-in');
+   return t;}
+
+ // ---- build screen + sidebar nav ----
+ function inject(){
+   if(!el('s-jobengine')){
+     var main=document.querySelector('main')||document.body;
+     var scr=document.createElement('div'); scr.id='s-jobengine'; scr.className='screen';
+     scr.innerHTML='<div class="rje-wrap"><div class="rje-hero"><h2>💼 Royal Job Engine</h2><p>AI care-sector job search — find higher-paying work near '+esc(db().profile.homeArea)+', matched to your skills and goals.</p></div><div class="rje-pills" id="rje-pills"></div><div id="rje-body"></div></div>';
+     main.appendChild(scr);
+   }
+   if(!el('nb-jobengine')){
+     var sb=document.querySelector('.sidebar');
+     if(sb){ var b=document.createElement('button'); b.type='button'; b.className='nav-btn'; b.id='nb-jobengine'; b.setAttribute('data-tab','jobengine');
+       b.setAttribute('onclick',"go('jobengine')"); b.innerHTML='<span class="ni">💼</span><span class="nl">Job Engine</span>';
+       var anchor=el('nb-diary')||el('nb-sched')||el('nb-goals');
+       if(anchor&&anchor.parentNode){ anchor.parentNode.insertBefore(b, anchor.nextSibling); } else { sb.appendChild(b); }
+     }
+   }
+ }
+ var VIEW='dash';
+ function pills(){var P=[['dash','📊 Dashboard'],['search','🔎 Search & Launch'],['jobs','🗂 My Jobs'],['rank','🏆 Rankings'],['apps','📨 Applications'],['iview','🎤 Interviews'],['prof','⚙️ Profile']];
+   el('rje-pills').innerHTML=P.map(function(x){return '<button class="rje-pill'+(VIEW===x[0]?' on':'')+'" onclick="RJE.go(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');}
+ function render(){ if(!el('rje-body'))return; pills(); var d=db(),p=d.profile;
+   var body='';
+   if(VIEW==='dash') body=vDash(d,p);
+   else if(VIEW==='search') body=vSearch(d,p);
+   else if(VIEW==='jobs') body=vJobs(d,p);
+   else if(VIEW==='rank') body=vRank(d,p);
+   else if(VIEW==='apps') body=vApps(d,p);
+   else if(VIEW==='iview') body=vIview(d,p);
+   else if(VIEW==='prof') body=vProf(d,p);
+   el('rje-body').innerHTML=body;
+ }
+ function vDash(d,p){ var jobs=d.jobs;
+   var today=jobs.filter(function(j){return (j.savedAt||'').slice(0,10)===new Date().toISOString().slice(0,10);}).length;
+   var apps=d.apps.length, iv=d.interviews.length, offers=jobs.filter(function(j){return j.status==='Offer'||j.status==='Accepted';}).length;
+   var sals=jobs.map(function(j){return annualOf(j);}).filter(function(x){return x>0;});
+   var avg=sals.length?sals.reduce(function(a,b){return a+b;},0)/sals.length:0;
+   var top=jobs.slice().sort(function(a,b){return annualOf(b)-annualOf(a);})[0];
+   var expMonth=top?salary(top).monthly:0;
+   var tgt=+p.targetMonthly||0, prog=tgt?Math.min(100,Math.round(expMonth/tgt*100)):0;
+   return '<div class="rje-kpis">'+
+     kpi(today,'Jobs Found Today')+kpi(apps,'Applications Sent')+kpi(iv,'Interviews')+kpi(offers,'Offers')+
+     kpi(money(avg),'Avg Salary (yr)')+kpi(top?money(annualOf(top)):'—','Highest Paying')+
+     kpi(money(expMonth),'Best Monthly')+kpi(prog+'%','Toward £'+ (tgt).toLocaleString('en-GB')+'/mo')+
+     '</div>'+
+     '<div class="rje-card"><h3>🤖 AI Summary</h3><p style="color:#c9bb93;font-size:14px;line-height:1.6">'+
+     (jobs.length? ('You have '+jobs.length+' tracked roles. Your best match pays about '+money(expMonth)+'/month'+(top?(' at '+esc(top.employer||top.title)) :'')+'. '+(expMonth>=tgt?'That meets your £'+tgt.toLocaleString('en-GB')+'/month target. ✅':'That is '+money(tgt-expMonth)+'/month short of your £'+tgt.toLocaleString('en-GB')+' target — aim for roles above '+money(tgt*12)+'/yr.'))
+       : 'No jobs tracked yet. Go to <b>Search & Launch</b> to open the job boards, then add roles under <b>My Jobs</b> and I\'ll score each one for you.')+
+     '</p></div>';
+ }
+ function kpi(v,l){return '<div class="rje-kpi"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+ function vSearch(d,p){ var f=d.filters;
+   var chips=JOBTYPES.map(function(t){return '<span class="rje-chip'+(f.types.indexOf(t)>=0?' on':'')+'" onclick="RJE.tgType(\''+t.replace(/'/g,'')+'\')">'+t+'</span>';}).join('');
+   var areaOpts=AREAS.map(function(a){return '<option'+(f.area===a?' selected':'')+'>'+a+'</option>';}).join('');
+   var radOpts=RADII.map(function(r){return '<option'+(f.radius===r?' selected':'')+'>'+(r==='Nationwide'?'Nationwide':r+' miles')+'</option>';}).join('');
+   var kw=f.types[0]||'care assistant';
+   var urls=PU(kw,f.area,f.radius);
+   var plats=Object.keys(urls).map(function(name){return '<a class="rje-plat" target="_blank" rel="noopener" href="'+urls[name]+'"><span class="pi">'+(PICON[name]||'🔗')+'</span>'+esc(name)+'</a>';}).join('');
+   return '<div class="rje-card"><h3>What are you searching for?</h3><div>'+chips+'</div>'+
+     '<div class="rje-lab">Area</div><select class="rje-f" onchange="RJE.setF(\'area\',this.value)">'+areaOpts+'</select>'+
+     '<div class="rje-lab">Search radius</div><select class="rje-f" onchange="RJE.setF(\'radius\',this.value)">'+radOpts+'</select>'+
+     '<p style="color:#9b8f70;font-size:12px;margin-top:8px">Tapping a platform opens its live results in your browser, pre-filled with "'+esc(kw)+' care" near '+esc(f.area)+'. Found something good? Add it under <b>My Jobs</b> and I\'ll score it.</p></div>'+
+     '<div class="rje-card"><h3>🌐 Job Platforms ('+Object.keys(urls).length+')</h3><div class="rje-grid">'+plats+'</div></div>';
+ }
+ function jobForm(){return '<div class="rje-card" id="rje-form"><h3>➕ Add / score a job</h3>'+
+   '<input class="rje-f" id="jf-title" placeholder="Job title (e.g. Live-in Carer)">'+
+   '<input class="rje-f" id="jf-emp" placeholder="Employer / agency">'+
+   '<input class="rje-f" id="jf-loc" placeholder="Location">'+
+   '<input class="rje-f" id="jf-dist" placeholder="Distance from home (miles)" inputmode="decimal">'+
+   '<div style="display:flex;gap:6px"><input class="rje-f" id="jf-sal" placeholder="Pay amount" inputmode="decimal" style="flex:2">'+
+   '<select class="rje-f" id="jf-unit" style="flex:1"><option value="hour">per hour</option><option value="day">per day</option><option value="week">per week</option><option value="month">per month</option><option value="year">per year</option></select></div>'+
+   '<div style="display:flex;gap:6px"><input class="rje-f" id="jf-hrs" placeholder="Hours/week" inputmode="numeric" style="flex:1"><input class="rje-f" id="jf-days" placeholder="Days/week" inputmode="numeric" style="flex:1"></div>'+
+   '<input class="rje-f" id="jf-shift" placeholder="Shift pattern (e.g. 2 weeks on / 2 off)">'+
+   '<input class="rje-f" id="jf-cqc" placeholder="CQC rating (Outstanding/Good) or employer rating 1-5">'+
+   '<input class="rje-f" id="jf-link" placeholder="Job link (optional)">'+
+   '<button class="rje-btn" onclick="RJE.addJob()">Score &amp; Save</button></div>';}
+ function vJobs(d,p){ var list=d.jobs.slice().sort(function(a,b){return (b.matchScore||0)-(a.matchScore||0);});
+   var out=jobForm();
+   if(!list.length){ out+='<p style="color:#9b8f70">No jobs yet. Add one above.</p>'; return out; }
+   out+=list.map(function(j){return jobCard(j,p);}).join('');
+   return out;
+ }
+ function matchColour(m){return m>=80?'#3ddc84':m>=60?'#E8C96A':m>=40?'#f0a53a':'#e0736b';}
+ function jobCard(j,p){ var s=salary(j),an=annualOf(j),tags=ranks(j,p),cur=(+p.currentIncome||0);
+   var diff=s.monthly-cur;
+   return '<div class="rje-job"><div class="top"><div><div class="ttl">'+esc(j.title||'Role')+'</div><div class="emp">'+esc(j.employer||'')+(j.location?' · '+esc(j.location):'')+(j.distanceMi?' · '+j.distanceMi+' mi':'')+'</div></div>'+
+     '<div style="text-align:right"><div class="rje-match" style="color:'+matchColour(j.matchScore||0)+'">'+(j.matchScore||0)+'%</div><div style="font-size:10px;color:#9b8f70">MATCH</div></div></div>'+
+     '<div class="rje-tags">'+tags.map(function(t){return '<span class="rje-tag">'+t+'</span>';}).join('')+'</div>'+
+     '<div class="rje-sal"><div><b>'+money(s.hourly)+'</b>hourly</div><div><b>'+money(s.weekly)+'</b>weekly</div><div><b>'+money(s.monthly)+'</b>monthly</div><div><b>'+money(an)+'</b>annual</div><div><b>'+money(s.travelMo)+'</b>travel/mo</div><div><b>'+money(s.net)+'</b>net/mo</div></div>'+
+     '<p style="font-size:12px;color:'+(diff>=0?'#3ddc84':'#e0736b')+';margin:8px 0 0">'+(diff>=0?'+'+money(diff)+'/mo vs current':money(-diff)+'/mo less than current')+(s.monthly>=(+p.targetMonthly||0)?' · meets your target ✅':'')+'</p>'+
+     '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">'+
+       (j.link?'<a class="rje-btn ghost" target="_blank" rel="noopener" href="'+esc(j.link)+'" style="text-decoration:none">Open</a>':'')+
+       '<select class="rje-f" style="width:auto;margin:0" onchange="RJE.setStatus(\''+j.id+'\',this.value)">'+['Saved','Applied','Interview','Offer','Accepted','Rejected'].map(function(st){return '<option'+(j.status===st?' selected':'')+'>'+st+'</option>';}).join('')+'</select>'+
+       '<button class="rje-btn ghost" onclick="RJE.del(\''+j.id+'\')">Remove</button>'+
+     '</div></div>';
+ }
+ function vRank(d,p){ if(!d.jobs.length)return '<p style="color:#9b8f70">Add jobs first, then I\'ll rank them here.</p>';
+   var cats=[['Best Income',function(a,b){return annualOf(b)-annualOf(a);}],['Closest to Home',function(a,b){return (+a.distanceMi||99)-(+b.distanceMi||99);}],['Highest Match',function(a,b){return (b.matchScore||0)-(a.matchScore||0);}]];
+   return cats.map(function(c){var top=d.jobs.slice().sort(c[1]).slice(0,3);
+     return '<div class="rje-card"><h3>🏆 '+c[0]+'</h3>'+top.map(function(j){return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span>'+esc(j.title||'Role')+' · '+esc(j.employer||'')+'</span><b style="color:#E8C96A">'+money(annualOf(j))+' · '+(j.matchScore||0)+'%</b></div>';}).join('')+'</div>';
+   }).join('');
+ }
+ function vApps(d,p){ var board=['Applied','Interview','Offer','Accepted','Rejected'];
+   var docs=d.docs;
+   var docBox='<div class="rje-card"><h3>📎 My Documents</h3>'+
+     '<div class="rje-lab">CV (paste text or link)</div><textarea class="rje-f" rows="2" onchange="RJE.setDoc(\'cv\',this.value)">'+esc(docs.cv)+'</textarea>'+
+     '<div class="rje-lab">Cover letter template(s)</div><textarea class="rje-f" rows="2" onchange="RJE.setDoc(\'covers\',this.value)">'+esc(docs.covers)+'</textarea>'+
+     '<div class="rje-lab">Certificates</div><textarea class="rje-f" rows="1" onchange="RJE.setDoc(\'certs\',this.value)">'+esc(docs.certs)+'</textarea>'+
+     '<div class="rje-lab">References</div><textarea class="rje-f" rows="1" onchange="RJE.setDoc(\'refs\',this.value)">'+esc(docs.refs)+'</textarea></div>';
+   var cols=board.map(function(st){var items=d.jobs.filter(function(j){return j.status===st;});
+     return '<div class="rje-card"><h3>'+st+' ('+items.length+')</h3>'+(items.length?items.map(function(j){return '<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px">'+esc(j.title||'Role')+' · <span style="color:#9b8f70">'+esc(j.employer||'')+'</span></div>';}).join(''):'<p style="color:#9b8f70;font-size:12px">None</p>')+'</div>';
+   }).join('');
+   return docBox+cols;
+ }
+ function vIview(d,p){
+   var form='<div class="rje-card"><h3>🎤 Prepare for an interview</h3>'+
+     '<input class="rje-f" id="iv-emp" placeholder="Employer">'+
+     '<input class="rje-f" id="iv-date" placeholder="Date (YYYY-MM-DD)">'+
+     '<input class="rje-f" id="iv-time" placeholder="Time">'+
+     '<input class="rje-f" id="iv-cqc" placeholder="CQC rating (optional)">'+
+     '<button class="rje-btn" onclick="RJE.addIview()">Add + prep + block in Diary</button></div>';
+   var list=d.interviews.map(function(iv){return '<div class="rje-card"><h3>'+esc(iv.emp||'Interview')+' — '+esc(iv.date||'')+' '+esc(iv.time||'')+'</h3>'+
+     '<div class="rje-lab">Company research</div><p style="font-size:13px;color:#c9bb93">'+esc(iv.emp)+(iv.cqc?' — CQC: '+esc(iv.cqc):'')+'. Check their latest CQC report, services offered, and recent news before you attend.</p>'+
+     '<div class="rje-lab">Likely questions</div><ul style="font-size:13px;color:#c9bb93;line-height:1.7"><li>Tell us about your care experience and qualifications.</li><li>How do you handle a safeguarding concern?</li><li>Describe managing a complex or dementia client.</li><li>Why this employer, and your availability?</li></ul>'+
+     '<div class="rje-lab">Checklist</div><p style="font-size:13px;color:#c9bb93">ID, DBS, certificates, references, route planned, questions to ask ready.</p></div>';}).join('');
+   return form+(list||'<p style="color:#9b8f70">No interviews yet.</p>');
+ }
+ function vProf(d,p){
+   return '<div class="rje-card"><h3>⚙️ Your job-search profile (used for matching)</h3>'+
+     '<div class="rje-lab">Qualifications</div><input class="rje-f" id="pf-quals" value="'+esc(p.quals)+'">'+
+     '<div class="rje-lab">Years of experience</div><input class="rje-f" id="pf-exp" value="'+esc(p.expYears)+'" inputmode="numeric">'+
+     '<div class="rje-lab">Skills (comma separated)</div><textarea class="rje-f" rows="2" id="pf-skills">'+esc(p.skills)+'</textarea>'+
+     '<div class="rje-lab">Certificates</div><textarea class="rje-f" rows="2" id="pf-certs">'+esc(p.certs)+'</textarea>'+
+     '<div class="rje-lab">Current income (£/month)</div><input class="rje-f" id="pf-cur" value="'+esc(p.currentIncome)+'" inputmode="numeric">'+
+     '<div class="rje-lab">Target income (£/month)</div><input class="rje-f" id="pf-tgt" value="'+esc(p.targetMonthly)+'" inputmode="numeric">'+
+     '<div class="rje-lab">Max travel radius (miles)</div><input class="rje-f" id="pf-rad" value="'+esc(p.maxRadius)+'" inputmode="numeric">'+
+     '<button class="rje-btn" onclick="RJE.saveProf()" style="margin-top:10px">Save profile &amp; re-score jobs</button></div>';
+ }
+ window.RJE={
+   go:function(v){VIEW=v;render();},
+   setF:function(k,v){var d=db();d.filters[k]=(k==='radius')?v.replace(' miles',''):v;S(d);render();},
+   tgType:function(t){var d=db();var i=d.filters.types.indexOf(t);if(i>=0)d.filters.types.splice(i,1);else d.filters.types.unshift(t);S(d);render();},
+   addJob:function(){var d=db();var j={id:'j'+Date.now(),title:el('jf-title').value,employer:el('jf-emp').value,location:el('jf-loc').value,distanceMi:el('jf-dist').value,salaryVal:el('jf-sal').value,salaryUnit:el('jf-unit').value,hoursWk:el('jf-hrs').value,daysWk:el('jf-days').value,shift:el('jf-shift').value,cqc:el('jf-cqc').value,link:el('jf-link').value,status:'Saved',savedAt:new Date().toISOString()};if(!j.title){alert('Add a job title');return;}j.matchScore=score(j,d.profile);d.jobs.unshift(j);S(d);render();},
+   setStatus:function(id,st){var d=db();var j=d.jobs.filter(function(x){return x.id===id;})[0];if(j){j.status=st;if(st==='Applied'&&d.apps.indexOf(id)<0)d.apps.push(id);}S(d);render();},
+   del:function(id){var d=db();d.jobs=d.jobs.filter(function(x){return x.id!==id;});S(d);render();},
+   setDoc:function(k,v){var d=db();d.docs[k]=v;S(d);},
+   addIview:function(){var d=db();var iv={emp:el('iv-emp').value,date:el('iv-date').value,time:el('iv-time').value,cqc:el('iv-cqc').value};d.interviews.unshift(iv);S(d);
+     try{var DK='royal_diary_v1';var dia=JSON.parse(localStorage.getItem(DK)||'[]');if(Array.isArray(dia)){dia.unshift({id:'iv'+Date.now(),date:iv.date,title:'Interview — '+iv.emp,type:'Appointment',body:'Job interview at '+iv.emp+' '+(iv.time||'')+'. Blocked from Job Engine.'});localStorage.setItem(DK,JSON.stringify(dia));}}catch(e){}
+     render();},
+   saveProf:function(){var d=db();d.profile.quals=el('pf-quals').value;d.profile.expYears=el('pf-exp').value;d.profile.skills=el('pf-skills').value;d.profile.certs=el('pf-certs').value;d.profile.currentIncome=el('pf-cur').value;d.profile.targetMonthly=el('pf-tgt').value;d.profile.maxRadius=el('pf-rad').value;d.jobs.forEach(function(j){j.matchScore=score(j,d.profile);});S(d);alert('Profile saved and jobs re-scored.');render();}
+ };
+ function boot(){ inject(); if(el('s-jobengine')&&el('s-jobengine').classList.contains('active')){ if(!el('rje-body').innerHTML) render(); } }
+ var _go=window.go; window.go=function(n){ if(typeof _go==='function')_go(n); if(n==='jobengine'){ inject(); render(); } };
+ inject(); setInterval(inject,1500);
+ if(document.readyState!=='loading')boot(); else document.addEventListener('DOMContentLoaded',boot);
+})();
+</script>
+
 </body>
 </html>
