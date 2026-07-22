@@ -27265,84 +27265,8 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
 #cc-add-fab{bottom:286px !important;}
 #voice-fab{bottom:352px !important;}
 </style>
-<style id="v7mob2-css">
-/* ===== MOBILE / TABLET: hide desktop sidebar, show bottom tab bar (v4.19 style) ===== */
-@media (max-width:1024px), (hover:none) and (pointer:coarse){
-  .sidebar{display:none !important;}
-  .main{margin-left:0 !important;width:100% !important;max-width:100% !important;
-    padding:10px 12px calc(84px + env(safe-area-inset-bottom,0px)) !important;box-sizing:border-box !important;}
-  html,body{overflow-x:hidden !important;}
-  #v7mob-tabs{display:flex !important;}
-  /* lift any floating buttons above the tab bar so they don't overlap */
-  #rrfh-handle{bottom:96px !important;right:16px !important;}
-  #rr-refresh-fab{bottom:160px !important;right:16px !important;}
-  #v7-read-fab,#rips-fab{bottom:224px !important;right:16px !important;}
-  #cc-fab{bottom:288px !important;right:16px !important;}
-  #cc-add-fab{bottom:352px !important;right:16px !important;}
-  #voice-fab{bottom:416px !important;right:16px !important;}
-}
-/* bottom tab bar */
-#v7mob-tabs{display:none;position:fixed;left:0;right:0;bottom:0;z-index:100000;
-  background:rgba(12,12,20,0.98);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
-  border-top:1px solid rgba(201,168,76,0.42);padding:7px 2px calc(7px + env(safe-area-inset-bottom,0px));
-  box-shadow:0 -6px 20px rgba(0,0,0,0.45);}
-#v7mob-tabs button{flex:1;background:none;border:0;color:#b9ab84;font-family:inherit;
-  display:flex;flex-direction:column;align-items:center;gap:3px;padding:3px 1px;font-size:10.5px;
-  line-height:1.05;cursor:pointer;border-radius:10px;}
-#v7mob-tabs button .ic{font-size:22px;}
-#v7mob-tabs button.on{color:#E8C96A;}
-/* full-menu sheet */
-#v7mob-sheet{display:none;position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,0.55);}
-#v7mob-sheet.on{display:block;}
-#v7mob-sheet .sh{position:absolute;left:0;right:0;bottom:0;max-height:82vh;overflow:auto;
-  background:#12121c;border-top-left-radius:20px;border-top-right-radius:20px;
-  padding:8px 14px calc(22px + env(safe-area-inset-bottom,0px));border-top:1px solid rgba(201,168,76,0.4);}
-#v7mob-sheet .sh .grab{width:40px;height:4px;border-radius:3px;background:rgba(255,255,255,0.22);margin:8px auto 12px;}
-#v7mob-sheet .sh h4{color:#E8C96A;margin:2px 4px 12px;font-size:13px;letter-spacing:1px;text-transform:uppercase;}
-#v7mob-sheet .sh button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
-  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:#F0EBE0;
-  border-radius:12px;padding:13px 14px;margin-bottom:8px;font-size:15px;font-family:inherit;cursor:pointer;}
-#v7mob-sheet .sh button:active{background:rgba(201,168,76,0.16);}
-</style>
-<script id="v7mob2-js">
-(function(){
- function homeBtn(){return [].slice.call(document.querySelectorAll('.sidebar .nav-btn,.sidebar button')).filter(function(b){return /(^|\s)Home(\s|$)/.test((b.textContent||'').trim());})[0];}
- function nav(id,tab){var b=document.getElementById(id); if(b){b.click();} else if(typeof go==='function'){go(tab);} window.scrollTo(0,0);}
- var TABS=[
-  {ic:'🏠',lab:'Home',act:function(){var h=homeBtn(); if(h){h.click();} else if(typeof go==='function'){go('command');} window.scrollTo(0,0);}},
-  {ic:'💷',lab:'Money',act:function(){nav('nb-moneyhub','moneyhub');}},
-  {ic:'📋',lab:'Rota',act:function(){nav('nb-rota','rota');}},
-  {ic:'📅',lab:'Diary',act:function(){nav('nb-diary','diary');}},
-  {ic:'☰',lab:'More',act:function(){var s=document.getElementById('v7mob-sheet'); if(s)s.classList.add('on');}}
- ];
- var bar;
- function setOn(b){if(!bar)return;for(var i=0;i<bar.children.length;i++)bar.children[i].classList.remove('on');b.classList.add('on');}
- function build(){
-  if(!document.querySelector('.sidebar'))return;
-  if(!document.getElementById('v7mob-tabs')){
-   bar=document.createElement('div');bar.id='v7mob-tabs';
-   TABS.forEach(function(t){var b=document.createElement('button');b.type='button';
-     b.innerHTML='<span class="ic">'+t.ic+'</span><span>'+t.lab+'</span>';
-     b.addEventListener('click',function(){setOn(b);t.act();});bar.appendChild(b);});
-   document.body.appendChild(bar); if(bar.children[0])bar.children[0].classList.add('on');
-  }
-  if(!document.getElementById('v7mob-sheet')){
-   var s=document.createElement('div');s.id='v7mob-sheet';
-   var sh=document.createElement('div');sh.className='sh';
-   sh.innerHTML='<div class="grab"></div><h4>All sections</h4>';
-   [].slice.call(document.querySelectorAll('.sidebar .nav-btn')).forEach(function(nb){
-     if(nb.id==='nb-tracker')return; var txt=(nb.textContent||'').trim(); if(!txt)return;
-     var b=document.createElement('button');b.type='button';b.textContent=txt;
-     b.addEventListener('click',function(){nb.click();s.classList.remove('on');window.scrollTo(0,0);});
-     sh.appendChild(b);
-   });
-   s.appendChild(sh);
-   s.addEventListener('click',function(e){if(e.target===s)s.classList.remove('on');});
-   document.body.appendChild(s);
-  }
- }
- build(); setInterval(build,1500);
-})();</script>
+
+
 <style id="v7mobgrid-css">
 /* MOBILE: stop desktop multi-column grids squashing; stack to 2 columns */
 @media (max-width:760px), (hover:none) and (pointer:coarse) and (max-width:900px){
@@ -27376,5 +27300,122 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
   .home-desc{font-size:14px !important;}
 }
 </style>
+<style id="v7mob2-css">
+/* ===== MOBILE / TABLET: hide desktop sidebar, categorised bottom tab bar (v4.19 style) ===== */
+@media (max-width:1024px), (hover:none) and (pointer:coarse){
+  .sidebar{display:none !important;}
+  .main{margin-left:0 !important;width:100% !important;max-width:100% !important;
+    padding:12px 14px calc(88px + env(safe-area-inset-bottom,0px)) !important;box-sizing:border-box !important;}
+  html,body{overflow-x:hidden !important;}
+  #v7mob-tabs{display:flex !important;}
+  #rrfh-handle{bottom:98px !important;right:14px !important;}
+  #rr-refresh-fab{bottom:162px !important;right:14px !important;}
+  #v7-read-fab,#rips-fab{bottom:226px !important;right:14px !important;}
+  #cc-fab{bottom:290px !important;right:14px !important;}
+  #cc-add-fab{bottom:354px !important;right:14px !important;}
+  #voice-fab{bottom:418px !important;right:14px !important;}
+}
+#v7mob-tabs{display:none;position:fixed;left:0;right:0;bottom:0;z-index:100000;
+  background:rgba(10,10,15,0.98);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+  border-top:1px solid rgba(201,168,76,0.28);padding:6px 2px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 20px rgba(0,0,0,0.45);}
+#v7mob-tabs button{flex:1;background:none;border:0;color:#9b8f70;font-family:inherit;
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 1px;font-size:9.5px;font-weight:700;
+  letter-spacing:.4px;text-transform:uppercase;line-height:1;cursor:pointer;border-radius:10px;}
+#v7mob-tabs button .ic{font-size:21px;}
+#v7mob-tabs button.on{color:#E8C96A;}
+#v7mob-sheet{display:none;position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,0.55);}
+#v7mob-sheet.on{display:block;}
+#v7mob-sheet .sh{position:absolute;left:0;right:0;bottom:0;max-height:84vh;overflow:auto;
+  background:#12121c;border-top-left-radius:22px;border-top-right-radius:22px;
+  padding:8px 16px calc(24px + env(safe-area-inset-bottom,0px));border-top:1px solid rgba(201,168,76,0.4);}
+#v7mob-sheet .grab{width:42px;height:4px;border-radius:3px;background:rgba(255,255,255,0.22);margin:8px auto 14px;}
+#v7mob-sheet .sh h4{color:#9db4d6;text-align:center;margin:2px 4px 16px;font-size:19px;font-family:Georgia,serif;font-weight:400;}
+#v7mob-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+#v7mob-grid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+  background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.07);border-radius:16px;
+  padding:24px 10px;color:#cfc6b2;font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;
+  font-family:inherit;cursor:pointer;text-align:center;}
+#v7mob-grid button:active{background:rgba(201,168,76,0.16);}
+#v7mob-grid button .gic{font-size:28px;}
+</style>
+<script id="v7mob2-js">
+(function(){
+ function homeBtn(){return [].slice.call(document.querySelectorAll('.sidebar .nav-btn,.sidebar button')).filter(function(b){return /(^|\s)Home(\s|$)/.test((b.textContent||'').trim());})[0];}
+ function goTab(id){ if(typeof go==='function'){go(id);} else {var b=document.getElementById('nb-'+id); if(b)b.click();} window.scrollTo(0,0); }
+ function callFn(name){ try{ if(typeof window[name]==='function'){window[name]();} }catch(e){} }
+ var GROUPS={
+   money:{title:'Money',items:[
+     {ic:'💷',lbl:'Money Hub',run:function(){goTab('moneyhub');}},
+     {ic:'💳',lbl:'Debts',run:function(){goTab('debts');}},
+     {ic:'💎',lbl:'Finance Plan',run:function(){goTab('fin');}},
+     {ic:'📋',lbl:'Rota',run:function(){goTab('rota');}},
+     {ic:'📊',lbl:'Reports',run:function(){goTab('report');}},
+     {ic:'💰',lbl:'Income',run:function(){goTab('income');}},
+     {ic:'🧾',lbl:'Spending',run:function(){goTab('expense');}}
+   ]},
+   plan:{title:'Plan',items:[
+     {ic:'🎯',lbl:'17 Goals',run:function(){goTab('goals');}},
+     {ic:'🕐',lbl:'Schedule',run:function(){goTab('sched');}},
+     {ic:'📔',lbl:'Diary',run:function(){goTab('diary');}}
+   ]},
+   royal:{title:'Royal',items:[
+     {ic:'⚖️',lbl:'Chieftaincy',run:function(){goTab('chief');}},
+     {ic:'🏰',lbl:'Residence',run:function(){goTab('residence');}},
+     {ic:'🏘️',lbl:'Family',run:function(){goTab('family');}},
+     {ic:'🙏',lbl:'Prayers',run:function(){goTab('pray');}},
+     {ic:'👥',lbl:'Contacts',run:function(){callFn('openContactsManager');}},
+     {ic:'👑',lbl:'Exec Wealth',run:function(){goTab('wealth');}}
+   ]},
+   more:{title:'Settings & System',items:[
+     {ic:'🎙️',lbl:'AI Chat & Search',run:function(){callFn('voiceToggle');}},
+     {ic:'👤',lbl:'Profile',run:function(){goTab('profile');}},
+     {ic:'⚙️',lbl:'Settings',run:function(){goTab('settings');}},
+     {ic:'📊',lbl:'Reports',run:function(){goTab('report');}}
+   ]}
+ };
+ var TABS=[
+   {ic:'👑',lab:'Home',run:function(){var h=homeBtn(); if(h){h.click();} else {goTab('command');} window.scrollTo(0,0);}},
+   {ic:'💷',lab:'Money',group:'money'},
+   {ic:'🧭',lab:'Command',run:function(){goTab('command');}},
+   {ic:'🎯',lab:'Plan',group:'plan'},
+   {ic:'🏰',lab:'Royal',group:'royal'},
+   {ic:'⚙️',lab:'More',group:'more'}
+ ];
+ var bar;
+ function setOn(b){if(!bar)return;for(var i=0;i<bar.children.length;i++)bar.children[i].classList.remove('on');if(b)b.classList.add('on');}
+ function openGroup(name){
+   var g=GROUPS[name]; if(!g)return;
+   var s=document.getElementById('v7mob-sheet'); var grid=document.getElementById('v7mob-grid'); var h=document.getElementById('v7mob-title');
+   if(!s||!grid)return;
+   h.textContent=g.title; grid.innerHTML='';
+   g.items.forEach(function(it){
+     var b=document.createElement('button');b.type='button';
+     b.innerHTML='<span class="gic">'+it.ic+'</span><span>'+it.lbl+'</span>';
+     b.addEventListener('click',function(){ s.classList.remove('on'); it.run(); });
+     grid.appendChild(b);
+   });
+   s.classList.add('on');
+ }
+ function build(){
+  if(!document.querySelector('.sidebar'))return;
+  if(!document.getElementById('v7mob-tabs')){
+   bar=document.createElement('div');bar.id='v7mob-tabs';
+   TABS.forEach(function(t){var b=document.createElement('button');b.type='button';
+     b.innerHTML='<span class="ic">'+t.ic+'</span><span>'+t.lab+'</span>';
+     b.addEventListener('click',function(){ setOn(b); if(t.group){openGroup(t.group);} else {t.run();} });
+     bar.appendChild(b);});
+   document.body.appendChild(bar); if(bar.children[0])bar.children[0].classList.add('on');
+  }
+  if(!document.getElementById('v7mob-sheet')){
+   var s=document.createElement('div');s.id='v7mob-sheet';
+   var sh=document.createElement('div');sh.className='sh';
+   sh.innerHTML='<div class="grab"></div><h4 id="v7mob-title">Menu</h4><div id="v7mob-grid"></div>';
+   s.appendChild(sh);
+   s.addEventListener('click',function(e){if(e.target===s)s.classList.remove('on');});
+   document.body.appendChild(s);
+  }
+ }
+ build(); setInterval(build,1500);
+})();</script>
 </body>
 </html>
