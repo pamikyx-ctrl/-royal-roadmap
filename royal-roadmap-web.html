@@ -18599,70 +18599,10 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
 </script>
 
 
-<style id="v7mobile-css">
-/* v7 mobile layout: collapse the desktop sidebar into a slide-out drawer on phones/small tablets. */
-#v7-ham{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:10px;z-index:9200;width:46px;height:46px;border-radius:13px;border:1px solid rgba(201,168,76,0.45);background:rgba(18,18,30,0.92);color:#E8C96A;font-size:21px;align-items:center;justify-content:center;cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 16px rgba(0,0,0,0.4);}
-#v7-ham-back{position:fixed;inset:0;z-index:8900;background:rgba(0,0,0,0.55);opacity:0;pointer-events:none;transition:opacity .28s;}
-#v7-ham-back.on{opacity:1;pointer-events:auto;}
-@media (max-width:1024px){
-  .sidebar{transform:translateX(-102%);transition:transform .28s ease;width:min(86vw,300px)!important;z-index:9000!important;box-shadow:0 0 46px rgba(0,0,0,0.55);}
-  .sidebar.v7-open{transform:translateX(0);}
-  .main{margin-left:0!important;}
-  #v7-ham{display:flex!important;}
-  /* nudge page content down a touch so the ☰ button doesn't cover headings */
-  .main{padding-top:calc(env(safe-area-inset-top,0px) + 4px);}
-}
-</style>
-<script id="v7mobile-js">
-(function(){
-  function build(){
-    if(document.getElementById('v7-ham'))return;
-    var sb=document.querySelector('.sidebar'); if(!sb)return;
-    var ham=document.createElement('button');ham.id='v7-ham';ham.type='button';ham.setAttribute('aria-label','Open menu');ham.textContent='☰';
-    var back=document.createElement('div');back.id='v7-ham-back';
-    document.body.appendChild(ham);document.body.appendChild(back);
-    function open(){sb.classList.add('v7-open');back.classList.add('on');ham.textContent='✕';}
-    function close(){sb.classList.remove('v7-open');back.classList.remove('on');ham.textContent='☰';}
-    ham.addEventListener('click',function(e){e.stopPropagation();sb.classList.contains('v7-open')?close():open();});
-    back.addEventListener('click',close);
-    sb.addEventListener('click',function(e){var t=e.target;while(t&&t!==sb){if(t.classList&&t.classList.contains('nav-btn')){setTimeout(close,70);break;}t=t.parentNode;}});
-  }
-  build(); setInterval(build,1500);
-})();
-</script>
 
-<style id="v7btabs-css">
-#v7btabs{display:none;}
-@media (max-width:1024px){
- #v7-ham{display:none!important;}
- #v7btabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:9300;background:rgba(14,14,24,0.97);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(201,168,76,0.4);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 18px rgba(0,0,0,0.4);}
- #v7btabs button{flex:1;background:none;border:0;color:#c9bb93;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;cursor:pointer;font-size:11px;line-height:1.1;border-radius:10px;}
- #v7btabs button .ic{font-size:20px;}
- #v7btabs button.on{color:#E8C96A;background:rgba(201,168,76,0.14);}
- .main{padding-bottom:calc(74px + env(safe-area-inset-bottom,0px))!important;}
-}
-</style>
-<script id="v7btabs-js">
-(function(){
- var TABS=[['👑','Command','command'],['💷','Money','moneyhub'],['📋','Rota','rota'],['📅','Diary','diary']];
- function build(){
-  if(document.getElementById('v7btabs'))return;
-  if(!document.querySelector('.sidebar'))return;
-  var bar=document.createElement('div');bar.id='v7btabs';
-  function setActive(btn){for(var i=0;i<bar.children.length;i++)bar.children[i].classList.remove('on');if(btn)btn.classList.add('on');}
-  TABS.forEach(function(t){
-    var b=document.createElement('button');b.type='button';
-    b.innerHTML='<span class="ic">'+t[0]+'</span><span>'+t[1]+'</span>';
-    b.addEventListener('click',function(){var nav=document.getElementById('nb-'+t[2]);if(nav)nav.click();setActive(b);});
-    bar.appendChild(b);
-  });
-  var more=document.createElement('button');more.type='button';
-  more.innerHTML='<span class="ic">☰</span><span>More</span>';
-  more.addEventListener('click',function(){var h=document.getElementById('v7-ham');if(h)h.click();});
-  bar.appendChild(more);
-  document.body.appendChild(bar);
- }
- build();setInterval(build,1500);
-})();</script>
+
+
+
+
 </body>
 </html>
