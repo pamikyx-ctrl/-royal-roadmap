@@ -27338,20 +27338,21 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
 #v7mob-grid button:active{background:rgba(201,168,76,0.16);}
 #v7mob-grid button .gic{font-size:28px;}
 </style>
+
 <script id="v7mob2-js">
 (function(){
- function homeBtn(){return [].slice.call(document.querySelectorAll('.sidebar .nav-btn,.sidebar button')).filter(function(b){return /(^|\s)Home(\s|$)/.test((b.textContent||'').trim());})[0];}
  function goTab(id){ if(typeof go==='function'){go(id);} else {var b=document.getElementById('nb-'+id); if(b)b.click();} window.scrollTo(0,0); }
  function callFn(name){ try{ if(typeof window[name]==='function'){window[name]();} }catch(e){} }
+ function clickByText(txt){ var b=[].slice.call(document.querySelectorAll('button,a')).filter(function(e){return (e.textContent||'').trim().indexOf(txt)>=0;})[0]; if(b)b.click(); }
  var GROUPS={
    money:{title:'Money',items:[
      {ic:'💷',lbl:'Money Hub',run:function(){goTab('moneyhub');}},
      {ic:'💳',lbl:'Debts',run:function(){goTab('debts');}},
      {ic:'💎',lbl:'Finance Plan',run:function(){goTab('fin');}},
-     {ic:'📋',lbl:'Rota',run:function(){goTab('rota');}},
-     {ic:'📊',lbl:'Reports',run:function(){goTab('report');}},
      {ic:'💰',lbl:'Income',run:function(){goTab('income');}},
-     {ic:'🧾',lbl:'Spending',run:function(){goTab('expense');}}
+     {ic:'🧾',lbl:'Spending',run:function(){goTab('expense');}},
+     {ic:'📊',lbl:'Reports',run:function(){goTab('report');}},
+     {ic:'📋',lbl:'Rota & Invoicing',run:function(){goTab('rota');}}
    ]},
    plan:{title:'Plan',items:[
      {ic:'🎯',lbl:'17 Goals',run:function(){goTab('goals');}},
@@ -27363,18 +27364,19 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
      {ic:'🏰',lbl:'Residence',run:function(){goTab('residence');}},
      {ic:'🏘️',lbl:'Family',run:function(){goTab('family');}},
      {ic:'🙏',lbl:'Prayers',run:function(){goTab('pray');}},
-     {ic:'👥',lbl:'Contacts',run:function(){callFn('openContactsManager');}},
-     {ic:'👑',lbl:'Exec Wealth',run:function(){goTab('wealth');}}
+     {ic:'👑',lbl:'Exec Wealth',run:function(){goTab('wealth');}},
+     {ic:'👥',lbl:'Contacts',run:function(){callFn('openContactsManager');}}
    ]},
    more:{title:'Settings & System',items:[
-     {ic:'🎙️',lbl:'AI Chat & Search',run:function(){callFn('voiceToggle');}},
      {ic:'👤',lbl:'Profile',run:function(){goTab('profile');}},
      {ic:'⚙️',lbl:'Settings',run:function(){goTab('settings');}},
-     {ic:'📊',lbl:'Reports',run:function(){goTab('report');}}
+     {ic:'🎙️',lbl:'AI Chat & Search',run:function(){callFn('voiceToggle');}},
+     {ic:'🔄',lbl:'Sync Devices',run:function(){clickByText('Sync Between Devices');}},
+     {ic:'📲',lbl:'Install App',run:function(){clickByText('Install as App');}}
    ]}
  };
  var TABS=[
-   {ic:'👑',lab:'Home',run:function(){var h=homeBtn(); if(h){h.click();} else {goTab('command');} window.scrollTo(0,0);}},
+   {ic:'👑',lab:'Home',run:function(){goTab('home');}},
    {ic:'💷',lab:'Money',group:'money'},
    {ic:'🧭',lab:'Command',run:function(){goTab('command');}},
    {ic:'🎯',lab:'Plan',group:'plan'},
