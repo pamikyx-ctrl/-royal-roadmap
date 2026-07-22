@@ -27343,5 +27343,38 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
  }
  build(); setInterval(build,1500);
 })();</script>
+<style id="v7mobgrid-css">
+/* MOBILE: stop desktop multi-column grids squashing; stack to 2 columns */
+@media (max-width:760px), (hover:none) and (pointer:coarse) and (max-width:900px){
+.report-stat-row,
+.mh-kpi-row,
+#s-royaldaily .rd-adv,
+.sb-cd-grid,
+.modal-stats,
+.tracker-total-row,
+.tc-stats,
+.cc-stats,
+.loan-stats,
+.lfp-timeline-track,
+.invoice-strip,
+.plan-expense-strip,
+.cc-type-row,
+.rrcc-scope .rg-g4,
+#s-scholars .scl-kpis,
+#s-report .rrep-kpis,
+#s-royaldaily .rd-kpis,
+.rftl-sum,
+.mh-forecast-row,
+.plan-type-grid,
+#mh-fic-livecharts,
+.rrcc-scope .rg-g3,
+.rfmr-grid{grid-template-columns:repeat(2,1fr) !important;}
+  .phase-grid{grid-template-columns:1fr !important;gap:14px !important;}
+  .phase-card-inner{min-height:150px !important;}
+  .main, .main *{max-width:100% !important;box-sizing:border-box !important;}
+  .home-title{font-size:28px !important;line-height:1.15 !important;}
+  .home-desc{font-size:14px !important;}
+}
+</style>
 </body>
 </html>
