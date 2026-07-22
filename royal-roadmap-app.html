@@ -27340,55 +27340,74 @@ setInterval(function(){var t=document.getElementById('v7-site-time');if(t){var n
 </style>
 
 
+
 <script id="v7mob2-js">
 (function(){
- function goTab(id){ if(typeof go==='function'){go(id);} else {var b=document.getElementById('nb-'+id); if(b)b.click();} window.scrollTo(0,0); }
- function callFn(name){ try{ if(typeof window[name]==='function'){window[name]();} }catch(e){} }
+ function strip(s){return (s||'').replace(/\s+/g,' ').trim().replace(/^[^0-9A-Za-z(]+/,'').trim();}
+ function clickNav(label){
+   var els=[].slice.call(document.querySelectorAll('.sidebar .nav-btn'));
+   var L=label.toLowerCase();
+   var el=els.filter(function(e){return strip(e.textContent).toLowerCase()===L;})[0];
+   if(!el) el=els.filter(function(e){return strip(e.textContent).toLowerCase().indexOf(L)===0;})[0];
+   if(!el) el=els.filter(function(e){return (e.textContent||'').toLowerCase().indexOf(L)>=0;})[0];
+   if(el){el.click(); window.scrollTo(0,0);}
+ }
  function clickByText(txt){ var b=[].slice.call(document.querySelectorAll('button,a')).filter(function(e){return (e.textContent||'').trim().indexOf(txt)>=0;})[0]; if(b)b.click(); }
+ function N(ic,lbl,nav){return {ic:ic,lbl:lbl,run:function(){clickNav(nav);}};}
  var GROUPS={
+   command:{title:'Command',items:[
+     N('🧭','Command Centre','Command Centre'),
+     N('💬','Claude AI Chat','Claude AI Chat'),
+     N('🎙️','AI Chat & Search','AI Chat & Search')
+   ]},
    money:{title:'Money',items:[
-     {ic:'💷',lbl:'Money Hub',run:function(){goTab('moneyhub');}},
-     {ic:'💳',lbl:'Debts',run:function(){goTab('debts');}},
-     {ic:'💎',lbl:'Finance Plan',run:function(){goTab('fin');}},
-     {ic:'💰',lbl:'Income',run:function(){goTab('income');}},
-     {ic:'🧾',lbl:'Spending',run:function(){goTab('expense');}},
-     {ic:'📊',lbl:'Reports',run:function(){goTab('report');}},
-     {ic:'📋',lbl:'Rota & Invoicing',run:function(){goTab('rota');}},
-     {ic:'👑',lbl:'Exec Wealth',run:function(){goTab('wealth');}}
+     N('💷','Money Hub','Money Hub'),
+     N('💳','Debts','Debt Management'),
+     N('💎','Finance Plan','Finance Plan'),
+     N('💷','Finance','Finance'),
+     N('💰','Income & Wealth','Income & Wealth'),
+     N('🧾','Spending','Spending'),
+     N('📊','Reports','Reports'),
+     N('📋','Rota & Invoicing','Rota & Invoicing'),
+     N('📈','Placement Intelligence','Placement Intelligence'),
+     N('🤖','AI CFO — Wealth','AI CFO'),
+     N('👑','Executive Wealth','Executive Wealth')
    ]},
    plan:{title:'Plan',items:[
-     {ic:'🎯',lbl:'17 Goals',run:function(){goTab('goals');}},
-     {ic:'📖',lbl:'Goals Book',run:function(){goTab('goalbook');}},
-     {ic:'🕐',lbl:'Schedule',run:function(){goTab('sched');}},
-     {ic:'📔',lbl:'Royal Diary',run:function(){goTab('diary');}},
-     {ic:'📅',lbl:'iCalender',run:function(){goTab('icalender');}},
-     {ic:'☀️',lbl:'Royal Daily',run:function(){goTab('royaldaily');}}
+     N('🎯','17 Goals','All 17 Goals'),
+     N('🕐','Daily Schedule','Daily Schedule'),
+     N('📔','Royal Diary','Royal Diary'),
+     N('📅','Legacy Daily','Legacy Daily'),
+     N('☀️','Royal Daily','Royal Daily')
    ]},
    royal:{title:'Royal',items:[
-     {ic:'⚖️',lbl:'Chieftaincy',run:function(){goTab('chief');}},
-     {ic:'🏰',lbl:'Residence',run:function(){goTab('residence');}},
-     {ic:'🏘️',lbl:'Family',run:function(){goTab('family');}},
-     {ic:'🙏',lbl:'Prayers',run:function(){goTab('pray');}},
-     {ic:'📿',lbl:'Prayer Book',run:function(){goTab('prayerbook');}},
-     {ic:'🎓',lbl:'Scholars',run:function(){goTab('scholars');}},
-     {ic:'📚',lbl:'Scholars Book',run:function(){goTab('scholarbook');}},
-     {ic:'📜',lbl:'Identity Book',run:function(){goTab('identity');}}
+     N('⚖️','Chieftaincy & Coronation','Chieftaincy & Coronation'),
+     N('🌐','Website','Website'),
+     N('🏰','Royal Projects','Royal Projects'),
+     N('📜','Legacy Projects','Legacy Projects'),
+     N('👸','Queen Mother\u2019s House','Queen Mother'),
+     N('🤝','Investors','Investors'),
+     N('👥','Stakeholders','Stakeholders'),
+     N('🏛️','Council','Council'),
+     N('🎖️','Milestones','Milestones'),
+     N('🏡','Royal Residence','Royal Residence'),
+     N('🏘️','Family Support','Family Support'),
+     N('🎓','Royal Scholars','Royal Scholars'),
+     N('🙏','Royal Prayers','Royal Prayers')
    ]},
    more:{title:'Settings & System',items:[
-     {ic:'👤',lbl:'Profile',run:function(){goTab('profile');}},
-     {ic:'⚙️',lbl:'Settings',run:function(){goTab('settings');}},
-     {ic:'🎙️',lbl:'AI Chat & Search',run:function(){callFn('voiceToggle');}},
-     {ic:'👥',lbl:'Contacts',run:function(){callFn('openContactsManager');}},
-     {ic:'📇',lbl:'Contact Book',run:function(){goTab('contactbook');}},
-     {ic:'📕',lbl:'Royal Library',run:function(){goTab('book');}},
+     N('👤','My Profile','My Profile'),
+     N('🔒','Renewals (Private)','Renewals'),
+     N('📇','Edit Contacts','Edit Contacts'),
+     N('⚙️','Settings','Settings'),
      {ic:'🔄',lbl:'Sync Devices',run:function(){clickByText('Sync Between Devices');}},
      {ic:'📲',lbl:'Install App',run:function(){clickByText('Install as App');}}
    ]}
  };
  var TABS=[
-   {ic:'👑',lab:'Home',run:function(){goTab('home');}},
+   {ic:'👑',lab:'Home',run:function(){clickNav('Home');}},
    {ic:'💷',lab:'Money',group:'money'},
-   {ic:'🧭',lab:'Command',run:function(){goTab('command');}},
+   {ic:'🧭',lab:'Command',group:'command'},
    {ic:'🎯',lab:'Plan',group:'plan'},
    {ic:'🏰',lab:'Royal',group:'royal'},
    {ic:'⚙️',lab:'More',group:'more'}
