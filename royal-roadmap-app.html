@@ -24059,7 +24059,7 @@ function renderPage(){
   h+='<div class="rpbk-body">'+esc(p.body||'')+'</div>';
   h+='<div class="rpbk-pageno">— PAGE '+(curIdx+1)+' OF '+ps.length+' —</div>';
   h+='</div>';
-  h+='<div class="rg2-arrows" style="margin-top:12px;"><span class="rg2-chip" onclick="rpbTurn(-1)">⬅ Previous</span><span class="rg2-chip" id="rpbk-speak" onclick="rpbSpeak()">🔊 Read to me</span><span class="rg2-chip" onclick="rpbToc()">🕊️ Prayer Room</span><span class="rg2-chip" onclick="rpbGo(\'home\')">🏠 Home</span><span class="rg2-chip" onclick="rpbTurn(1)">Next ➡</span></div>';
+  h+='<div class="rg2-arrows" style="margin-top:12px;"><span class="rg2-chip" onclick="rpbTurn(-1)">⬅ Previous</span><span class="rg2-chip" id="rpbk-speak" onclick="rpbSpeak()">🔊 Read to me</span><span class="rg2-chip" onclick="rpbToc()">📖 Contents</span><span class="rg2-chip" onclick="rpbTurn(1)">Next ➡</span></div>';
   h+='</div>';
   r.innerHTML=h;
   var page=r.querySelector('.rpbk-page');var x0=null;
