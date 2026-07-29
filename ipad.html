@@ -27128,6 +27128,25 @@ function boot(){
   }
   load();
 }
+// add "➕ Add your own…" to every content dropdown inside register forms
+function rcxDecorateSelects(){
+  var scope=document.getElementById("rcx-ov"); if(!scope) return;
+  var skip=/(tf-status|tf-dir|ef-gender|ef-living|ef-verify|tf-cs|tf-cr|tt-s)$/;
+  scope.querySelectorAll("select").forEach(function(sel){
+    if(sel.getAttribute("data-own")) return;
+    if(sel.id && skip.test(sel.id)) return;
+    if(sel.querySelector('option[value="__rcxadd__"]')) return;
+    var o=document.createElement("option"); o.value="__rcxadd__"; o.textContent="➕ Add your own…"; sel.appendChild(o);
+    sel.setAttribute("data-own","1");
+    sel.addEventListener("change",function(){
+      if(sel.value==="__rcxadd__"){
+        var v=(window.prompt("Add your own option:")||"").trim();
+        if(v){ var op=document.createElement("option"); op.value=v; op.textContent=v; sel.insertBefore(op, sel.querySelector('option[value="__rcxadd__"]')); sel.value=v; }
+        else { sel.selectedIndex=0; }
+      }
+    });
+  });
+}
 function showRegister(){
   if(!document.getElementById("s-rcontacts")) boot();
   document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
@@ -27164,6 +27183,8 @@ setTimeout(boot,1200); setTimeout(hookNav,2600); setTimeout(hookNav,4200);
 setTimeout(maybeHash,700); setTimeout(maybeHash,1600); setTimeout(maybeHash,3000);
 // keep nav item alive if the app rebuilds its sidebar
 try{ var _mo=new MutationObserver(function(){ if(!document.getElementById("nb-rcontacts")) hookNav(); }); var _sb=document.querySelector(".sidebar"); if(_sb) _mo.observe(_sb,{childList:true,subtree:true}); }catch(e){}
+// decorate every register-form dropdown with "➕ Add your own…" whenever a form opens
+try{ var _ovo=overlay(); new MutationObserver(function(){ try{ rcxDecorateSelects(); }catch(e){} }).observe(_ovo,{childList:true,subtree:true}); }catch(e){}
 })();
 </script>
 
