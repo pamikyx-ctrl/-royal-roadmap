@@ -14057,7 +14057,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v7.1.2-rcx';
+window.ROYAL_APP_VERSION='v7.1.3-rcx';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -28078,7 +28078,7 @@ function fxFreezeAll(){
   var h=fxHistLoad(); var need={};
   store.txns.forEach(function(t){ if(t.gbpFrozen==null){ var v=txValue(t); if(v.cur==="GHS" && !t.rate && t.date && !h[t.date]) need[t.date]=1; } });
   var dates=Object.keys(need);
-  var freezeNow=function(){ var ch=false; store.txns.forEach(function(t){ if(t.gbpFrozen==null){ if(fxFreeze(t)!=null) ch=true; } }); if(ch){ save(); try{render();}catch(e){} refreshOpenProfile(); } };
+  var freezeNow=function(){ var ch=false; store.txns.forEach(function(t){ if(t.gbpFrozen==null){ if(fxFreeze(t)!=null) ch=true; } }); if(ch){ save(); try{render();}catch(e){} try{rcxGoalOverlay();}catch(e){} refreshOpenProfile(); } };
   if(!dates.length || typeof fetch!=="function"){ freezeNow(); return; }
   var done=0;
   dates.forEach(function(d){
@@ -28755,6 +28755,7 @@ function goalFunded(uid){
 }
 function rcxGoalOverlay(){
   var scr=document.getElementById("s-goals"); if(!scr) return;
+  if(!store) load(); try{ fxFreezeAll(); }catch(e){}  // make sure £ values exist before computing funding
   var goals=goalList(); if(!goals.length) return; var byUid={},byTitle={}; goals.forEach(function(g){byUid[g.uid]=g;byTitle[g.title]=g;});
   scr.querySelectorAll(".gname").forEach(function(nameEl){
     var card=(nameEl.closest&&nameEl.closest("[data-uid]"))||nameEl.parentElement; if(!card)return;
@@ -28935,6 +28936,7 @@ function boot(){
     if(ours) return; clearTimeout(_gt); _gt=setTimeout(function(){ try{rcxGoalOverlay();}catch(e){} },350);
   }).observe(_gs,{childList:true,subtree:true}); } }catch(e){}
   load();
+  try{ fxFreezeAll(); }catch(e){}  // freeze £ values on load so Goals & totals are ready even before the register screen is opened
 }
 // add "➕ Add your own…" to every content dropdown inside register forms
 var LS_CUST="royal_rcx_custom_v1";
