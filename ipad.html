@@ -14057,7 +14057,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v7.1.0-rcx-ai';
+window.ROYAL_APP_VERSION='v7.1.1-rcx';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -28219,7 +28219,7 @@ function listView(list){
       '<div class="rcx-qa" onclick="event.stopPropagation()">'+
         qa("👁","RCX.open(\'"+c.id+"\')","View")+qa("✏️","RCX.edit(\'"+c.id+"\')","Edit")+
         qa("💷","RCX.addTxn(\'"+c.id+"\',null)","Add transaction")+
-        (mainPhone(c)?qa("📞","window.location.href='tel:"+encodeURIComponent(mainPhone(c))+"'","Call")+qa("💬","RCX.wa(\'"+c.id+"\')","WhatsApp"):"")+
+        (mainPhone(c)?qa("📞","RCX.waCall(\'"+c.id+"\')","Call on WhatsApp")+qa("💬","RCX.wa(\'"+c.id+"\')","WhatsApp chat"):"")+
       '</div></div>';
   });
   return h;
@@ -28286,7 +28286,7 @@ function profileBody(c){
     '<button class="rcx-btn gold" onclick="RCX.edit(\''+c.id+'\')">✏️ Edit</button>'+
     '<button class="rcx-btn" onclick="RCX.addTxn(\''+c.id+'\',null)">💷 Add transaction</button>'+
     '<button class="rcx-btn" onclick="RCX.addComm(\''+c.id+'\')">🗨 Log communication</button>'+
-    (mainPhone(c)?'<button class="rcx-btn" onclick="window.location.href=\'tel:'+encodeURIComponent(mainPhone(c))+'\'">📞 Call</button>':"")+
+    (mainPhone(c)?'<button class="rcx-btn" onclick="RCX.waCall(\''+c.id+'\')">📞 Call on WhatsApp</button><button class="rcx-btn" onclick="RCX.wa(\''+c.id+'\')">💬 WhatsApp chat</button>':"")+
     '</div>';
   h+='<div class="rcx-sec-h">Identity</div>';
   h+=kv("Royal Contact ID",'<span class="rcx-id">'+esc(c.id)+'</span>')+kv("Full name",esc(fullName(c)))+kv("Preferred / nickname",esc([c.preferred,c.nickname].filter(Boolean).join(" / ")))+
@@ -28768,7 +28768,35 @@ function importGo(){ var cid=gv("ir-c"); if(!cid){toast("Choose a contact first"
 // ================= toast =================
 var toastT;
 function toast(msg){ var e=el("rcx-toast"); if(!e){e=document.createElement("div");e.id="rcx-toast";e.className="rcx-toast";document.body.appendChild(e);} e.textContent=msg; e.style.display="block"; clearTimeout(toastT); toastT=setTimeout(function(){e.style.display="none";},2600); }
-function wa(id){ var c=C(id); var ph=mainPhone(c).replace(/\D/g,""); if(!ph){toast("No number");return;} window.open("https://wa.me/"+ph,"_blank"); }
+function intlNumber(raw){
+  var d=(raw||"").trim();
+  if(d.indexOf("+")===0) return d.slice(1).replace(/\D/g,"");
+  d=d.replace(/\D/g,"");
+  if(d.indexOf("00")===0) d=d.slice(2);
+  else if(d.indexOf("0")===0){ if(d.length===11 && d[1]==="7") d="44"+d.slice(1); else d="233"+d.slice(1); } // 07..=UK mobile, else Ghana
+  return d;
+}
+function wa(id){ var c=C(id); var ph=mainPhone(c); if(!ph){toast("No number");return;} window.open("https://wa.me/"+intlNumber(ph),"_blank"); }
+// Call via WhatsApp: opens WhatsApp on that contact; you tap the call icon there. Audio can't be auto-recorded, so we offer a one-tap log.
+function waCall(id){
+  var c=C(id); var ph=mainPhone(c); if(!ph){ toast("No number for this contact"); return; }
+  window.open("https://wa.me/"+intlNumber(ph),"_blank");
+  toast("📲 Opening WhatsApp for "+fullName(c).split(" ")[0]+" — tap the call icon");
+  // when you come back, log the call in one step
+  el("rcx-lastcall")&&el("rcx-lastcall").remove();
+  var b=document.createElement("div"); b.id="rcx-lastcall";
+  b.style.cssText="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:500001;background:#16210f;border:1px solid rgba(90,200,140,.4);border-radius:14px;padding:10px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)";
+  b.innerHTML='<span style="color:#8fe0ac;font-size:13px">📞 Called '+esc(fullName(c))+'?</span><button class="rcx-btn sm gold" onclick="RCX.logCall(\''+id+'\')">Log it</button><button class="rcx-btn sm" onclick="var x=document.getElementById(\'rcx-lastcall\');if(x)x.remove();">Dismiss</button>';
+  document.body.appendChild(b);
+  setTimeout(function(){ var x=el("rcx-lastcall"); if(x) x.remove(); }, 30000);
+}
+function logCall(id){
+  var x=el("rcx-lastcall"); if(x) x.remove();
+  var s=window.prompt("Log the WhatsApp call — a quick note of what was discussed (optional):");
+  if(s===null) return;
+  store.comms.push({id:"CM-"+uid(""),contactId:id,date:nowISO(),time:new Date().toTimeString().slice(0,5),method:"WhatsApp call",subject:"WhatsApp call",summary:s||"",by:"Elias"});
+  audit("wacall",id); save(); toast("📞 Call logged in Communications"); refreshOpenProfile();
+}
 
 // ================= PUBLIC API =================
 // ================= AI SEARCH (type or speak) =================
@@ -28808,7 +28836,7 @@ function aiSummaryHTML(c){
   say+='</div>';
   say+='<div class="meta" style="margin-top:8px">Breakdown: '+money("GBP",st.GBP)+' sent in pounds + '+money("GHS",st.GHS)+' sent in cedis (≈ '+money("GBP",st.conv-st.GBP)+'). In cedis today ≈ '+money("GHS",ghsEq)+'.</div>';
   var h='<div class="rcx-ai-card">'+say;
-  h+='<div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap"><button class="rcx-btn gold" onclick="RCX.open(\''+c.id+'\')">👁 Open full profile</button><button class="rcx-btn" onclick="RCX.open(\''+c.id+'\',\'txns\')">💷 All transactions</button><button class="rcx-btn" onclick="RCX.edit(\''+c.id+'\')">✏️ Edit</button>'+(mainPhone(c)?'<button class="rcx-btn" onclick="window.location.href=\'tel:'+encodeURIComponent(mainPhone(c))+'\'">📞 Call</button>':'')+'</div>';
+  h+='<div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap"><button class="rcx-btn gold" onclick="RCX.open(\''+c.id+'\')">👁 Open full profile</button><button class="rcx-btn" onclick="RCX.open(\''+c.id+'\',\'txns\')">💷 All transactions</button><button class="rcx-btn" onclick="RCX.edit(\''+c.id+'\')">✏️ Edit</button>'+(mainPhone(c)?'<button class="rcx-btn" onclick="RCX.waCall(\''+c.id+'\')">📞 Call on WhatsApp</button>':'')+'</div>';
   h+='<div class="rcx-sec-h" style="margin-top:4px">Every transaction ('+ts.length+')</div>';
   if(!ts.length) h+='<div class="meta">No transactions recorded for this person yet.</div>';
   ts.slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"");}).forEach(function(t){ var v=txValue(t);
@@ -28847,7 +28875,7 @@ window.RCX={
   addComm:addComm, saveComm:saveComm, pickApple:pickApple, appleFilter:appleFilter, appleAdd:appleAdd,
   reveal:toggleReveal, exportCSV:exportCSV, stmtCSV:stmtCSV, stmtPrint:stmtPrint, viewReceipt:viewReceipt,
   del:del, dupCompare:dupCompare, merge:merge, markDiff:markDiff, importReceipt:importReceipt, importGo:importGo,
-  toMoneyHub:toMoneyHub, mhLinkAll:function(){mhLinkAll(false);}, wa:wa,
+  toMoneyHub:toMoneyHub, mhLinkAll:function(){mhLinkAll(false);}, wa:wa, waCall:waCall, logCall:logCall,
   toggleHist:function(){ histOpen=!histOpen; renderTab(); },
   histFilter:function(k,v){ if(k==="year")histYearV=v; else histPurpV=v; renderTab(); },
   addPhone:function(){pullRepeats();editRepeat.phones.push({label:"Mobile",value:""});el("ef-phones").innerHTML=phoneRows();},
