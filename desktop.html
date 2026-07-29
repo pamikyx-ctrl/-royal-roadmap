@@ -28722,23 +28722,36 @@ function boot(){
   }
   load();
 }
+function showRegister(){
+  if(!document.getElementById("s-rcontacts")) boot();
+  document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
+  var scr=document.getElementById("s-rcontacts"); if(scr) scr.classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.remove("active");});
+  var nb=document.getElementById("nb-rcontacts"); if(nb) nb.classList.add("active");
+  try{render();}catch(e){}
+  try{window.scrollTo(0,0);}catch(e){}
+}
 function hookNav(){
   if(document.getElementById("nb-rcontacts")) return;
-  var nav=document.querySelector(".sidebar .nav")||document.querySelector(".sidebar nav")||document.querySelector(".sidebar");
-  // find an existing nav button to clone style
   var ref=document.getElementById("nb-family")||document.getElementById("nb-fin")||document.querySelector(".nav-btn");
+  var a;
   if(ref && ref.parentNode){
-    var a=ref.cloneNode(true); a.id="nb-rcontacts";
-    a.setAttribute("onclick","go('rcontacts')");
-    // set label + icon text
-    a.innerHTML='<span class="nav-ico">👑</span> <span>Contacts Register</span>';
-    ref.parentNode.insertBefore(a, ref.nextSibling);
-  } else if(nav){
-    var b=document.createElement("a"); b.id="nb-rcontacts"; b.className="nav-btn"; b.setAttribute("onclick","go('rcontacts')");
-    b.innerHTML='<span class="nav-ico">👑</span> <span>Contacts Register</span>'; nav.appendChild(b);
+    a=ref.cloneNode(true);
+  } else {
+    var nav=document.querySelector(".sidebar .nav")||document.querySelector(".sidebar nav")||document.querySelector(".sidebar");
+    if(!nav) return;
+    a=document.createElement("button"); a.type="button"; a.className="nav-btn"; nav.appendChild(a);
   }
+  a.id="nb-rcontacts";
+  a.removeAttribute("data-tab");   // CRITICAL: do not inherit the cloned button's routing
+  a.removeAttribute("onclick");
+  a.setAttribute("data-rcx","1");
+  a.innerHTML='<span class="nav-ico">👑</span> <span>Contacts Register</span>';
+  a.onclick=function(e){ if(e){e.preventDefault();e.stopPropagation();} showRegister(); return false; };
+  if(ref && ref.parentNode && a.parentNode!==ref.parentNode){ ref.parentNode.insertBefore(a, ref.nextSibling); }
+  else if(ref && ref.parentNode){ ref.parentNode.insertBefore(a, ref.nextSibling); }
 }
-function maybeHash(){ if((location.hash||"").replace("#","").toLowerCase()==="rcontacts"){ try{ if(window.go) window.go("rcontacts"); else { boot(); render(); } }catch(e){} } }
+function maybeHash(){ if((location.hash||"").replace("#","").toLowerCase()==="rcontacts"){ try{ showRegister(); }catch(e){} } }
 window.addEventListener("hashchange",maybeHash);
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot); else boot();
 setTimeout(boot,1200); setTimeout(hookNav,2600); setTimeout(hookNav,4200);
