@@ -14057,7 +14057,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v7.0.0 · 21 Jul 2026 · everything-back (v4.19.2 base + AI CFO, Placement Intelligence, Renewals, Claude Chat)';
+window.ROYAL_APP_VERSION='v7.1.0-rcx-ai';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -27978,6 +27978,19 @@ window.__RCX_SEEDSEQ__=1;
 .rcx-txn:hover{border-color:rgba(201,168,76,.4);}
 .rcx-mask{cursor:pointer;color:var(--gold,#c9a84c);text-decoration:underline dotted;}
 .rcx-nav-item .nav-ico{font-size:16px;}
+/* AI search */
+.rcx-ai{background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.03));border:1px solid rgba(201,168,76,.32);border-radius:16px;padding:14px 16px;margin:14px 0;}
+.rcx-ai .ttl{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gold-dim,#a88f3f);margin-bottom:8px;}
+.rcx-ai .row{display:flex;gap:8px;align-items:center;}
+.rcx-ai input{flex:1;min-width:0;background:var(--dark3,#1a1a22);border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:12px 14px;color:var(--ink,#efe9d8);font-family:inherit;font-size:14px;}
+.rcx-ai .mic{width:46px;height:46px;border-radius:12px;border:1px solid rgba(201,168,76,.3);background:rgba(201,168,76,.08);color:var(--gold,#c9a84c);font-size:18px;cursor:pointer;flex-shrink:0;}
+.rcx-ai .mic.live{background:#c0392b;color:#fff;animation:rcxpulse 1s infinite;}
+@keyframes rcxpulse{0%,100%{opacity:1}50%{opacity:.45}}
+.rcx-ai-card{background:var(--dark2,#16161d);border:1px solid rgba(201,168,76,.3);border-radius:14px;padding:16px;margin-top:12px;}
+.rcx-ai-say{font-size:14.5px;line-height:1.65;color:var(--ink,#efe9d8);}
+.rcx-ai-say b{color:var(--gold-light,#e6d9a8);}
+.rcx-tot-ghs{margin:-2px 0 12px;color:var(--text3,#b6ac8c);font-size:13px;}
+.rcx-tot-ghs b{color:var(--gold-light,#e6d9a8);}
 @media(max-width:1024px){#s-rcontacts{padding-bottom:100px;}}
 </style>
 
@@ -28139,6 +28152,14 @@ function render(){
     kpi(totC,"Contacts")+kpi(store.txns.length,"Transactions")+
     kpi(money("GBP",st.conv),"Total sent · all in £")+kpi(money("GHS",st.GHS),"of which sent in GH₵")+
     kpi(reviewCt,"Needs review")+'</div>';
+  // grand total also shown in cedis at today's rate
+  html+='<div class="rcx-tot-ghs">💷 Total spent so far: <b>'+money("GBP",st.conv)+'</b> &nbsp;=&nbsp; <b>'+money("GHS",st.conv*fx())+'</b> at today\'s rate (£1 = GH₵'+fx().toFixed(2)+'). Each payment stays locked at its own dated rate; this cedi figure re-reads today\'s rate whenever you open the page.</div>';
+  // AI search
+  html+='<div class="rcx-ai"><div class="ttl">🔎 Ask about anyone — type or speak</div>'+
+    '<div class="row"><input id="rcx-ai-q" placeholder="e.g. “how much have I sent Emmanuel?” or “RC-0007”" onkeydown="if(event.key===\'Enter\'){event.preventDefault();RCX.aiAsk();}">'+
+    '<button class="mic" id="rcx-ai-mic" title="Speak your question" onclick="RCX.aiMic()">🎙️</button>'+
+    '<button class="rcx-btn gold" onclick="RCX.aiAsk()">Ask</button></div>'+
+    '<div id="rcx-ai-result"></div></div>';
   // toolbar
   html+='<div class="rcx-bar">'+
     '<input class="rcx-search" id="rcx-q" placeholder="Search name, RC-ID, phone, title…" value="'+esc(state.q)+'" oninput="RCX.q(this.value)">'+
@@ -28750,8 +28771,76 @@ function toast(msg){ var e=el("rcx-toast"); if(!e){e=document.createElement("div
 function wa(id){ var c=C(id); var ph=mainPhone(c).replace(/\D/g,""); if(!ph){toast("No number");return;} window.open("https://wa.me/"+ph,"_blank"); }
 
 // ================= PUBLIC API =================
+// ================= AI SEARCH (type or speak) =================
+function aiFindContact(q){
+  q=(q||"").trim(); if(!q) return {none:true};
+  var m=q.match(/rc[-\s]?0*(\d+)/i);
+  if(m){ var id="RC-"+String(m[1]).padStart(4,"0"); var c=C(id); if(c&&!c.mergedInto) return {one:c}; }
+  var ql=" "+q.toLowerCase()+" ";
+  var stop=/\b(how|much|have|has|i|did|do|send|sent|spend|spent|to|the|with|show|me|my|money|total|for|of|about|transaction|transactions|detail|details|all|and|is|are|a|an|on|paid|pay|give|given|receive|received|from|find|search|look|who)\b/g;
+  var terms=ql.replace(/rc[-\s]?\d+/g," ").replace(stop," ").split(/\s+/).filter(function(w){return w.length>2;});
+  if(!terms.length) terms=ql.trim().split(/\s+/).filter(function(w){return w.length>2;});
+  var cands=store.contacts.filter(function(c){return !c.mergedInto&&!c.deleted;}).map(function(c){
+    var name=fullName(c).toLowerCase(); var parts=name.split(/\s+/); var score=0;
+    terms.forEach(function(t){ if(parts.indexOf(t)>=0) score+=3; else if(name.indexOf(t)>=0) score+=1; if((c.preferred||"").toLowerCase().indexOf(t)>=0||(c.nickname||"").toLowerCase().indexOf(t)>=0) score+=2; });
+    if(ql.indexOf(c.id.toLowerCase())>=0) score+=6;
+    return {c:c,score:score};
+  }).filter(function(x){return x.score>0;}).sort(function(a,b){return b.score-a.score;});
+  if(!cands.length) return {none:true};
+  if(cands.length===1 || cands[0].score>=cands[1].score+2) return {one:cands[0].c};
+  return {many:cands.slice(0,6).map(function(x){return x.c;})};
+}
+function aiSummaryHTML(c){
+  var ts=txnsFor(c.id); var st=sentTotal(c.id);
+  var sent=ts.filter(function(t){return t.direction!=="Received";});
+  var recv=ts.filter(function(t){return t.direction==="Received";});
+  var dates=ts.map(function(t){return t.date;}).filter(Boolean).sort();
+  var purp={},meth={}; sent.forEach(function(t){ if(t.purpose)purp[t.purpose]=(purp[t.purpose]||0)+1; var mm=t.provider||t.delivery; if(mm)meth[mm]=(meth[mm]||0)+1; });
+  var topP=Object.keys(purp).sort(function(a,b){return purp[b]-purp[a];})[0];
+  var topM=Object.keys(meth).sort(function(a,b){return meth[b]-meth[a];})[0];
+  var rel=((c.relationships||[])[0]||{}); var relTxt=rel.type?(rel.type==="Other"?(rel.custom||"Other"):rel.type):"";
+  var title=((c.titles||[])[0]||{}).title;
+  var ghsEq=st.conv*fx();
+  var say='<div class="rcx-ai-say">You have sent <b>'+esc(fullName(c))+'</b>'+((relTxt||title)?' ('+esc([relTxt,title].filter(Boolean).join(", "))+')':'')+', <b>'+esc(c.id)+'</b>, a total of <b>'+money("GBP",st.conv)+'</b>'+(st.conv?' (≈ '+money("GHS",ghsEq)+' at today’s rate)':'')+' across <b>'+sent.length+'</b> payment'+(sent.length===1?'':'s')+'.';
+  if(dates.length) say+=' First on <b>'+esc(dates[0])+'</b>, most recent on <b>'+esc(dates[dates.length-1])+'</b>.';
+  if(topP) say+=' Mostly for <b>'+esc(topP)+'</b>'+(topM?' via '+esc(topM):'')+'.';
+  if(recv.length) say+=' You have also received '+recv.length+' payment'+(recv.length===1?'':'s')+' from them.';
+  say+='</div>';
+  say+='<div class="meta" style="margin-top:8px">Breakdown: '+money("GBP",st.GBP)+' sent in pounds + '+money("GHS",st.GHS)+' sent in cedis (≈ '+money("GBP",st.conv-st.GBP)+'). In cedis today ≈ '+money("GHS",ghsEq)+'.</div>';
+  var h='<div class="rcx-ai-card">'+say;
+  h+='<div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap"><button class="rcx-btn gold" onclick="RCX.open(\''+c.id+'\')">👁 Open full profile</button><button class="rcx-btn" onclick="RCX.open(\''+c.id+'\',\'txns\')">💷 All transactions</button><button class="rcx-btn" onclick="RCX.edit(\''+c.id+'\')">✏️ Edit</button>'+(mainPhone(c)?'<button class="rcx-btn" onclick="window.location.href=\'tel:'+encodeURIComponent(mainPhone(c))+'\'">📞 Call</button>':'')+'</div>';
+  h+='<div class="rcx-sec-h" style="margin-top:4px">Every transaction ('+ts.length+')</div>';
+  if(!ts.length) h+='<div class="meta">No transactions recorded for this person yet.</div>';
+  ts.slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"");}).forEach(function(t){ var v=txValue(t);
+    h+='<div class="rcx-txn" onclick="RCX.txnView(\''+t.id+'\')"><div style="width:34px;text-align:center;font-size:16px">'+(t.direction==="Received"?"⬇":"⬆")+'</div>'+
+      '<div class="rcx-grow"><div class="nm">'+money(v.cur,v.amt)+(t.gbpFrozen!=null&&v.cur!=="GBP"?' <span class="meta">(£'+t.gbpFrozen.toFixed(2)+')</span>':'')+'</div>'+
+      '<div class="meta">'+esc(t.date||"date needs review")+' · '+esc(t.purpose||"—")+' · '+esc(t.status||"")+(t.code?' · '+esc(t.code):"")+'</div></div>'+
+      ((t.needsReview||[]).length?'<span class="rcx-badge rev">REVIEW</span>':'')+'</div>';
+  });
+  h+='</div>'; return h;
+}
+function aiAsk(){
+  var qb=el("rcx-ai-q"); var q=qb?qb.value:""; var res=el("rcx-ai-result"); if(!res) return;
+  if(!(q||"").trim()){ res.innerHTML=""; return; }
+  var r=aiFindContact(q);
+  if(r.none){ res.innerHTML='<div class="rcx-ai-card"><div class="rcx-ai-say">I couldn’t find anyone matching “<b>'+esc(q)+'</b>”. Try a name (e.g. “Emmanuel”) or an ID (e.g. “RC-0007”).</div></div>'; return; }
+  if(r.one){ res.innerHTML=aiSummaryHTML(r.one); return; }
+  res.innerHTML='<div class="rcx-ai-card"><div class="rcx-ai-say">I found a few people — tap the one you mean:</div><div style="margin-top:8px">'+r.many.map(function(c){return '<div class="rcx-row" onclick="RCX.aiPick(\''+c.id+'\')">'+avatar(c)+'<div class="rcx-grow"><div class="nm">'+esc(fullName(c))+'</div><div class="meta"><span class="rcx-id">'+esc(c.id)+'</span> · '+esc(relLine(c))+'</div></div></div>';}).join("")+'</div></div>';
+}
+function aiPick(id){ var c=C(id); var res=el("rcx-ai-result"); if(c&&res) res.innerHTML=aiSummaryHTML(c); }
+function aiMic(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast("Voice search isn’t supported on this browser — type instead"); var q=el("rcx-ai-q"); if(q)q.focus(); return; }
+  var rec=new SR(); rec.lang="en-GB"; rec.interimResults=false; rec.maxAlternatives=1;
+  var mic=el("rcx-ai-mic"); if(mic)mic.classList.add("live"); toast("🎙️ Listening…");
+  rec.onresult=function(e){ var t=e.results[0][0].transcript; var q=el("rcx-ai-q"); if(q)q.value=t; aiAsk(); };
+  rec.onerror=function(){ toast("Didn’t catch that — try again"); };
+  rec.onend=function(){ if(mic)mic.classList.remove("live"); };
+  try{ rec.start(); }catch(e){ if(mic)mic.classList.remove("live"); }
+}
 window.RCX={
   render:render, setView:function(v){state.view=v;render();}, q:function(v){state.q=v;render();},
+  aiAsk:aiAsk, aiPick:aiPick, aiMic:aiMic,
   f:function(k,v){ if(v==="__rcxadd__") return; state[k]=v;render();}, open:openProfile, tab:function(t){openTab=t;renderTab(); document.querySelectorAll('.rcx-tabs button').forEach(function(b){b.classList.remove('on');}); event&&event.target&&event.target.classList.add('on');},
   close:function(){ if(openId){var id=openId;closeModal();openProfile(id,"profile");} else {closeModal();render();} },
   edit:edit, saveContact:saveContact, addTxn:addTxn, saveTxn:saveTxn, txnView:txnView, delTxn:delTxn,
