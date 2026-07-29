@@ -26889,6 +26889,7 @@ function mhEntry(t,c){
     method:t.provider||t.delivery||"",source:"Royal Contacts"};
 }
 function mhSync(t,silent){ // upsert this txn's mirror in Money Hub
+  if(t&&t.fromMH){ if(!silent) toast("Already in Money Hub (history)"); return; } // history came FROM Money Hub — never mirror back
   var c=C(t.contactId); var e=mhEntry(t,c);
   var mh=mhRead(); var i=-1; for(var k=0;k<mh.length;k++){ if(mh[k]&&mh[k].rcxRef===t.id){i=k;break;} }
   if(!e){ if(i>=0){ mh.splice(i,1); mhWrite(mh); } if(!silent) toast("Not linked — currency needs confirming first"); return; }
@@ -26896,7 +26897,7 @@ function mhSync(t,silent){ // upsert this txn's mirror in Money Hub
   if(mhWrite(mh)){ if(!silent) toast("📊 Linked to Money Hub"); } else if(!silent) toast("⚠️ Money Hub storage full");
 }
 function mhRemove(tid){ var mh=mhRead(); var n=mh.filter(function(m){return !(m&&m.rcxRef===tid);}); if(n.length!==mh.length) mhWrite(n); }
-function mhLinkAll(silent){ var n=0,skip=0; store.txns.forEach(function(t){ if(mhAmountGBP(t)==null){skip++;return;} mhSync(t,true); n++; }); if(!silent) toast("📊 "+n+" linked to Money Hub"+(skip?" · "+skip+" awaiting currency":"")); return {n:n,skip:skip}; }
+function mhLinkAll(silent){ var n=0,skip=0; store.txns.forEach(function(t){ if(t.fromMH) return; if(mhAmountGBP(t)==null){skip++;return;} mhSync(t,true); n++; }); if(!silent) toast("📊 "+n+" linked to Money Hub"+(skip?" · "+skip+" awaiting currency":"")); return {n:n,skip:skip}; }
 function toMoneyHub(tid){ var t=store.txns.filter(function(x){return x.id===tid;})[0]; if(!t)return; mhSync(t,false); }
 
 // ================= IMPORT RECEIPT (manual assisted) =================
