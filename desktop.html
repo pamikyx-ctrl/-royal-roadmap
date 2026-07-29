@@ -28196,13 +28196,13 @@ function tableView(list){
 }
 
 // ================= PROFILE MODAL =================
-var openId=null, openTab="profile";
+var openId=null, openTab="profile", histOpen=false, histYearV="", histPurpV="";
 function overlay(){ var o=el("rcx-ov"); if(!o){ o=document.createElement("div"); o.id="rcx-ov"; o.className="rcx-ov"; o.onclick=function(e){ if(e.target===o) closeModal(); }; document.body.appendChild(o); } return o; }
 function closeModal(){ var o=el("rcx-ov"); if(o){o.classList.remove("open"); o.innerHTML="";} openId=null; }
 function refreshOpenProfile(){ if(openId) openProfile(openId,openTab); }
 
 function openProfile(id,tab){
-  var c=C(id); if(!c) return; openId=id; openTab=tab||"profile";
+  var c=C(id); if(!c) return; if(openId!==id){ histOpen=false; histYearV=""; histPurpV=""; } openId=id; openTab=tab||"profile";
   var o=overlay();
   var h='<div class="rcx-modal"><div class="rcx-mhead">'+avatar(c,true)+
     '<div><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;color:var(--gold-light,#e6d9a8);line-height:1.1">'+esc(fullName(c))+'</div>'+
@@ -28291,9 +28291,23 @@ function txnsBody(c){
      kv("First transaction",esc(dates[0]||"—"))+kv("Most recent",esc(dates[dates.length-1]||"—"))+
      kv("Most common purpose",esc(topP))+kv("Most used method",esc(topM));
   h+='<div class="meta" style="margin:10px 0 4px;color:var(--text4)">GBP and GHS are never added together. Converted view uses live rate £1 = GH₵'+fx().toFixed(2)+'.</div>';
-  h+='<div class="rcx-sec-h">History</div>';
+  // ----- collapsible / filterable history -----
+  h+='<div class="rcx-sec-h" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">History ('+ts.length+')';
+  if(ts.length>5) h+='<button class="rcx-btn sm" style="margin-left:auto" onclick="RCX.toggleHist()">'+(histOpen?"▲ Collapse":"▼ Show all "+ts.length)+'</button>';
+  h+='</div>';
+  var years=Array.from(new Set(ts.map(function(t){return (t.date||"").slice(0,4);}).filter(Boolean))).sort().reverse();
+  var purposes=Array.from(new Set(ts.map(function(t){return t.purpose;}).filter(Boolean))).sort();
+  if(ts.length>3){
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
+    if(years.length>1) h+='<select onchange="RCX.histFilter(\'year\',this.value)" style="background:var(--dark3);border:1px solid var(--sep);border-radius:8px;padding:6px 10px;color:var(--ink);font-family:inherit;font-size:12px"><option value="">All years</option>'+years.map(function(y){return '<option'+(histYearV===y?" selected":"")+'>'+y+'</option>';}).join("")+'</select>';
+    if(purposes.length>1) h+='<select onchange="RCX.histFilter(\'purpose\',this.value)" style="background:var(--dark3);border:1px solid var(--sep);border-radius:8px;padding:6px 10px;color:var(--ink);font-family:inherit;font-size:12px"><option value="">All purposes</option>'+purposes.map(function(p){return '<option'+(histPurpV===p?" selected":"")+'>'+esc(p)+'</option>';}).join("")+'</select>';
+    h+='</div>';
+  }
+  var list=ts.filter(function(t){ return (!histYearV||(t.date||"").slice(0,4)===histYearV) && (!histPurpV||t.purpose===histPurpV); });
   if(!ts.length) h+='<div class="rcx-empty">No transactions yet.</div>';
-  ts.forEach(function(t){ var v=txValue(t);
+  else if(!list.length) h+='<div class="rcx-empty">No transactions match the filter.</div>';
+  var show = (histOpen||histYearV||histPurpV)? list : list.slice(0,5);
+  show.forEach(function(t){ var v=txValue(t);
     h+='<div class="rcx-txn" onclick="RCX.txnView(\''+t.id+'\')">'+
       '<div style="width:40px;text-align:center;font-size:18px">'+(t.direction==="Received"?"⬇":"⬆")+'</div>'+
       '<div class="rcx-grow"><div class="nm">'+money(v.cur,v.amt)+(t.curRecv&&t.curRecv!=="?"&&t.curSent&&t.curSent!==t.curRecv?' <span class="meta">→ '+money(t.curRecv,t.amountRecv)+'</span>':"")+'</div>'+
@@ -28301,6 +28315,7 @@ function txnsBody(c){
       ((t.needsReview||[]).length?'<span class="rcx-badge rev">REVIEW</span>':'')+
       '</div>';
   });
+  if(!histOpen && !histYearV && !histPurpV && list.length>5) h+='<div class="meta" style="text-align:center;padding:10px;cursor:pointer;color:var(--gold)" onclick="RCX.toggleHist()">…and '+(list.length-5)+' more — tap to show all '+list.length+'</div>';
   return h;
 }
 function txnView(tid){
@@ -28702,6 +28717,8 @@ window.RCX={
   reveal:toggleReveal, exportCSV:exportCSV, stmtCSV:stmtCSV, stmtPrint:stmtPrint, viewReceipt:viewReceipt,
   del:del, dupCompare:dupCompare, merge:merge, markDiff:markDiff, importReceipt:importReceipt, importGo:importGo,
   toMoneyHub:toMoneyHub, mhLinkAll:function(){mhLinkAll(false);}, wa:wa,
+  toggleHist:function(){ histOpen=!histOpen; renderTab(); },
+  histFilter:function(k,v){ if(k==="year")histYearV=v; else histPurpV=v; renderTab(); },
   addPhone:function(){pullRepeats();editRepeat.phones.push({label:"Mobile",value:""});el("ef-phones").innerHTML=phoneRows();},
   addEmail:function(){pullRepeats();editRepeat.emails.push({label:"email",value:""});el("ef-emails").innerHTML=emailRows();},
   addAddr:function(){pullRepeats();editRepeat.addresses.push({label:"Home",line:""});el("ef-addrs").innerHTML=addrRows();},
@@ -28727,10 +28744,8 @@ function boot(){
 // add "➕ Add your own…" to every content dropdown inside register forms
 function rcxDecorateSelects(){
   var scope=document.getElementById("rcx-ov"); if(!scope) return;
-  var skip=/(tf-status|tf-dir|ef-gender|ef-living|ef-verify|tf-cs|tf-cr|tt-s)$/;
   scope.querySelectorAll("select").forEach(function(sel){
     if(sel.getAttribute("data-own")) return;
-    if(sel.id && skip.test(sel.id)) return;
     if(sel.querySelector('option[value="__rcxadd__"]')) return;
     var o=document.createElement("option"); o.value="__rcxadd__"; o.textContent="➕ Add your own…"; sel.appendChild(o);
     sel.setAttribute("data-own","1");
