@@ -14057,7 +14057,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v7.1.1-rcx';
+window.ROYAL_APP_VERSION='v7.1.2-rcx';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -28389,6 +28389,8 @@ function txnView(tid){
     kv("Exchange rate",t.rate?("£1 = GH₵"+t.rate):"")+kv("Fee",t.fee!=null?money(t.curSent||"GBP",t.fee):"")+kv("Total paid",t.total!=null?money(t.curSent||"GBP",t.total):"")+
     kv("Provider",esc(t.provider))+kv("Delivery",esc(t.delivery))+kv("Recipient number/account",esc(revealed?t.recipientAcct:maskNum(t.recipientAcct)))+
     kv("Bank / wallet",esc(t.bankWallet))+kv("Branch",esc(t.branch))+kv("Purpose",esc(t.purpose))+kv("Sender reference",esc(t.senderRef))+kv("Recipient reference",esc(t.recipientRef))+
+    (t.goalUid?kv("🎯 Counts toward goal",'<span style="color:#8fe0ac">'+esc(goalName(t.goalUid))+'</span>'):"")+
+    (t.gbpFrozen!=null&&(t.curSent||txValue(t).cur)!=="GBP"?kv("Locked £ value",money("GBP",t.gbpFrozen)+' <span class="meta">(at £1=GH₵'+(t.fxRate||fx())+')</span>'):"")+
     kv("Notes",esc(t.notes))+kv("Source receipt",esc(t.source))+kv("Entered by",esc(t.enteredBy));
   if(t.receipt) h+='<div style="margin:12px 0"><button class="rcx-btn" onclick="RCX.viewReceipt(\''+t.id+'\')">📎 View receipt</button></div>';
   h+='<div style="margin-top:14px;display:flex;gap:8px"><button class="rcx-btn gold" onclick="RCX.addTxn(\''+t.contactId+'\',\''+t.id+'\')">✏️ Edit</button>'+
@@ -28577,6 +28579,7 @@ function addTxn(cid,tid){
     field("tf-branch","Branch / pickup",t&&t.branch)+selField("tf-purp","Purpose",PURP,t&&t.purpose||"Family Support")+
     field("tf-sref","Sender reference",t&&t.senderRef)+field("tf-rref","Recipient reference",t&&t.recipientRef)+'</div>';
   h+=field("tf-notes","Full purpose / notes",t&&t.notes,"textarea");
+  h+='<div class="rcx-fg"><label>🎯 Count this toward a goal (optional)</label><select id="tf-goal"><option value="">— none —</option>'+goalList().map(function(g){return '<option value="'+esc(g.uid)+'"'+(t&&t.goalUid===g.uid?" selected":"")+'>'+esc(g.title)+(g.budget?" (£"+g.budget.toLocaleString()+")":"")+'</option>';}).join("")+'</select><div class="meta" style="margin-top:4px">Linking credits this payment toward that goal’s budget and shows on your 17 Goals.</div></div>';
   h+='<div class="rcx-fg"><label>Receipt attachment</label><input type="file" id="tf-file" accept="image/*,.pdf,.heic,.doc,.docx"></div>';
   h+='<div style="display:flex;gap:10px;margin-top:8px"><button class="rcx-btn gold" onclick="RCX.saveTxn()">✔ Save transaction</button><button class="rcx-btn" onclick="RCX.open(\''+cid+'\',\'txns\')">Cancel</button></div>';
   h+='</div></div>'; o.innerHTML=h; o.classList.add("open");
@@ -28592,7 +28595,7 @@ function saveTxn(){
     t.amountSent=as?+as:null; t.curSent=gv("tf-cs"); t.amountRecv=ar?+ar:null; t.curRecv=gv("tf-cr");
     t.rate=gv("tf-rate")?+gv("tf-rate"):null; t.fee=gv("tf-fee")?+gv("tf-fee"):0; t.total=gv("tf-total")?+gv("tf-total"):null;
     t.code=gv("tf-code"); t.provider=gv("tf-prov"); t.delivery=gv("tf-del"); t.recipientAcct=gv("tf-acct");
-    t.bankWallet=gv("tf-bank"); t.branch=gv("tf-branch"); t.purpose=gv("tf-purp"); t.senderRef=gv("tf-sref"); t.recipientRef=gv("tf-rref");
+    t.bankWallet=gv("tf-bank"); t.branch=gv("tf-branch"); t.purpose=gv("tf-purp"); t.senderRef=gv("tf-sref"); t.recipientRef=gv("tf-rref"); t.goalUid=gv("tf-goal");
     t.notes=gv("tf-notes"); t.editedAt=nowISO(); if(receipt) t.receipt=receipt;
     t.gbpFrozen=null; try{fxFreeze(t);}catch(e){} // recompute the locked £ value from the edited amount/rate
     var c=C(cid); t.recipient=t.direction==="Sent"?fullName(c):"HRH Prince Kwame Nkrabea"; t.sender=t.direction==="Sent"?"HRH Prince Kwame Nkrabea":fullName(c);
@@ -28739,7 +28742,32 @@ function mhEntry(t,c){
     amount:gbp,cur:"GBP",direction:received?"in":"out",
     desc:(t.purpose||"Payment")+" — "+(c?fullName(c):t.recipient||""),
     payee:c?fullName(c):(t.recipient||""),purpose:t.purpose||"",category:type,
+    goalUid:t.goalUid||"",
     method:t.provider||t.delivery||"",source:"Royal Contacts"};
+}
+// ---------- GOALS LINK: credit Ghana payments toward the 17 Goals ----------
+function goalList(){ try{var g=JSON.parse(localStorage.getItem("royal_goals_v2")||"[]"); return Array.isArray(g)?g.map(function(x){return {uid:x.uid,title:x.t||x.title||x.n||x.uid,budget:+(x.budget||0)};}):[];}catch(e){return [];} }
+function goalName(uid){ if(!uid)return""; var g=goalList().filter(function(x){return x.uid===uid;})[0]; return g?g.title:""; }
+function goalFunded(uid){
+  var s=0; store.txns.forEach(function(t){ if(t.goalUid===uid && t.direction!=="Received"){ var g=fxFrozenGBP(t); if(g!=null)s+=g; } });
+  try{ var mh=mhRead(); mh.forEach(function(m){ if(m&&m.goalUid===uid&&!m.rcxRef){ s+=+(m.amount||0); } }); }catch(e){}
+  return s;
+}
+function rcxGoalOverlay(){
+  var scr=document.getElementById("s-goals"); if(!scr) return;
+  var goals=goalList(); if(!goals.length) return; var byUid={},byTitle={}; goals.forEach(function(g){byUid[g.uid]=g;byTitle[g.title]=g;});
+  scr.querySelectorAll(".gname").forEach(function(nameEl){
+    var card=(nameEl.closest&&nameEl.closest("[data-uid]"))||nameEl.parentElement; if(!card)return;
+    var uid=card.getAttribute&&card.getAttribute("data-uid");
+    var g = (uid&&byUid[uid]) || byTitle[(nameEl.textContent||"").trim()]; if(!g) return;
+    var funded=goalFunded(g.uid);
+    var host=(nameEl.closest&&nameEl.closest("[data-uid]"))||card;
+    var line=host.querySelector(":scope > .rcx-goalfund")||host.querySelector(".rcx-goalfund");
+    if(funded<=0){ if(line) line.remove(); return; }
+    var pct=g.budget?Math.min(100,Math.round(funded/g.budget*100)):0;
+    if(!line){ line=document.createElement("div"); line.className="rcx-goalfund"; line.style.cssText="margin:8px 0 2px;font-size:12px;color:#8fe0ac;background:rgba(90,200,140,.08);border:1px solid rgba(90,200,140,.28);border-radius:9px;padding:7px 11px;"; host.appendChild(line); }
+    line.innerHTML="💷 Funded from contacts: <b>£"+funded.toLocaleString(undefined,{maximumFractionDigits:0})+"</b>"+(g.budget?" of £"+g.budget.toLocaleString()+" ("+pct+"%)":"")+'<div style="height:6px;background:rgba(255,255,255,.1);border-radius:4px;margin-top:6px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#4CAF7D,#8fe0ac)"></div></div>';
+  });
 }
 function mhSync(t,silent){ // upsert this txn's mirror in Money Hub
   if(t&&t.fromMH){ if(!silent) toast("Already in Money Hub (history)"); return; } // history came FROM Money Hub — never mirror back
@@ -28896,8 +28924,16 @@ function boot(){
   // wrap go()
   if(window.go && !window.__rcxGoWrapped){
     var _go=window.go; window.__rcxGoWrapped=true;
-    window.go=function(n){ _go.apply(this,arguments); if(n==="rcontacts"){ try{render();}catch(e){console.error(e);} } };
+    window.go=function(n){ _go.apply(this,arguments); if(n==="rcontacts"){ try{render();}catch(e){console.error(e);} } if(n==="goals"){ setTimeout(function(){try{rcxGoalOverlay();}catch(e){}},250); setTimeout(function(){try{rcxGoalOverlay();}catch(e){}},800); } };
   }
+  // keep the goals funding bars in sync if the goals screen re-renders (debounced, ignores our own additions)
+  try{ var _gs=document.getElementById("s-goals"); if(_gs && !window.__rcxGoalObs){ window.__rcxGoalObs=1; var _gt; new MutationObserver(function(muts){
+    var ours=muts.every(function(m){
+      var tgt=m.target; if(tgt&&tgt.nodeType===1&&tgt.closest&&tgt.closest(".rcx-goalfund")) return true; // change happened inside our own bar — ignore
+      return [].every.call(m.addedNodes||[],function(nd){ return nd.nodeType===1 && nd.className && (""+nd.className).indexOf("rcx-goalfund")>=0; });
+    });
+    if(ours) return; clearTimeout(_gt); _gt=setTimeout(function(){ try{rcxGoalOverlay();}catch(e){} },350);
+  }).observe(_gs,{childList:true,subtree:true}); } }catch(e){}
   load();
 }
 // add "➕ Add your own…" to every content dropdown inside register forms
