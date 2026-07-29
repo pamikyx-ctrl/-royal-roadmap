@@ -14057,7 +14057,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v7.1.4-rcx';
+window.ROYAL_APP_VERSION='v7.2.0-rcx';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -28023,6 +28023,8 @@ function load(){
   try{ if(!localStorage.getItem(LS_APPLE) && window.__RCX_APPLE__){ localStorage.setItem(LS_APPLE, JSON.stringify(window.__RCX_APPLE__)); } }catch(e){}
   // one-time: mirror register transactions into Money Hub totals
   try{ if(!localStorage.getItem(MH_SEEDFLAG) && store.txns.length){ mhLinkAll(true); localStorage.setItem(MH_SEEDFLAG,"1"); } }catch(e){}
+  // one-time: clear cedi payments frozen at the WRONG (today-only) rate so they re-freeze at their DATED rate
+  try{ if(!localStorage.getItem("royal_rcx_fxdated_v2")){ var fixed=0; store.txns.forEach(function(t){ var v=txValue(t); if(v.cur==="GHS"){ t.gbpFrozen=null; t.fxRate=null; fixed++; } }); localStorage.setItem("royal_rcx_fxdated_v2","1"); if(fixed) save(); } }catch(e){}
 }
 function save(){ try{ localStorage.setItem(LS_MAIN, JSON.stringify(store)); }catch(e){ toast("⚠️ Storage full — could not save"); } }
 function applePool(){ try{ return JSON.parse(localStorage.getItem(LS_APPLE)||"[]"); }catch(e){ return window.__RCX_APPLE__||[]; } }
@@ -28058,11 +28060,29 @@ function money(cur,n){ var sym=cur==="GBP"?"£":cur==="GHS"?"GH₵":(cur+" "); r
 var LS_FXH="royal_fx_hist_v1";
 function fxHistLoad(){ try{return JSON.parse(localStorage.getItem(LS_FXH)||"{}")||{};}catch(e){return {};} }
 function fxHistSave(o){ try{localStorage.setItem(LS_FXH,JSON.stringify(o));}catch(e){} }
-function fxRateForTxn(t){ // GH₵ per £1 to use for this payment (preference order, frozen once)
-  if(t.fxRate) return +t.fxRate;
+// Built-in dated GH₵-per-£1 table (annual anchors + two exact receipt rates).
+// Each cedi payment converts at the rate on ITS OWN date, then locks forever.
+var FX_ANCHORS=[
+  ["2022-01-01",8.20],["2022-08-01",10.20],["2022-12-01",16.50],
+  ["2023-06-01",14.20],["2023-12-01",14.80],
+  ["2024-06-01",19.30],["2024-12-01",18.40],
+  ["2025-03-30",19.95],["2025-08-01",16.30],
+  ["2026-01-17",14.49],["2026-05-01",15.20],["2026-07-29",15.54]
+];
+function fxAnchorMs(){ return FX_ANCHORS.map(function(a){return [Date.parse(a[0]+"T00:00:00Z"),a[1]];}).sort(function(a,b){return a[0]-b[0];}); }
+function fxRateForDate(date){ // GH₵ per £1 on a given date, interpolated between anchors
+  if(!date) return fx();
+  var t=Date.parse((""+date).slice(0,10)+"T00:00:00Z"); if(isNaN(t)) return fx();
+  var A=fxAnchorMs();
+  if(t<=A[0][0]) return A[0][1];
+  if(t>=A[A.length-1][0]) return fx(); // on/after latest anchor, use today's live rate
+  for(var i=0;i<A.length-1;i++){ if(t>=A[i][0] && t<=A[i+1][0]){ var f=(t-A[i][0])/(A[i+1][0]-A[i][0]); return +(A[i][1]+f*(A[i+1][1]-A[i][1])).toFixed(4); } }
+  return fx();
+}
+function fxRateForTxn(t){ // GH₵ per £1 for this payment (receipt rate → dated table → today)
   if(t.rate) return +t.rate;                 // rate printed on the receipt = most accurate
-  var h=fxHistLoad(); if(t.date && h[t.date]) return +h[t.date]; // rate on the payment's date
-  return fx();                               // today's live rate as last resort
+  var h=fxHistLoad(); if(t.date && h[t.date]) return +h[t.date]; // any saved dated rate
+  return fxRateForDate(t.date) || fx();      // dated table (falls back to today's rate)
 }
 function fxFreeze(t){ // returns frozen £ value; computes+locks once, then never changes
   if(t.gbpFrozen!=null) return t.gbpFrozen;
@@ -28072,19 +28092,10 @@ function fxFreeze(t){ // returns frozen £ value; computes+locks once, then neve
   return null; // unknown currency — cannot convert yet
 }
 function fxFrozenGBP(t){ return (t.gbpFrozen!=null)?t.gbpFrozen:null; }
-// one-time: fetch each payment's dated rate, then freeze. Never re-runs on frozen ones.
+// Freeze every unfrozen payment at its own dated rate. Synchronous — no network needed.
 function fxFreezeAll(){
-  var h=fxHistLoad(); var need={};
-  store.txns.forEach(function(t){ if(t.gbpFrozen==null){ var v=txValue(t); if(v.cur==="GHS" && !t.rate && t.date && !h[t.date]) need[t.date]=1; } });
-  var dates=Object.keys(need);
-  var freezeNow=function(){ var ch=false; store.txns.forEach(function(t){ if(t.gbpFrozen==null){ if(fxFreeze(t)!=null) ch=true; } }); if(ch){ save(); try{render();}catch(e){} try{rcxGoalOverlay();}catch(e){} refreshOpenProfile(); } };
-  if(!dates.length || typeof fetch!=="function"){ freezeNow(); return; }
-  var done=0;
-  dates.forEach(function(d){
-    fetch("https://api.exchangerate.host/"+d+"?base=GBP&symbols=GHS").then(function(r){return r.json();}).then(function(j){
-      var val=j&&j.rates&&j.rates.GHS; if(val&&val>0){ h[d]=+val; }
-    }).catch(function(){}).then(function(){ done++; if(done>=dates.length){ fxHistSave(h); freezeNow(); } });
-  });
+  var ch=false; store.txns.forEach(function(t){ if(t.gbpFrozen==null){ if(fxFreeze(t)!=null) ch=true; } });
+  if(ch){ save(); try{render();}catch(e){} try{rcxGoalOverlay();}catch(e){} refreshOpenProfile(); }
 }
 
 // ---------- filters/state ----------
@@ -28349,6 +28360,7 @@ function txnsBody(c){
      kv("First transaction",esc(dates[0]||"—"))+kv("Most recent",esc(dates[dates.length-1]||"—"))+
      kv("Most common purpose",esc(topP))+kv("Most used method",esc(topM));
   h+='<div class="meta" style="margin:10px 0 4px;color:var(--text4)">Each GH₵ payment is converted to £ at its own dated rate and then locked — it never changes when the rate moves.</div>';
+  h+=rcxMonthlyChart(ts);
   // ----- collapsible / filterable history -----
   h+='<div class="rcx-sec-h" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">History ('+ts.length+')';
   if(ts.length>5) h+='<button class="rcx-btn sm" style="margin-left:auto" onclick="RCX.toggleHist()">'+(histOpen?"▲ Collapse":"▼ Show all "+ts.length)+'</button>';
@@ -28846,6 +28858,29 @@ function aiFindContact(q){
   if(cands.length===1 || cands[0].score>=cands[1].score+2) return {one:cands[0].c};
   return {many:cands.slice(0,6).map(function(x){return x.c;})};
 }
+// Monthly spend bar chart (£, converted+frozen) — inline SVG, no external libraries.
+function rcxMonthlyChart(ts){
+  var by={}; (ts||[]).forEach(function(t){ if(t.direction==="Received")return; var m=(t.date||"").slice(0,7); if(!/^\d{4}-\d{2}$/.test(m))return; var g=fxFrozenGBP(t); if(g==null) g=fxFreeze(t); if(g==null)return; by[m]=(by[m]||0)+g; });
+  var months=Object.keys(by).sort(); if(!months.length) return "";
+  months=months.slice(-12);
+  var max=Math.max.apply(null,months.map(function(m){return by[m];}))||1;
+  var mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var bw=48, pad=10, base=128, top=26, H=172;
+  var svgW=Math.max(months.length*bw+pad*2, 260);
+  var bars=months.map(function(m,i){ var val=by[m]; var hh=Math.max(3,Math.round(val/max*(base-top))); var cx=pad+i*bw+bw/2; var w=bw-18; var x=cx-w/2; var y=base-hh;
+    return '<g>'+
+      '<rect x="'+x.toFixed(1)+'" y="'+y+'" width="'+w+'" height="'+hh+'" rx="5" fill="url(#rcxbargrad)"></rect>'+
+      '<text x="'+cx.toFixed(1)+'" y="'+(y-6)+'" text-anchor="middle" font-size="10" fill="#e6d9a8" font-family="inherit">£'+Math.round(val).toLocaleString()+'</text>'+
+      '<text x="'+cx.toFixed(1)+'" y="'+(base+16)+'" text-anchor="middle" font-size="9.5" fill="#9a916f" font-family="inherit">'+mm[(+m.slice(5,7))-1]+'</text>'+
+      '<text x="'+cx.toFixed(1)+'" y="'+(base+28)+'" text-anchor="middle" font-size="8" fill="#6f684f" font-family="inherit">'+m.slice(2,4)+'</text>'+
+    '</g>'; }).join("");
+  var tot=months.reduce(function(s,m){return s+by[m];},0);
+  return '<div class="rcx-sec-h" style="margin-top:16px">📊 Spend by month <span class="meta" style="font-size:12px;color:var(--text4)">(£, last '+months.length+' month'+(months.length===1?'':'s')+' with activity)</span></div>'+
+    '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;background:rgba(0,0,0,.18);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:12px 4px 8px">'+
+    '<svg width="'+svgW+'" height="'+H+'" viewBox="0 0 '+svgW+' '+H+'" style="display:block;min-width:100%">'+
+    '<defs><linearGradient id="rcxbargrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0e4b0"/><stop offset="1" stop-color="#b9942f"/></linearGradient></defs>'+
+    '<line x1="'+pad+'" y1="128.5" x2="'+(svgW-pad)+'" y2="128.5" stroke="rgba(201,168,76,.28)"></line>'+bars+'</svg></div>';
+}
 function aiSummaryHTML(c){
   var ts=txnsFor(c.id); var st=sentTotal(c.id);
   var sent=ts.filter(function(t){return t.direction!=="Received";});
@@ -28865,6 +28900,7 @@ function aiSummaryHTML(c){
   say+='<div class="meta" style="margin-top:8px">Breakdown: '+money("GBP",st.GBP)+' sent in pounds + '+money("GHS",st.GHS)+' sent in cedis (≈ '+money("GBP",st.conv-st.GBP)+'). In cedis today ≈ '+money("GHS",ghsEq)+'.</div>';
   var h='<div class="rcx-ai-card">'+say;
   h+='<div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap"><button class="rcx-btn gold" onclick="RCX.open(\''+c.id+'\')">👁 Open full profile</button><button class="rcx-btn" onclick="RCX.open(\''+c.id+'\',\'txns\')">💷 All transactions</button><button class="rcx-btn" onclick="RCX.edit(\''+c.id+'\')">✏️ Edit</button>'+(mainPhone(c)?'<button class="rcx-btn" onclick="RCX.waCall(\''+c.id+'\')">📞 Call on WhatsApp</button>':'')+'</div>';
+  h+=rcxMonthlyChart(ts);
   h+='<div class="rcx-sec-h" style="margin-top:4px">Every transaction ('+ts.length+')</div>';
   if(!ts.length) h+='<div class="meta">No transactions recorded for this person yet.</div>';
   ts.slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"");}).forEach(function(t){ var v=txValue(t);
