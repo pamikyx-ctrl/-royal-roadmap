@@ -28118,10 +28118,10 @@ function render(){
     '</div>';
   // filters
   html+='<div class="rcx-filters">'+
-    sel("RCX.f('fRel',this.value)",[""].concat(RELS),state.fRel,"Any relationship")+
-    sel("RCX.f('fTitle',this.value)",[""].concat(TITLES),state.fTitle,"Any title")+
-    sel("RCX.f('fCountry',this.value)",["","Ghana","United Kingdom","Other"],state.fCountry,"Any country")+
-    sel("RCX.f('fPay',this.value)",[""].concat(PAYM),state.fPay,"Any payment method")+
+    selF("RCX.f('fRel',this.value)",[""].concat(RELS),state.fRel,"Any relationship","relationship")+
+    selF("RCX.f('fTitle',this.value)",[""].concat(TITLES),state.fTitle,"Any title","title")+
+    selF("RCX.f('fCountry',this.value)",["","Ghana","United Kingdom","Other"],state.fCountry,"Any country","country")+
+    selF("RCX.f('fPay',this.value)",[""].concat(PAYM),state.fPay,"Any payment method","payment")+
     sel("RCX.f('fFlag',this.value)",[["","All records"],["review","Needs review"],["verified","Verified"],["hastx","Has transactions"],["dup","Possible duplicate"],["deceased","Deceased"]],state.fFlag,null)+
     sel("RCX.f('sort',this.value)",[["name","Sort: Name"],["recent","Sort: Most recent"],["sent","Sort: Most sent"]],state.sort,null)+
     '</div>';
@@ -28131,6 +28131,7 @@ function render(){
   else html+=tableView(list);
   html+='</div>';
   r.innerHTML=html;
+  try{ rcxDecorateSelects(); }catch(e){}
 }
 function kpi(n,l){ return '<div class="rcx-kpi"><div class="n">'+esc(n)+'</div><div class="l">'+esc(l)+'</div></div>'; }
 function vbtn(v,t){ return '<button class="'+(state.view===v?"on":"")+'" onclick="RCX.setView(\''+v+'\')">'+t+'</button>'; }
@@ -28140,6 +28141,7 @@ function sel(cb,opts,val,ph){
   opts.forEach(function(o){ var v,t; if(Array.isArray(o)){v=o[0];t=o[1];}else{v=o;t=o||"—";} h+='<option value="'+esc(v)+'"'+(String(v)===String(val)?" selected":"")+'>'+esc(t)+'</option>'; });
   return h+'</select>';
 }
+function selF(cb,opts,val,ph,field){ return sel(cb,opts,val,ph).replace('<select onchange="', '<select class="rcx-ownfilter" data-field="'+field+'" onchange="'); }
 function badge(c){
   if(c.dup) return '<span class="rcx-badge dup">DUPLICATE?</span>';
   if(c.verify==="Needs Review") return '<span class="rcx-badge rev">NEEDS REVIEW</span>';
@@ -28710,7 +28712,7 @@ function wa(id){ var c=C(id); var ph=mainPhone(c).replace(/\D/g,""); if(!ph){toa
 // ================= PUBLIC API =================
 window.RCX={
   render:render, setView:function(v){state.view=v;render();}, q:function(v){state.q=v;render();},
-  f:function(k,v){state[k]=v;render();}, open:openProfile, tab:function(t){openTab=t;renderTab(); document.querySelectorAll('.rcx-tabs button').forEach(function(b){b.classList.remove('on');}); event&&event.target&&event.target.classList.add('on');},
+  f:function(k,v){ if(v==="__rcxadd__") return; state[k]=v;render();}, open:openProfile, tab:function(t){openTab=t;renderTab(); document.querySelectorAll('.rcx-tabs button').forEach(function(b){b.classList.remove('on');}); event&&event.target&&event.target.classList.add('on');},
   close:function(){ if(openId){var id=openId;closeModal();openProfile(id,"profile");} else {closeModal();render();} },
   edit:edit, saveContact:saveContact, addTxn:addTxn, saveTxn:saveTxn, txnView:txnView, delTxn:delTxn,
   addComm:addComm, saveComm:saveComm, pickApple:pickApple, appleFilter:appleFilter, appleAdd:appleAdd,
@@ -28742,18 +28744,42 @@ function boot(){
   load();
 }
 // add "➕ Add your own…" to every content dropdown inside register forms
+var LS_CUST="royal_rcx_custom_v1";
+function custLoad(){ try{return JSON.parse(localStorage.getItem(LS_CUST)||"{}")||{};}catch(e){return {};} }
+function custSave(o){ try{localStorage.setItem(LS_CUST,JSON.stringify(o));}catch(e){} }
+function rcxField(sel){
+  if(sel.getAttribute("data-field")) return sel.getAttribute("data-field");
+  var id=sel.id||"";
+  if(/^rl-t/.test(id))return"relationship"; if(/^tt-t/.test(id))return"title";
+  if(/^tf-purp/.test(id))return"purpose"; if(/^tf-del/.test(id))return"delivery";
+  if(/^cf-method/.test(id))return"commethod"; if(/^py-m/.test(id))return"payment";
+  if(/^ef-country/.test(id))return"country"; if(/^ph-l/.test(id))return"phlabel";
+  if(/^em-l/.test(id))return"emlabel"; if(/^ad-l/.test(id))return"adlabel";
+  if(/^ef-gender/.test(id))return"gender"; if(/^tf-status/.test(id))return"txstatus";
+  if(/^tt-s/.test(id))return"titlestatus";
+  return "f_"+(id||"x");
+}
 function rcxDecorateSelects(){
-  var scope=document.getElementById("rcx-ov"); if(!scope) return;
-  scope.querySelectorAll("select").forEach(function(sel){
+  var list=[];
+  var ov=document.getElementById("rcx-ov"); if(ov) list=list.concat([].slice.call(ov.querySelectorAll("select")));
+  list=list.concat([].slice.call(document.querySelectorAll("select.rcx-ownfilter")));
+  var cust=custLoad();
+  list.forEach(function(sel){
     if(sel.getAttribute("data-own")) return;
-    if(sel.querySelector('option[value="__rcxadd__"]')) return;
-    var o=document.createElement("option"); o.value="__rcxadd__"; o.textContent="➕ Add your own…"; sel.appendChild(o);
-    sel.setAttribute("data-own","1");
+    var field=rcxField(sel);
+    (cust[field]||[]).forEach(function(v){ if(![].slice.call(sel.options).some(function(o){return o.value===v;})){ var o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o);} });
+    if(!sel.querySelector('option[value="__rcxadd__"]')){ var a=document.createElement("option"); a.value="__rcxadd__"; a.textContent="➕ Add your own…"; sel.appendChild(a); }
+    sel.setAttribute("data-own","1"); sel.setAttribute("data-field",field);
     sel.addEventListener("change",function(){
       if(sel.value==="__rcxadd__"){
         var v=(window.prompt("Add your own option:")||"").trim();
-        if(v){ var op=document.createElement("option"); op.value=v; op.textContent=v; sel.insertBefore(op, sel.querySelector('option[value="__rcxadd__"]')); sel.value=v; }
-        else { sel.selectedIndex=0; }
+        if(v){
+          var c=custLoad(); c[field]=c[field]||[]; if(c[field].indexOf(v)<0)c[field].push(v); custSave(c);
+          document.querySelectorAll('select[data-own]').forEach(function(s2){
+            if(rcxField(s2)===field && ![].slice.call(s2.options).some(function(o){return o.value===v;})){ var o2=document.createElement("option");o2.value=v;o2.textContent=v; s2.insertBefore(o2, s2.querySelector('option[value="__rcxadd__"]')); }
+          });
+          sel.value=v;
+        } else sel.selectedIndex=0;
       }
     });
   });
