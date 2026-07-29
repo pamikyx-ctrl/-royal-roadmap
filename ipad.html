@@ -28042,6 +28042,39 @@ function txValue(t){ // returns {cur, amount} best representing the money moved
 }
 function money(cur,n){ var sym=cur==="GBP"?"£":cur==="GHS"?"GH₵":(cur+" "); return sym+(+n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
+// ---------- CURRENCY ENGINE: freeze each payment's £ value at its own dated rate ----------
+var LS_FXH="royal_fx_hist_v1";
+function fxHistLoad(){ try{return JSON.parse(localStorage.getItem(LS_FXH)||"{}")||{};}catch(e){return {};} }
+function fxHistSave(o){ try{localStorage.setItem(LS_FXH,JSON.stringify(o));}catch(e){} }
+function fxRateForTxn(t){ // GH₵ per £1 to use for this payment (preference order, frozen once)
+  if(t.fxRate) return +t.fxRate;
+  if(t.rate) return +t.rate;                 // rate printed on the receipt = most accurate
+  var h=fxHistLoad(); if(t.date && h[t.date]) return +h[t.date]; // rate on the payment's date
+  return fx();                               // today's live rate as last resort
+}
+function fxFreeze(t){ // returns frozen £ value; computes+locks once, then never changes
+  if(t.gbpFrozen!=null) return t.gbpFrozen;
+  var v=txValue(t);
+  if(v.cur==="GBP"){ t.gbpFrozen=+(+v.amt).toFixed(2); t.fxRate=1; t.fxFrozenOn=nowISO(); return t.gbpFrozen; }
+  if(v.cur==="GHS"){ var r=fxRateForTxn(t); if(!r||r<=0) return null; t.fxRate=r; t.gbpFrozen=+(v.amt/r).toFixed(2); t.fxFrozenOn=nowISO(); return t.gbpFrozen; }
+  return null; // unknown currency — cannot convert yet
+}
+function fxFrozenGBP(t){ return (t.gbpFrozen!=null)?t.gbpFrozen:null; }
+// one-time: fetch each payment's dated rate, then freeze. Never re-runs on frozen ones.
+function fxFreezeAll(){
+  var h=fxHistLoad(); var need={};
+  store.txns.forEach(function(t){ if(t.gbpFrozen==null){ var v=txValue(t); if(v.cur==="GHS" && !t.rate && t.date && !h[t.date]) need[t.date]=1; } });
+  var dates=Object.keys(need);
+  var freezeNow=function(){ var ch=false; store.txns.forEach(function(t){ if(t.gbpFrozen==null){ if(fxFreeze(t)!=null) ch=true; } }); if(ch){ save(); try{render();}catch(e){} refreshOpenProfile(); } };
+  if(!dates.length || typeof fetch!=="function"){ freezeNow(); return; }
+  var done=0;
+  dates.forEach(function(d){
+    fetch("https://api.exchangerate.host/"+d+"?base=GBP&symbols=GHS").then(function(r){return r.json();}).then(function(j){
+      var val=j&&j.rates&&j.rates.GHS; if(val&&val>0){ h[d]=+val; }
+    }).catch(function(){}).then(function(){ done++; if(done>=dates.length){ fxHistSave(h); freezeNow(); } });
+  });
+}
+
 // ---------- filters/state ----------
 var state={view:"list", q:"", fRel:"", fTitle:"", fCountry:"", fPay:"", fFlag:"", sort:"name"};
 
@@ -28082,28 +28115,29 @@ function filtered(){
   });
   list.sort(function(a,b){
     if(state.sort==="recent"){ return (lastTxDate(b.id)||"").localeCompare(lastTxDate(a.id)||""); }
-    if(state.sort==="sent"){ return sentTotal(b.id).GHS+sentTotal(b.id).GBP*fx() - (sentTotal(a.id).GHS+sentTotal(a.id).GBP*fx()); }
+    if(state.sort==="sent"){ return sentTotal(b.id).conv - sentTotal(a.id).conv; }
     return fullName(a).localeCompare(fullName(b));
   });
   return list;
 }
 function lastTxDate(id){ var ts=txnsFor(id).map(function(t){return t.date||"";}).filter(Boolean).sort(); return ts[ts.length-1]||""; }
-function sentTotal(id){ var o={GBP:0,GHS:0}; txnsFor(id).forEach(function(t){ if(t.direction==="Received")return; var v=txValue(t); if(o[v.cur]!=null) o[v.cur]+=v.amt; }); return o; }
+function sentTotal(id){ var o={GBP:0,GHS:0,conv:0}; txnsFor(id).forEach(function(t){ if(t.direction==="Received")return; var v=txValue(t); if(o[v.cur]!=null) o[v.cur]+=v.amt; var g=fxFrozenGBP(t); if(g!=null) o.conv+=g; }); return o; }
 
 function render(){
   load();
   var r=root(); if(!r) return;
+  try{ fxFreezeAll(); }catch(e){}
   var list=filtered();
   var totC=store.contacts.filter(function(c){return !c.mergedInto;}).length;
-  var st={GBP:0,GHS:0};
-  store.txns.forEach(function(t){ if(t.direction==="Received")return; var v=txValue(t); if(st[v.cur]!=null) st[v.cur]+=v.amt; });
+  var st={GBP:0,GHS:0,conv:0};
+  store.txns.forEach(function(t){ if(t.direction==="Received")return; var v=txValue(t); if(st[v.cur]!=null) st[v.cur]+=v.amt; var g=fxFrozenGBP(t); if(g!=null) st.conv+=g; });
   var reviewCt=store.contacts.filter(function(c){return c.verify==="Needs Review";}).length;
   var html='<div class="rcx-wrap">';
   html+='<div class="page-eyebrow">PRIVATE FAMILY REGISTER</div><div class="page-title">Royal Contacts</div>'+
        '<div class="page-sub">Suaman Dadiaso Royal Family, officeholders and trusted contacts — with full money-transfer history. Private to this device.</div>';
   html+='<div class="rcx-kpis">'+
     kpi(totC,"Contacts")+kpi(store.txns.length,"Transactions")+
-    kpi(money("GBP",st.GBP),"Total sent (GBP)")+kpi(money("GHS",st.GHS),"Total sent (GHS)")+
+    kpi(money("GBP",st.conv),"Total sent · all in £")+kpi(money("GHS",st.GHS),"of which sent in GH₵")+
     kpi(reviewCt,"Needs review")+'</div>';
   // toolbar
   html+='<div class="rcx-bar">'+
@@ -28273,8 +28307,9 @@ function profileBody(c){
 // ---- transactions tab ----
 function txnsBody(c){
   var ts=txnsFor(c.id).slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"");});
-  var sent={GBP:0,GHS:0,other:0}, recv={GBP:0,GHS:0,other:0}, fees=0, nSent=0,nRecv=0, purp={},meth={};
+  var sent={GBP:0,GHS:0,other:0,conv:0}, recv={GBP:0,GHS:0,other:0,conv:0}, fees=0, nSent=0,nRecv=0, purp={},meth={};
   ts.forEach(function(t){ var v=txValue(t); var bag=t.direction==="Received"?recv:sent; if(bag[v.cur]!=null)bag[v.cur]+=v.amt; else bag.other+=v.amt;
+    var g=fxFrozenGBP(t); if(g!=null) bag.conv+=g;
     if(t.direction==="Received")nRecv++; else nSent++; fees+=+(t.fee||0);
     if(t.purpose)purp[t.purpose]=(purp[t.purpose]||0)+1; var m=t.provider||t.delivery; if(m)meth[m]=(meth[m]||0)+1; });
   var dates=ts.map(function(t){return t.date;}).filter(Boolean).sort();
@@ -28286,13 +28321,14 @@ function txnsBody(c){
     '<button class="rcx-btn" onclick="RCX.stmtPrint(\''+c.id+'\')">🖨 Print statement</button></div>';
   h+='<div class="rcx-kpis" style="grid-template-columns:repeat(3,1fr)">'+
     kpi(ts.length,"Transactions")+kpi(nSent+" / "+nRecv,"Sent / Received")+kpi(money("GBP",fees),"Total fees (GBP)")+'</div>';
-  h+='<div class="rcx-sec-h">Totals (kept separate by currency)</div>';
-  h+=kv("Sent — GBP",money("GBP",sent.GBP))+kv("Sent — GHS",money("GHS",sent.GHS))+
-     kv("Received — GBP",money("GBP",recv.GBP))+kv("Received — GHS",money("GHS",recv.GHS))+
-     (sent.other||recv.other?kv("Unconfirmed-currency amounts",'<span style="color:#e0a860">'+((sent.other+recv.other).toFixed(2))+' — currency needs review</span>'):"")+
+  h+='<div class="rcx-sec-h">Totals</div>';
+  h+='<div class="rcx-kv" style="border-bottom:2px solid rgba(201,168,76,.25)"><span class="k" style="font-weight:700;color:var(--gold-light)">Total sent — all in £</span><span class="v" style="font-size:16px;color:var(--green)">'+money("GBP",sent.conv)+'</span></div>';
+  h+=kv("&nbsp;&nbsp;↳ originally sent in GBP",money("GBP",sent.GBP))+kv("&nbsp;&nbsp;↳ originally sent in GH₵",money("GHS",sent.GHS)+(sent.GHS?' <span class="meta">(≈ '+money("GBP",sent.conv-sent.GBP)+')</span>':""))+
+     (recv.conv?kv("Total received — all in £",money("GBP",recv.conv)):"")+
+     (sent.other||recv.other?kv("Unconfirmed-currency amounts",'<span style="color:#e0a860">'+((sent.other+recv.other).toFixed(2))+' — currency needs review, not counted</span>'):"")+
      kv("First transaction",esc(dates[0]||"—"))+kv("Most recent",esc(dates[dates.length-1]||"—"))+
      kv("Most common purpose",esc(topP))+kv("Most used method",esc(topM));
-  h+='<div class="meta" style="margin:10px 0 4px;color:var(--text4)">GBP and GHS are never added together. Converted view uses live rate £1 = GH₵'+fx().toFixed(2)+'.</div>';
+  h+='<div class="meta" style="margin:10px 0 4px;color:var(--text4)">Each GH₵ payment is converted to £ at its own dated rate and then locked — it never changes when the rate moves.</div>';
   // ----- collapsible / filterable history -----
   h+='<div class="rcx-sec-h" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">History ('+ts.length+')';
   if(ts.length>5) h+='<button class="rcx-btn sm" style="margin-left:auto" onclick="RCX.toggleHist()">'+(histOpen?"▲ Collapse":"▼ Show all "+ts.length)+'</button>';
@@ -28378,7 +28414,9 @@ function edit(id){
   editRepeat.titles=(c&&c.titles||[]).map(clone);
   editRepeat.pays=(c&&c.payments||[]).map(clone);
   var o=overlay();
-  var h='<div class="rcx-modal"><div class="rcx-mhead"><div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;color:var(--gold-light)">'+(c?"Edit contact":"New contact")+'</div>'+
+  var idShow = c? c.id : ("RC-"+String(store.nextSeq||1).padStart(4,"0"));
+  var h='<div class="rcx-modal"><div class="rcx-mhead"><div><div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;color:var(--gold-light)">'+(c?"Edit contact":"New contact")+'</div>'+
+    '<div class="meta"><span class="rcx-id">'+esc(idShow)+'</span>'+(c?"":" · this ID is assigned automatically when you save")+'</div></div>'+
     '<button class="rcx-x" onclick="RCX.close()">×</button></div><div class="rcx-mbody" id="rcx-form">';
   h+='<input type="hidden" id="ef-id" value="'+esc(c?c.id:"")+'">';
   h+='<div class="rcx-sec-h">Identity</div><div class="rcx-2col">'+
@@ -28410,7 +28448,8 @@ function edit(id){
   h+='<div class="rcx-sec-h">Royal profile & notes</div>'+field("ef-stool","Stool / division",c&&c.stool)+
     field("ef-bio","Biography",c&&c.bio,"textarea")+field("ef-royalhist","Royal history",c&&c.royalHistory,"textarea")+
     field("ef-resp","Traditional responsibilities",c&&c.responsibilities,"textarea")+field("ef-notes","Private notes",c&&c.notes,"textarea");
-  h+=selField("ef-verify","Verification",["Unverified","Needs Review","Verified"],c?c.verify:"Unverified");
+  h+=selField("ef-verify","Verification status",["Unverified","Needs Review","Verified"],c?c.verify:"Unverified");
+  h+='<div class="rcx-nr" style="background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.25);color:var(--text3)"><b style="color:var(--gold)">What the statuses mean:</b><br>• <b>Unverified</b> — added, but you haven\'t checked the details yet (the starting point for every new or imported contact).<br>• <b>Needs Review</b> — something is uncertain or missing (e.g. a receipt didn\'t show the currency, or a suggested relationship needs your confirmation). Use the "Needs review" filter to find these.<br>• <b>Verified</b> — you\'ve checked this person\'s details and confirmed they\'re correct. Set this once you\'re happy.<br><span class="meta">You choose the status here; the app never marks a contact Verified on its own.</span></div>';
   h+='<div style="display:flex;gap:10px;margin-top:16px"><button class="rcx-btn gold" onclick="RCX.saveContact()">✔ Save contact</button>'+
     '<button class="rcx-btn" onclick="'+(c?"RCX.open('"+c.id+"')":"RCX.close()")+'">Cancel</button></div>';
   h+='</div></div>'; o.innerHTML=h; o.classList.add("open");
@@ -28534,6 +28573,7 @@ function saveTxn(){
     t.code=gv("tf-code"); t.provider=gv("tf-prov"); t.delivery=gv("tf-del"); t.recipientAcct=gv("tf-acct");
     t.bankWallet=gv("tf-bank"); t.branch=gv("tf-branch"); t.purpose=gv("tf-purp"); t.senderRef=gv("tf-sref"); t.recipientRef=gv("tf-rref");
     t.notes=gv("tf-notes"); t.editedAt=nowISO(); if(receipt) t.receipt=receipt;
+    t.gbpFrozen=null; try{fxFreeze(t);}catch(e){} // recompute the locked £ value from the edited amount/rate
     var c=C(cid); t.recipient=t.direction==="Sent"?fullName(c):"HRH Prince Kwame Nkrabea"; t.sender=t.direction==="Sent"?"HRH Prince Kwame Nkrabea":fullName(c);
     if(!t.date) t.needsReview=["Transaction date not confirmed"]; else t.needsReview=[];
     audit(isNew?"txn-create":"txn-edit",t.id); save();
