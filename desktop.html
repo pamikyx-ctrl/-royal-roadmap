@@ -9715,6 +9715,16 @@ function sysResetTabs(){
   sysSaveSettings(s); sysApplySettings(); buildSettingsScreen();
 }
 
+function rmToast(msg,ok){
+  try{
+    var b=document.getElementById('rm-toast');
+    if(!b){b=document.createElement('div');b.id='rm-toast';b.style.cssText='position:fixed;left:50%;top:22px;transform:translateX(-50%);z-index:2147483647;max-width:92%;padding:14px 22px;border-radius:14px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:15px;font-weight:700;box-shadow:0 12px 46px rgba(0,0,0,.55);white-space:pre-line;text-align:center;line-height:1.4;';document.body.appendChild(b);}
+    var bad=(ok===false);
+    b.style.background=bad?'#3a1414':'#12301a';b.style.color=bad?'#ffc2c2':'#9ff0bd';b.style.border='1.5px solid '+(bad?'#c0504d':'#2fae66');
+    b.textContent=msg;b.style.display='block';b.style.opacity='1';
+    clearTimeout(window.__rmt);window.__rmt=setTimeout(function(){b.style.transition='opacity .5s';b.style.opacity='0';setTimeout(function(){b.style.display='none';b.style.transition='';},600);},5200);
+  }catch(e){try{alert(msg);}catch(_){}}
+}
 function sysExportAll(){
   var allData = {};
   try{ for(var _i=0;_i<localStorage.length;_i++){ var _k=localStorage.key(_i); if(!_k) continue; if(/^royal/i.test(_k) || (typeof LS_SETTINGS!=='undefined' && _k===LS_SETTINGS)){ try{ allData[_k]=JSON.parse(localStorage.getItem(_k)); }catch(e){ allData[_k]=localStorage.getItem(_k); } } } }catch(e){}
@@ -9725,7 +9735,8 @@ function sysExportAll(){
   var a = document.createElement('a');
   a.href=url; a.download='Royal-Dashboard-Backup-'+new Date().toISOString().slice(0,10)+'.json';
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  alert('✅ Full backup exported!\n\nAll your data has been saved to your Downloads folder.\n\nKeep this file safe — it contains everything.');
+  var _cnt=0; for(var _kk in allData){ if((''+_kk).charAt(0)!=='_') _cnt++; }
+  rmToast('✅ Backup saved to your Downloads folder\n'+_cnt+' data sections · keep this file safe',true);
 }
 
 function sysImportAll(){
@@ -9743,8 +9754,9 @@ function sysImportAll(){
           try{ localStorage.setItem(k,JSON.stringify(data[k])); count++; }catch(err){}
         });
         sysApplySettings();
-        alert('✅ Import complete!\n\n'+count+' data items restored.\n\nReload the page to see everything fully applied.');
-      }catch(err){ alert('❌ Could not read backup file.\n\nError: '+err.message); }
+        rmToast('✅ Restore complete — '+count+' data sections loaded\nReloading…',true);
+        setTimeout(function(){try{location.reload();}catch(e){}},1500);
+      }catch(err){ rmToast('❌ Could not read that backup file\n'+err.message,false); }
     };
     reader.readAsText(file);
   };
@@ -14057,7 +14069,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v7.2.0-rcx';
+window.ROYAL_APP_VERSION='v7.2.1-rcx';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
