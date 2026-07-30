@@ -14069,7 +14069,7 @@ try{window.collect=collect;window.chartBars=chartBars;window.chartFlow=chartFlow
 
 <!-- ═══ VERSION STAMP & TAB MIGRATION — added by Claude ═══ -->
 <script>
-window.ROYAL_APP_VERSION='v7.2.1-rcx';
+window.ROYAL_APP_VERSION='v7.2.3-rcx';
 (function(){
   /* Migrate old saved settings: rename Finance Tracker → AI Finance Dashboard, force visible */
   try{
@@ -27934,6 +27934,22 @@ window.__RCX_SEEDSEQ__=1;
 .rcx-qa button{background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:7px;width:30px;height:30px;
   font-size:14px;cursor:pointer;color:var(--gold,#c9a84c);display:flex;align-items:center;justify-content:center;}
 .rcx-qa button:hover{background:rgba(201,168,76,.18);}
+/* --- iPhone / narrow-screen list layout: stack buttons onto their own row --- */
+@media (max-width:520px){
+  .rcx-row{flex-wrap:wrap; align-items:center; column-gap:10px; row-gap:6px; padding:12px;}
+  .rcx-row .rcx-av{width:40px;height:40px;font-size:14px;}
+  .rcx-row .rcx-grow{flex:1 1 auto; min-width:0;}
+  .rcx-row .nm{font-size:14.5px; line-height:1.28; overflow-wrap:anywhere;}
+  .rcx-row .nm .rcx-badge{display:inline-block; margin-top:2px;}
+  .rcx-row .meta{white-space:normal; overflow-wrap:anywhere;}
+  .rcx-row .rcx-amt{flex:0 0 auto; margin-left:auto; align-self:flex-start; font-size:13.5px;}
+  .rcx-row .rcx-qa{flex:0 0 100%; order:9; justify-content:space-between; gap:8px; margin-top:4px;}
+  .rcx-row .rcx-qa button{flex:1 1 0; height:40px; min-width:0; font-size:17px;}
+}
+/* --- collapsed / compact list rows --- */
+.rcx-row.rcx-compact{padding:9px 12px;}
+.rcx-row.rcx-compact .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rcx-chev{flex:0 0 auto;color:var(--gold-dim,#a88f3f);font-size:22px;line-height:1;opacity:.6;}
 /* cards grid */
 .rcx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
 .rcx-card{background:var(--dark2,#16161d);border:1px solid var(--sep,rgba(201,168,76,.15));border-radius:16px;padding:16px;cursor:pointer;}
@@ -28111,7 +28127,7 @@ function fxFreezeAll(){
 }
 
 // ---------- filters/state ----------
-var state={view:"list", q:"", fRel:"", fTitle:"", fCountry:"", fPay:"", fFlag:"", sort:"name"};
+var state={view:"list", q:"", fRel:"", fTitle:"", fCountry:"", fPay:"", fFlag:"", sort:"name", compact:(function(){try{return localStorage.getItem("royal_rcx_compact_v1")==="1";}catch(e){return false;}})()};
 
 // ---------- dropdown data ----------
 var RELS=["Father","Mother","Son","Daughter","Brother","Sister","Husband","Wife","Partner","Grandfather","Grandmother","Grandson","Granddaughter","Uncle","Aunt","Nephew","Niece","Cousin","Great-grandfather","Great-grandmother","Great-grandson","Great-granddaughter","Father-in-law","Mother-in-law","Brother-in-law","Sister-in-law","Stepfather","Stepmother","Stepson","Stepdaughter","Guardian","Family elder","Extended family","Royal Family member","Family representative","Trusted family contact","Other"];
@@ -28186,6 +28202,7 @@ function render(){
   html+='<div class="rcx-bar">'+
     '<input class="rcx-search" id="rcx-q" placeholder="Search name, RC-ID, phone, title…" value="'+esc(state.q)+'" oninput="RCX.q(this.value)">'+
     '<div class="rcx-views">'+vbtn("list","≣ List")+vbtn("cards","▦ Cards")+vbtn("table","▤ Table")+'</div>'+
+    (state.view==="list"?'<button class="rcx-btn'+(state.compact?" gold":"")+'" onclick="RCX.toggleCompact()" title="Collapse or expand the list">'+(state.compact?"⤢ Expand list":"⤡ Collapse list")+'</button>':"")+
     '<button class="rcx-btn gold" onclick="RCX.edit(null)">＋ Add Contact</button>'+
     '<button class="rcx-btn" onclick="RCX.pickApple()">📇 Apple Contacts</button>'+
     '<button class="rcx-btn" onclick="RCX.importReceipt()">🧾 Import Receipt</button>'+
@@ -28234,15 +28251,21 @@ function listView(list){
     var L=(fullName(c)[0]||"#").toUpperCase();
     if(state.sort==="name" && L!==cur){ cur=L; h+='<div class="rcx-sec">'+esc(L)+'</div>'; }
     var st=sentTotal(c.id); var stTxt=st.GBP?money("GBP",st.GBP):(st.GHS?money("GHS",st.GHS):"—");
-    h+='<div class="rcx-row" onclick="RCX.open(\''+c.id+'\')">'+avatar(c)+
-      '<div class="rcx-grow"><div class="nm">'+esc(fullName(c))+' '+badge(c)+'</div>'+
-      '<div class="meta"><span class="rcx-id">'+esc(c.id)+'</span> · '+esc(relLine(c))+' · '+esc(maskNum(mainPhone(c))||"no phone")+'</div></div>'+
-      '<div class="rcx-amt">'+stTxt+'<div class="meta" style="text-align:right">'+txnsFor(c.id).length+' txns</div></div>'+
-      '<div class="rcx-qa" onclick="event.stopPropagation()">'+
-        qa("👁","RCX.open(\'"+c.id+"\')","View")+qa("✏️","RCX.edit(\'"+c.id+"\')","Edit")+
-        qa("💷","RCX.addTxn(\'"+c.id+"\',null)","Add transaction")+
-        (mainPhone(c)?qa("📞","RCX.waCall(\'"+c.id+"\')","Call on WhatsApp")+qa("💬","RCX.wa(\'"+c.id+"\')","WhatsApp chat"):"")+
-      '</div></div>';
+    if(state.compact){
+      h+='<div class="rcx-row rcx-compact" onclick="RCX.open(\''+c.id+'\')">'+avatar(c)+
+        '<div class="rcx-grow"><div class="nm">'+esc(fullName(c))+' '+badge(c)+'</div></div>'+
+        '<div class="rcx-amt">'+stTxt+'</div><span class="rcx-chev">›</span></div>';
+    } else {
+      h+='<div class="rcx-row" onclick="RCX.open(\''+c.id+'\')">'+avatar(c)+
+        '<div class="rcx-grow"><div class="nm">'+esc(fullName(c))+' '+badge(c)+'</div>'+
+        '<div class="meta"><span class="rcx-id">'+esc(c.id)+'</span> · '+esc(relLine(c))+' · '+esc(maskNum(mainPhone(c))||"no phone")+'</div></div>'+
+        '<div class="rcx-amt">'+stTxt+'<div class="meta" style="text-align:right">'+txnsFor(c.id).length+' txns</div></div>'+
+        '<div class="rcx-qa" onclick="event.stopPropagation()">'+
+          qa("👁","RCX.open(\'"+c.id+"\')","View")+qa("✏️","RCX.edit(\'"+c.id+"\')","Edit")+
+          qa("💷","RCX.addTxn(\'"+c.id+"\',null)","Add transaction")+
+          (mainPhone(c)?qa("📞","RCX.waCall(\'"+c.id+"\')","Call on WhatsApp")+qa("💬","RCX.wa(\'"+c.id+"\')","WhatsApp chat"):"")+
+        '</div></div>';
+    }
   });
   return h;
 }
@@ -28944,6 +28967,7 @@ function aiMic(){
 }
 window.RCX={
   render:render, setView:function(v){state.view=v;render();}, q:function(v){state.q=v;render();},
+  toggleCompact:function(){ state.compact=!state.compact; try{localStorage.setItem("royal_rcx_compact_v1",state.compact?"1":"0");}catch(e){} render(); },
   aiAsk:aiAsk, aiPick:aiPick, aiMic:aiMic,
   f:function(k,v){ if(v==="__rcxadd__") return; state[k]=v;render();}, open:openProfile, tab:function(t){openTab=t;renderTab(); document.querySelectorAll('.rcx-tabs button').forEach(function(b){b.classList.remove('on');}); event&&event.target&&event.target.classList.add('on');},
   close:function(){ if(openId){var id=openId;closeModal();openProfile(id,"profile");} else {closeModal();render();} },
@@ -29066,6 +29090,7 @@ try{ var _mo=new MutationObserver(function(){ if(!document.getElementById("nb-rc
 try{ var _ovo=overlay(); new MutationObserver(function(){ try{ rcxDecorateSelects(); }catch(e){} }).observe(_ovo,{childList:true,subtree:true}); }catch(e){}
 })();
 </script>
+
 
 </body>
 </html>
